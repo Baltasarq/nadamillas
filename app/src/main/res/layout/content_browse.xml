@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".ui.BrowseActivity"
+    tools:showIn="@layout/activity_browse">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_margin="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.github.sundeepk.compactcalendarview.CompactCalendarView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/cvCalendar"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:padding="10dp"
+            app:compactCalendarTextSize="18sp"
+            app:compactCalendarTextColor="#ff000000"
+            app:compactCalendarCurrentSelectedDayBackgroundColor="#ff303f9f"
+            app:compactCalendarCurrentDayBackgroundColor="@android:color/darker_gray"
+            app:compactCalendarCurrentDayTextColor="@android:color/white"
+            app:compactCalendarCurrentSelectedDayTextColor="@android:color/white"
+            />
+
+        <TextView       android:id="@+id/lblSelectedDay"
+            android:layout_margin="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="@string/message_no_day_selected"/>
+
+        <ListView       android:id="@+id/lvSessionsPerDay"
+            android:layout_margin="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
