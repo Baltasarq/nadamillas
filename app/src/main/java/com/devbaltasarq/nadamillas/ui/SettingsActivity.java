@@ -297,22 +297,27 @@ public class SettingsActivity extends AppCompatActivity {
 
         final Cursor CURSOR = dataStore.getDescendingAllYearInfosCursor();
         final Cursor SELECTED_YEAR_CURSOR = (Cursor) CB_YEARS.getSelectedItem();
-        final int SELECTED_YEAR = SELECTED_YEAR_CURSOR.getInt(
-                CURSOR.getColumnIndexOrThrow(
-                        YearInfoStorage.FIELD_YEAR ) );
-        final YearInfo INFO = dataStore.getInfoFor( SELECTED_YEAR );
 
-        if ( INFO != null ) {
-            final String TARGET = Integer.toString( INFO.getTarget() / 1000 );
-            int displayUnits = R.string.label_km;
+        if ( SELECTED_YEAR_CURSOR != null ) {
+            final int SELECTED_YEAR = SELECTED_YEAR_CURSOR.getInt(
+                    CURSOR.getColumnIndexOrThrow(
+                            YearInfoStorage.FIELD_YEAR ) );
+            final YearInfo INFO = dataStore.getInfoFor( SELECTED_YEAR );
 
-            if ( settings.getDistanceUnits() == Settings.DistanceUnits.mi ) {
-                displayUnits = R.string.label_mi;
+            if ( INFO != null ) {
+                final String TARGET = Integer.toString( INFO.getTarget() / 1000 );
+                int displayUnits = R.string.label_km;
+
+                if ( settings.getDistanceUnits() == Settings.DistanceUnits.mi ) {
+                    displayUnits = R.string.label_mi;
+                }
+
+                ED_TARGET.setText( TARGET );
+                LBL_TOTAL_DISTANCE.setText( INFO.getTotalAsString( settings ) );
+                LBL_UNITS_TOTAL_DISTANCE.setText( displayUnits );
             }
-
-            ED_TARGET.setText( TARGET );
-            LBL_TOTAL_DISTANCE.setText( INFO.getTotalAsString( settings ) );
-            LBL_UNITS_TOTAL_DISTANCE.setText( displayUnits );
+        } else {
+            Log.d( LOG_TAG, "unable to update the target");
         }
 
         return;

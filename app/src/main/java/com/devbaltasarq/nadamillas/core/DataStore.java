@@ -240,9 +240,14 @@ public class DataStore extends SQLiteOpenHelper {
     private void updateYearInfo(Date date, int distance, boolean atPool)
     {
         final YearInfo YEAR_INFO = this.getInfoFor( date );
-        final YearInfo NEW_YEAR_INFO = YEAR_INFO.addMeters( distance, atPool );
+        YearInfo NEW_YEAR_INFO;
 
-        Log.d( LOG_TAG,"Updating year info, adding:" + distance + ", at pool: " + atPool );
+        if ( YEAR_INFO != null ) {
+            NEW_YEAR_INFO = YEAR_INFO.addMeters( distance, atPool );
+            Log.d( LOG_TAG,"Updating year info, adding:" + distance + ", at pool: " + atPool );
+        } else {
+            NEW_YEAR_INFO = new YearInfo( 2019, distance, atPool? distance : 0 );
+        }
 
         this.updateYearInfo( NEW_YEAR_INFO );
     }
@@ -484,6 +489,7 @@ public class DataStore extends SQLiteOpenHelper {
         final Cursor CURSOR = this.getAllSessionsCursorFor( year );
         final YearInfo INFO = this.getInfoFor( year );
 
+        int target = 0;
         int totalMeters = 0;
         int totalMetersPool = 0;
 
@@ -506,8 +512,13 @@ public class DataStore extends SQLiteOpenHelper {
             Log.e( LOG_TAG, "field not found: " + exc.getMessage() );
         }
 
+        // Get the target
+        if ( INFO != null ) {
+            target = INFO.getTarget();
+        }
+
         final YearInfo TORET = new YearInfo( year, totalMeters, totalMetersPool );
-        TORET.setTarget( INFO.getTarget() );
+        TORET.setTarget( target );
         this.add( TORET );
     }
 

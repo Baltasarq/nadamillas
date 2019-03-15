@@ -50,7 +50,7 @@ public class HistoryActivity extends BaseActivity {
             public void onClick(View v) {
                 final HistoryActivity SELF = HistoryActivity.this;
 
-                SELF.share( SELF.takeScreenshot( LOG_TAG, dataStore ) );
+                SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG, dataStore ) );
             }
         });
     }

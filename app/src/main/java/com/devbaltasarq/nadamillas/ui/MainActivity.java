@@ -28,6 +28,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.MimeTypeMap;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
@@ -66,12 +67,14 @@ public class MainActivity extends BaseActivity
         final FloatingActionButton FB_STATS = this.findViewById( R.id.fbStats );
         final TextView LBL_TITLE = this.findViewById( R.id.lblTitle );
 
+        this.setTitle( "" );
+
         BT_SHARE.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
             final MainActivity SELF = MainActivity.this;
 
-            SELF.share( SELF.takeScreenshot( LOG_TAG, dataStore ) );
+            SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG, dataStore ) );
             }
         });
 
@@ -359,7 +362,10 @@ public class MainActivity extends BaseActivity
                     .toString().toLowerCase() );
             final String RES_FILE_EXT = DataStore.EXT_BACKUP_FILE.toLowerCase();
 
-            if ( FILE_EXTENSION.equals( RES_FILE_EXT ) ) {
+            if ( ( uri.getScheme().equals( ContentResolver.SCHEME_FILE )
+                && FILE_EXTENSION.equals( RES_FILE_EXT ) )
+              || uri.getScheme().equals( ContentResolver.SCHEME_CONTENT ) )
+            {
                 final AlertDialog.Builder DLG = new AlertDialog.Builder( this );
 
                 DLG.setTitle( R.string.action_import );
@@ -393,6 +399,15 @@ public class MainActivity extends BaseActivity
             public void run()
             {
                 final MainActivity SELF = MainActivity.this;
+                final ProgressBar PROGRESS_BAR = SELF.findViewById( R.id.pbProgressMain );
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        PROGRESS_BAR.setVisibility( View.VISIBLE );
+                        PROGRESS_BAR.setIndeterminate( true );
+                    }
+                });
 
                 if ( uri != null
                   && uri.getScheme() != null
@@ -401,6 +416,7 @@ public class MainActivity extends BaseActivity
                 {
                     try {
                         final InputStream IN = SELF.getContentResolver().openInputStream( uri );
+
                         SELF.dataStore.importFrom( IN, fromScratch );
                         SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_finished ) );
                     } catch(IOException exc) {
@@ -418,6 +434,13 @@ public class MainActivity extends BaseActivity
                 } else {
                     SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_unsupported_file_type_error ) );
                 }
+
+                runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        PROGRESS_BAR.setVisibility( View.GONE );
+                    }
+                });
 
                 return;
             }

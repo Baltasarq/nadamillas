@@ -1,0 +1,52 @@
+{
+"years": [{"_id":2019,"total":0,"target":850000,"total_pool":0}],
+"workouts":[
+{"_id": 1,"year":2019,"month":0,"day": 5,"distance":1500,"pool":false},
+
+{"_id": 2,"year":2019,"month":0,"day": 8,"distance":4200,"pool":true},
+{"_id": 3,"year":2019,"month":0,"day": 9,"distance":4200,"pool":true},
+{"_id": 4,"year":2019,"month":0,"day":10,"distance":4200,"pool":true},
+{"_id": 5,"year":2019,"month":0,"day":11,"distance":3500,"pool":true},
+
+{"_id": 6,"year":2019,"month":0,"day":14,"distance":3800,"pool":true},
+{"_id": 7,"year":2019,"month":0,"day":15,"distance":3600,"pool":true},
+{"_id": 8,"year":2019,"month":0,"day":16,"distance":4000,"pool":true},
+{"_id": 9,"year":2019,"month":0,"day":17,"distance":4200,"pool":true},
+{"_id":10,"year":2019,"month":0,"day":18,"distance":3700,"pool":true},
+
+{"_id":11,"year":2019,"month":0,"day":22,"distance":3600,"pool":true},
+{"_id":12,"year":2019,"month":0,"day":24,"distance":4000,"pool":true},
+{"_id":13,"year":2019,"month":0,"day":25,"distance":4000,"pool":true},
+
+{"_id":14,"year":2019,"month":0,"day":29,"distance":4200,"pool":true},
+{"_id":15,"year":2019,"month":0,"day":30,"distance":3200,"pool":true},
+{"_id":16,"year":2019,"month":0,"day":31,"distance":3700,"pool":true},
+{"_id":17,"year":2019,"month":1,"day": 1,"distance":4200,"pool":true},
+{"_id":18,"year":2019,"month":1,"day": 2,"distance":4300,"pool":true},
+
+{"_id":19,"year":2019,"month":1,"day": 5,"distance":4000,"pool":true},
+{"_id":20,"year":2019,"month":1,"day": 6,"distance":3200,"pool":true},
+{"_id":21,"year":2019,"month":1,"day": 7,"distance":5000,"pool":true},
+{"_id":22,"year":2019,"month":1,"day": 8,"distance":3600,"pool":true},
+{"_id":23,"year":2019,"month":1,"day":10,"distance":4200,"pool":true},
+
+{"_id":24,"year":2019,"month":1,"day":12,"distance":3300,"pool":true},
+{"_id":25,"year":2019,"month":1,"day":14,"distance":3600,"pool":true},
+{"_id":26,"year":2019,"month":1,"day":15,"distance":3800,"pool":true},
+{"_id":27,"year":2019,"month":1,"day":16,"distance":4000,"pool":true},
+{"_id":28,"year":2019,"month":1,"day":17,"distance":4200,"pool":true},
+
+{"_id":29,"year":2019,"month":1,"day":21,"distance":3800,"pool":true},
+{"_id":30,"year":2019,"month":1,"day":22,"distance":3200,"pool":true},
+
+{"_id":31,"year":2019,"month":1,"day":26,"distance":4200,"pool":true},
+{"_id":32,"year":2019,"month":1,"day":27,"distance":3800,"pool":true},
+{"_id":33,"year":2019,"month":1,"day":28,"distance":3600,"pool":true},
+
+{"_id":34,"year":2019,"month":2,"day": 6,"distance":4000,"pool":true},
+{"_id":35,"year":2019,"month":2,"day": 7,"distance":4000,"pool":true},
+{"_id":36,"year":2019,"month":2,"day": 8,"distance":4100,"pool":true},
+{"_id":37,"year":2019,"month":2,"day": 9,"distance":4200,"pool":true},
+{"_id":38,"year":2019,"month":2,"day":10,"distance":3400,"pool":true}
+
+]}

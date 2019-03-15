@@ -4,12 +4,13 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.FileUriExposedException;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.devbaltasarq.nadamillas.R;
@@ -21,7 +22,6 @@ import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Date;
 
 public class BaseActivity extends AppCompatActivity {
@@ -141,17 +141,25 @@ public class BaseActivity extends AppCompatActivity {
         return;
     }
 
-    protected void share(File f)
+    protected void share(String logTag, File f)
     {
-        final Intent INTENT = new Intent( Intent.ACTION_SEND );
-        final Uri SCRSHOT_URI = Uri.fromFile( f );
+        try {
+            final Intent INTENT = new Intent( Intent.ACTION_SEND );
+            final Uri SCRSHOT_URI = FileProvider.getUriForFile( this.getApplicationContext(), getPackageName() + ".fileprovider", f );
 
-        INTENT.setType( "image/*" );
-        INTENT.putExtra( Intent.EXTRA_STREAM, SCRSHOT_URI );
+            INTENT.setType( "image/*" );
+            INTENT.setAction( Intent.ACTION_SEND );
+            INTENT.putExtra( Intent.EXTRA_STREAM, SCRSHOT_URI );
 
-        this.startActivity(
-                Intent.createChooser(
-                        INTENT, this.getString( R.string.action_share ) ) );
+            this.startActivity(
+                    Intent.createChooser(
+                            INTENT, this.getString( R.string.action_share ) ) );
+        } catch(Exception exc) {
+            this.showStatus( logTag, this.getString( R.string.message_io_error ) );
+            Log.e( logTag, exc.getMessage() );
+        }
+
+        return;
     }
 
     /** @return a screenshot image file in the private storage. */
@@ -161,7 +169,7 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     /** @return an image file in the private storage. */
-    protected File extractBitmap(String logTag, View view, DataStore dataStore)
+    protected File extractBitmap(String logTag, final View V1, DataStore dataStore)
     {
         final String FMT_DATE = Util.getISODate()
                 + "-" + Util.getTimeAsString().replace( ':', '_' );
@@ -169,15 +177,21 @@ public class BaseActivity extends AppCompatActivity {
 
         try {
             // create bitmap screen capture
-            final View V1 = view.getRootView();
             V1.setDrawingCacheEnabled( true );
             final Bitmap BITMAP = Bitmap.createBitmap( V1.getDrawingCache() );
             V1.setDrawingCacheEnabled( false );
 
+            // Scale bitmap
+            final Bitmap SCALED_BITMAP =
+                    Bitmap.createScaledBitmap( BITMAP,
+                                        (int) Math.round( BITMAP.getWidth() / 2.5 ),
+                                        (int) Math.round( BITMAP.getHeight() / 2.5 ), true );
+
+            // Save it
             final File TEMP_FILE = dataStore.createTempFile(
-                    "scrshot", FMT_DATE );
+                    "scrshot", FMT_DATE + ".jpg" );
             final FileOutputStream OUTPUT = new FileOutputStream( TEMP_FILE );
-            BITMAP.compress( Bitmap.CompressFormat.JPEG, 100, OUTPUT );
+            SCALED_BITMAP.compress( Bitmap.CompressFormat.JPEG, 90, OUTPUT );
             OUTPUT.flush();
             OUTPUT.close();
             toret = TEMP_FILE;

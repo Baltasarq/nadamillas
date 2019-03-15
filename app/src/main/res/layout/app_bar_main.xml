@@ -40,6 +40,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
+            <ProgressBar    android:id="@+id/pbProgressMain"
+                android:visibility="gone"
+                android:indeterminateOnly="true"
+                android:layout_gravity="end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
         </android.support.v7.widget.Toolbar>
 
     </android.support.design.widget.AppBarLayout>

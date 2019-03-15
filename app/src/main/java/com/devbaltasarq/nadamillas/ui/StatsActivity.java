@@ -132,9 +132,8 @@ public class StatsActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 final StatsActivity SELF = StatsActivity.this;
-                final ImageView GRAPH_IMG = SELF.findViewById( R.id.ivChartViewer );
 
-                SELF.share( SELF.extractBitmap( LOG_TAG, GRAPH_IMG, dataStore ) );
+                SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG, dataStore ) );
             }
         });
 

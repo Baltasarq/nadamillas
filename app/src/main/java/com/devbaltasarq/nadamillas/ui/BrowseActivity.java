@@ -77,7 +77,7 @@ public class BrowseActivity extends BaseActivity {
             public void onClick(View v) {
                 final BrowseActivity SELF = BrowseActivity.this;
 
-                SELF.share( SELF.takeScreenshot( LOG_TAG, dataStore ) );
+                SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG, dataStore ) );
             }
         });
     }
