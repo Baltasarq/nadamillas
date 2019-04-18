@@ -10,7 +10,7 @@ The sources are available for **Android Studio**. Download [Android Studio](http
 
 ## License
 
-The sources for this app are shared using the [MIT License](LICENSE.md).
+The sources for this app are shared using the [MIT License](LICENSE).
 
 ## Availability
 

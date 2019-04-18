@@ -9,7 +9,9 @@ This is an Android App that manages your workouts on the water. You can take int
 *Esta es una aplicación para Android que gestiona tus entrenamientos en el agua. Puedes tomar en cuenta si fue una sesión de aguas abiertas o en la piscina, hojear las sesiones en los meses anteriores y explorar secuencialmente el histórico de entrenamientos. La aplicación genera gráficos para resultados de metros por semana, mes y año.*
 
 <p align="center">
+
 ![The main screen, showing the progress and the year's objective.](res/scr-main.png)
+
 </p>
 
 ### Languages
@@ -21,7 +23,9 @@ Nadamillas is available in English and Spanish. It can also be chosen to select 
 ### Creating a new session
 
 <p align="center">
+
 ![Adding a new session.](res/scr-add.png)
+
 </p>
 
 A new session is just created by tapping the '+' button in the main screen. The data required is the meters swam, and where there were swam. Optionally, mainly for open water sessions, you can introduce the time it took you to swim that distance, so the app can calculate the mean pace, in km/h and also seconds per one hundred meters.
@@ -31,7 +35,9 @@ A new session is just created by tapping the '+' button in the main screen. The 
 ### Browsing sesions
 
 <p align="center">
+
 ![Browsing sessions.](res/scr-browse.png)
+
 </p>
 
 A calendar is shown in which each day with a training session sports a dot. A blue dot means a session at the pool, while a green one means an open waters session. The calendar can be swiped to the left or to the right to get to the previous and following month, respectly. In the lowermost part of the screen all trainings for the selected day are shown.
@@ -41,7 +47,9 @@ A calendar is shown in which each day with a training session sports a dot. A bl
 ### Data graphs
 
 <p align="center">
+
 ![Automatic graphs.](res/scr-graph.png)
+
 </p>
 
 A graph is automatically and immediately drawn given the data stored in the app. In the uppermost part of the screen you can choose between weekly, monthly and yearly graphs, which are updated immediately. It will also redrawn if the device's orientation is changed. You can also zoom in and out from the graph.
