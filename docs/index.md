@@ -55,4 +55,4 @@ All screens showing data have the "share" button, allowing you to capture a scre
 
 *Todos las pantallas que muestran datos tienen un botón para compartir, permitiendo la captura de la pantalla y su envío por whatsapp, email, o cualquier otra aplicación instalada.*
 
-<a href='https://play.google.com/store/apps/details?id=com.devbaltasarq.nadamillas><img alt='Get it on Google Play' width="200" src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png'/></a>
+<a href='https://play.google.com/store/apps/details?id=com.devbaltasarq.nadamillas'><img alt='Get nadamillas on Google Play!' width="200" src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png'/></a>
