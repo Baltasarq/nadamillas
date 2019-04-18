@@ -28,6 +28,7 @@
     <!-- Labels -->
     <string name="label_back">Back</string>
     <string name="label_communicate">Communicate</string>
+    <string name="label_speed">Speed</string>
     <string name="label_target_distance">Target distance</string>
     <string name="label_total_distance">Total distance</string>
     <string name="label_total">total</string>
@@ -45,6 +46,7 @@
     <string name="label_open_waters">open waters</string>
     <string name="label_recalculate">recalculate</string>
     <string name="label_distance_units">Distance units</string>
+    <string name="label_duration">Duration</string>
     <string name="label_import">Import workouts database</string>
     <string name="label_import_from_scratch">Import erasing database</string>
     <string name="label_add_to_database">Import adding to the database</string>

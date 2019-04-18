@@ -4,7 +4,6 @@ package com.devbaltasarq.nadamillas.ui;
 
 import android.content.DialogInterface;
 import android.database.Cursor;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -31,7 +30,7 @@ import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 import com.devbaltasarq.nadamillas.core.storage.SettingsStorage;
 import com.devbaltasarq.nadamillas.core.storage.YearInfoStorage;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends BaseActivity {
     public final static String LOG_TAG = SettingsActivity.class.getSimpleName();
 
     @Override
@@ -326,6 +325,5 @@ public class SettingsActivity extends AppCompatActivity {
     private boolean recalculating;
     private CursorAdapter yearsAdapter;
 
-    public static Settings settings;
     public static DataStore dataStore;
 }

@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.Session;
+import com.devbaltasarq.nadamillas.core.Settings;
 import com.devbaltasarq.nadamillas.core.Util;
 import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 
@@ -41,10 +42,11 @@ public class BaseActivity extends AppCompatActivity {
 
         if ( date != null ) {
             final Bundle BUNDLE = new Bundle();
-            new SessionStorage( new Session( date, 0, true ) ).toBundle( BUNDLE );
+            new SessionStorage( new Session( date, 0, 0, true ) ).toBundle( BUNDLE );
             NEW_SESSION_DATA.putExtras( BUNDLE );
         }
 
+        EditSessionActivity.settings = settings;
         this.startActivityForResult( NEW_SESSION_DATA, RC_NEW_SESSION );
     }
 
@@ -60,6 +62,7 @@ public class BaseActivity extends AppCompatActivity {
         new SessionStorage( session ).toBundle( BUNDLE );
         EDIT_SESSION_DATA.putExtras( BUNDLE );
 
+        EditSessionActivity.settings = settings;
         this.startActivityForResult( EDIT_SESSION_DATA, RC_EDIT_SESSION );
     }
 
@@ -203,4 +206,6 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private int lastEditedSessionId;
+
+    public static Settings settings;
 }

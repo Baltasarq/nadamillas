@@ -80,6 +80,7 @@ public class SessionCursorAdapter extends CursorAdapter {
     {
         final Locale LOCALE = Locale.getDefault();
         final TextView LBL_DATA = view.findViewById( R.id.lblData );
+        final TextView LBL_SPEED = view.findViewById( R.id.lblSpeed );
         final ImageView IV_LOGO = view.findViewById( R.id.ivLogo );
         final String DATE = Util.getShortDate( session.getDate(), null );
         final String FORMATTED_DISTANCE = String.format( LOCALE, "%6d", session.getDistance() );
@@ -90,8 +91,17 @@ public class SessionCursorAdapter extends CursorAdapter {
             units = R.string.label_yard;
         }
 
+        if ( session.getDistance() > 0
+          && session.getDuration().getTimeInSeconds() > 0 )
+        {
+            LBL_SPEED.setText( session.getSpeedAsString( HistoryActivity.settings )
+                    + " - " + session.getMeanTimeAsString( HistoryActivity.settings ) );
+        }
+
         // Basic data
-        LBL_DATA.setText( FORMATTED_DATE + " " + FORMATTED_DISTANCE + historyActivity.getString( units ) );
+        LBL_DATA.setText( FORMATTED_DATE
+                            + " " + FORMATTED_DISTANCE
+                            + historyActivity.getString( units ) );
 
         // Logo
         int drawableId = R.drawable.ic_sea;

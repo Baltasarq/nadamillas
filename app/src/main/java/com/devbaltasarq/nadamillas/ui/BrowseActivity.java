@@ -40,11 +40,6 @@ public class BrowseActivity extends BaseActivity {
         final FloatingActionButton FB_NEW = this.findViewById( R.id.fbNew );
         final CompactCalendarView CV_CALENDAR = this.findViewById( R.id.cvCalendar );
 
-        // Initialize widgets
-        this.currentDate = Util.getDate().getTime();
-        this.onDateChanged();
-        this.highlightDays();
-
         // Connect listeners
         CV_CALENDAR.setListener( new CompactCalendarView.CompactCalendarViewListener() {
             @Override
@@ -83,6 +78,20 @@ public class BrowseActivity extends BaseActivity {
     }
 
     @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        final CompactCalendarView CV_CALENDAR = this.findViewById( R.id.cvCalendar );
+
+        this.currentDate = Util.getDate().getTime();
+        CV_CALENDAR.setCurrentDate( this.currentDate );
+
+        this.onDateChanged();
+        this.update();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
     {
         super.onActivityResult( requestCode, resultCode, data );
@@ -99,11 +108,16 @@ public class BrowseActivity extends BaseActivity {
                     break;
             }
 
-            this.highlightDays();
-            this.updateSessions();
+            this.update();
         }
 
         return;
+    }
+
+    private void update()
+    {
+        this.updateSessions();
+        this.highlightDays();
     }
 
     private void highlightDays()
@@ -174,8 +188,7 @@ public class BrowseActivity extends BaseActivity {
     {
         this.deleteSession( dataStore, session );
 
-        this.updateSessions();
-        this.highlightDays();
+        this.update();
     }
 
     private Date currentDate;

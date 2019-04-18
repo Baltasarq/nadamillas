@@ -124,7 +124,7 @@ public class MainActivity extends BaseActivity
         final Calendar DATE = Util.getDate();
 
         this.dataStore = DataStore.createFor( APP_CONTEXT );
-        this.settings = SettingsStorage.restore( APP_CONTEXT );
+        settings = SettingsStorage.restore( APP_CONTEXT );
 
         if ( DATE.get( Calendar.DAY_OF_WEEK ) == Calendar.MONDAY ) {
             Thread backupThread = new Thread() {
@@ -490,5 +490,4 @@ public class MainActivity extends BaseActivity
     }
 
     private DataStore dataStore;
-    private Settings settings;
 }

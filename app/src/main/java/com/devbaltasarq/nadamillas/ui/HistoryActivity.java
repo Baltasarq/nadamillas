@@ -53,12 +53,7 @@ public class HistoryActivity extends BaseActivity {
                 SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG, dataStore ) );
             }
         });
-    }
 
-    @Override
-    public void onStart()
-    {
-        super.onStart();
         this.createAllSessionsList();
     }
 
@@ -66,6 +61,7 @@ public class HistoryActivity extends BaseActivity {
     public void onResume()
     {
         super.onResume();
+
         this.updateAllSessionsList();
     }
 
@@ -73,6 +69,7 @@ public class HistoryActivity extends BaseActivity {
     public void onPause()
     {
         super.onPause();
+
         this.sessionsCursor.getCursor().close();
     }
 
@@ -134,5 +131,4 @@ public class HistoryActivity extends BaseActivity {
 
     private SessionCursorAdapter sessionsCursor;
     public static DataStore dataStore;
-    public static Settings settings;
 }

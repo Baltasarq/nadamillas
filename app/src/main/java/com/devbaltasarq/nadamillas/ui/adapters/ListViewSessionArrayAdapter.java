@@ -60,6 +60,7 @@ public class ListViewSessionArrayAdapter extends ArrayAdapter<Session> {
 
         final ImageView IV_LOGO = rowView.findViewById( R.id.ivLogo );
         final TextView LBL_DISTANCE = rowView.findViewById( R.id.lblDistance );
+        final TextView LBL_SPEED = rowView.findViewById( R.id.lblSpeed );
 
         // Set appropriate icon
         int drawableId = R.drawable.ic_sea;
@@ -70,8 +71,14 @@ public class ListViewSessionArrayAdapter extends ArrayAdapter<Session> {
 
         IV_LOGO.setImageDrawable( AppCompatResources.getDrawable( ACTIVITY, drawableId ) );
 
-        // Set distance
+        // Set data
         LBL_DISTANCE.setText( Integer.toString( SESSION.getDistance() ) );
+
+        if ( SESSION.getDistance() > 0
+          && SESSION.getDuration().getTimeInSeconds() > 0 )
+        {
+            LBL_SPEED.setText( SESSION.getMeanTimeAsString( BrowseActivity.settings ) );
+        }
 
         return rowView;
     }

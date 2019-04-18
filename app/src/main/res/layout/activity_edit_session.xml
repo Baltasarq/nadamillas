@@ -34,7 +34,8 @@
                 android:tint="#ffffffff"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="10dp"/>
+                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"/>
 
             <TextView   android:id="@+id/lblTitle"
                 android:text="@string/title_activity_edit_session"
@@ -43,19 +44,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
+            <ImageButton android:id="@+id/btSaveSession"
+                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
+                android:contentDescription="@string/label_ok"
+                android:layout_gravity="end"
+                android:background="#00000000"
+                android:tint="#ffffffff"
+                app:srcCompat="@android:drawable/ic_menu_save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
         </android.support.v7.widget.Toolbar>
-
     </android.support.design.widget.AppBarLayout>
 
     <include layout="@layout/content_new_session" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fbSaveSession"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:tint="#ffffff"
-        app:srcCompat="@android:drawable/ic_menu_save" />
 
 </android.support.design.widget.CoordinatorLayout>

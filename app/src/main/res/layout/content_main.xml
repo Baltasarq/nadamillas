@@ -8,12 +8,19 @@
     tools:context=".ui.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
+    <ScrollView
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:fillViewport="true"
+        android:padding="10dp"
+        android:gravity="center_horizontal|center_vertical" >
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center_horizontal|center_vertical"
-        android:padding="10dp">
+        android:padding="10dp" >
 
         <LinearLayout
             android:gravity="center_vertical|center_horizontal"
@@ -31,14 +38,6 @@
                 android:text="2019-03-13" />
 
         </LinearLayout>
-
-        <ImageView
-            android:padding="10dp"
-            android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:gravity="center"
-            android:tint="@color/design_default_color_primary_dark"
-            app:srcCompat="@drawable/ic_swimming_figure"/>
 
         <TableLayout
             android:padding="10dp"
@@ -188,6 +187,15 @@
                 android:textSize="75sp" />
         </LinearLayout>
 
+        <ImageView
+            android:padding="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:gravity="center"
+            android:tint="@color/design_default_color_primary_dark"
+            app:srcCompat="@drawable/ic_swimming_figure"/>
+
     </LinearLayout>
+    </ScrollView>
 
 </android.support.constraint.ConstraintLayout>

@@ -25,6 +25,7 @@ public class SessionStorage {
     public static final String FIELD_MONTH = "month";
     public static final String FIELD_DAY = "day";
     public static final String FIELD_DISTANCE = "distance";
+    public static final String FIELD_SECONDS = "seconds_used";
     public static final String FIELD_AT_POOL = "pool";
 
     /** Create a new wrapper for the Session. */
@@ -39,14 +40,15 @@ public class SessionStorage {
     public ContentValues toValues()
     {
         final ContentValues toret = new ContentValues();
-        final int[] DATE_DATA = Util.dataFromDate( session.getDate() );
+        final int[] DATE_DATA = Util.dataFromDate( this.session.getDate() );
 
-        toret.put( FIELD_SESSION_ID, session.getId() );
+        toret.put( FIELD_SESSION_ID, this.session.getId() );
         toret.put( FIELD_YEAR, DATE_DATA[ 0 ] );
         toret.put( FIELD_MONTH, DATE_DATA[ 1 ] );
         toret.put( FIELD_DAY, DATE_DATA[ 2 ] );
-        toret.put( FIELD_DISTANCE, session.getDistance() );
-        toret.put( FIELD_AT_POOL, session.isAtPool() );
+        toret.put( FIELD_DISTANCE, this.session.getDistance() );
+        toret.put( FIELD_AT_POOL, this.session.isAtPool() );
+        toret.put( FIELD_SECONDS, this.session.getDuration().getTimeInSeconds() );
 
         return toret;
     }
@@ -57,15 +59,16 @@ public class SessionStorage {
       */
     public void toJSON(JsonWriter jsonWriter) throws IOException
     {
-        final int[] DATE_DATA = Util.dataFromDate( session.getDate() );
+        final int[] DATE_DATA = Util.dataFromDate( this.session.getDate() );
 
         jsonWriter.beginObject();
-        jsonWriter.name( FIELD_SESSION_ID ).value( session.getId() );
+        jsonWriter.name( FIELD_SESSION_ID ).value( this.session.getId() );
         jsonWriter.name( FIELD_YEAR ).value( DATE_DATA[ 0 ] );
         jsonWriter.name( FIELD_MONTH ).value( DATE_DATA[ 1 ] );
         jsonWriter.name( FIELD_DAY ).value( DATE_DATA[ 2 ] );
-        jsonWriter.name( FIELD_DISTANCE ).value( session.getDistance() );
-        jsonWriter.name( FIELD_AT_POOL ).value( session.isAtPool() );
+        jsonWriter.name( FIELD_DISTANCE ).value( this.session.getDistance() );
+        jsonWriter.name( FIELD_SECONDS ).value( this.session.getDuration().getTimeInSeconds() );
+        jsonWriter.name( FIELD_AT_POOL ).value( this.session.isAtPool() );
         jsonWriter.endObject();
     }
 
@@ -81,6 +84,7 @@ public class SessionStorage {
         int month = -1;
         int day = -1;
         int distance = -1;
+        int secs = 0;
         boolean atPool = false;
 
         jsonReader.beginObject();
@@ -108,8 +112,12 @@ public class SessionStorage {
                 distance = jsonReader.nextInt();
             }
             else
-            if ( NAME.equals( FIELD_AT_POOL) ) {
+            if ( NAME.equals( FIELD_AT_POOL ) ) {
                 atPool = jsonReader.nextBoolean();
+            }
+            else
+            if ( NAME.equals( FIELD_SECONDS ) ) {
+                secs = jsonReader.nextInt();
             } else {
                 jsonReader.skipValue();
             }
@@ -126,7 +134,7 @@ public class SessionStorage {
             throw new IOException( "reading YearInfo from JSON: missing data" );
         }
 
-        return new Session( id, Util.dateFromData( year, month, day ), distance, atPool );
+        return new Session( id, Util.dateFromData( year, month, day ), distance, secs, atPool );
     }
 
     /** Stores the Session's data in the given Bundle.
@@ -139,6 +147,7 @@ public class SessionStorage {
         bundle.putLong( FIELD_DATE, SESSION.getDate().getTime() );
         bundle.putBoolean( FIELD_AT_POOL, SESSION.isAtPool() );
         bundle.putInt( FIELD_DISTANCE, SESSION.getDistance() );
+        bundle.putInt( FIELD_SECONDS, SESSION.getDuration().getTimeInSeconds() );
     }
 
     /** @return the session wrapped. */
@@ -154,14 +163,21 @@ public class SessionStorage {
     public static Session createFrom(Cursor c)
     {
         // Extract data from cursor
-        final int ID = c.getInt( c.getColumnIndexOrThrow(FIELD_SESSION_ID) );
+        final int ID = c.getInt( c.getColumnIndexOrThrow( FIELD_SESSION_ID ) );
         final int DISTANCE = c.getInt( c.getColumnIndexOrThrow( FIELD_DISTANCE ) );
-        final boolean AT_POOL = c.getInt( c.getColumnIndexOrThrow(FIELD_AT_POOL) ) != 0;
+        final boolean AT_POOL = c.getInt( c.getColumnIndexOrThrow( FIELD_AT_POOL ) ) != 0;
         final int DAY = c.getInt( c.getColumnIndexOrThrow( FIELD_DAY ) );
         final int MONTH = c.getInt( c.getColumnIndexOrThrow( FIELD_MONTH ) );
-        final int YEAR = c.getInt( c.getColumnIndexOrThrow(FIELD_YEAR) );
+        final int YEAR = c.getInt( c.getColumnIndexOrThrow( FIELD_YEAR ) );
+        int secsColumn = c.getColumnIndex( FIELD_SECONDS );
+        int secs = 0;
 
-        return new Session( ID, Util.dateFromData( YEAR, MONTH, DAY ), DISTANCE, AT_POOL );
+        // Fetch the seconds, if available
+        if ( secsColumn >= 0 ) {
+            secs = c.getInt( secsColumn );
+        }
+
+        return new Session( ID, Util.dateFromData( YEAR, MONTH, DAY ), DISTANCE, secs, AT_POOL );
     }
 
     /** Creates a Session object from a Bundle.
@@ -196,7 +212,8 @@ public class SessionStorage {
             toret = new Session(
                     new Date( extras.getLong( FIELD_DATE, TODAY ) ),
                     extras.getInt( FIELD_DISTANCE, 0 ),
-                    extras.getBoolean(FIELD_AT_POOL, true ) );
+                    extras.getInt( FIELD_SECONDS, 0 ),
+                    extras.getBoolean( FIELD_AT_POOL, true ) );
         }
 
         return toret;

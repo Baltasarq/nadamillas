@@ -23,6 +23,7 @@
     <string name="action_settings">Preferencias</string>
     <string name="label_back">Atrás</string>
     <string name="label_communicate">Comunicaciones</string>
+    <string name="label_speed">Velocidad</string>
     <string name="label_target_distance">Distancia objetivo</string>
     <string name="label_total_distance">Distancia total</string>
     <string name="label_total">total</string>
@@ -40,6 +41,7 @@
     <string name="label_open_waters">aguas abiertas</string>
     <string name="label_recalculate">recalcular</string>
     <string name="label_distance_units">Unidades de distancia</string>
+    <string name="label_duration">Duración</string>
     <string name="label_import">Importar datos de sesiones</string>
     <string name="label_import_from_scratch">Importar eliminando los datos</string>
     <string name="label_add_to_database">Importar añadiendo a los datos</string>

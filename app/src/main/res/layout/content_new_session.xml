@@ -38,8 +38,10 @@
                 android:layout_height="wrap_content" />
 
             <ImageButton android:id="@+id/btDate"
+                android:layout_marginLeft="5dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="#00000000"
                 app:srcCompat="@drawable/btn_calendar" />
         </LinearLayout>
 
@@ -69,6 +71,112 @@
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                android:text="@string/label_duration"/>
+
+            <EditText   android:id="@+id/edHours"
+                android:hint="0"
+                android:layout_weight=".2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="textEnd"
+                android:gravity="end"
+                android:inputType="number"/>
+
+            <TextView
+                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                android:text=":"/>
+
+            <EditText   android:id="@+id/edMinutes"
+                android:hint="0"
+                android:layout_weight=".2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="textEnd"
+                android:gravity="end"
+                android:inputType="number"/>
+
+            <TextView
+                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                android:text=":"/>
+
+            <EditText   android:id="@+id/edSeconds"
+                android:hint="0"
+                android:layout_weight=".2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="textEnd"
+                android:gravity="end"
+                android:inputType="number"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:padding="5dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_marginRight="5dp"
+                android:layout_marginEnd="10dp"
+                android:text="@string/label_speed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+
+            <TextView   android:id="@+id/lblSpeed"
+                android:gravity="end"
+                android:layout_weight=".8"
+                android:textColor="@android:color/darker_gray"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:padding="5dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioGroup     android:id="@+id/grdWaters"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp">
+
+                <RadioButton    android:id="@+id/rbtPool"
+                    android:text="@string/label_pool"
+                    android:textAlignment="center"
+                    android:layout_gravity="center_horizontal|center_vertical"
+                    android:drawableRight="@drawable/ic_pool"
+                    android:drawableEnd="@drawable/ic_pool"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <RadioButton    android:id="@+id/rbtOpen"
+                    android:text="@string/label_open_waters"
+                    android:textAlignment="center"
+                    android:layout_gravity="center_horizontal|center_vertical"
+                    android:drawableRight="@drawable/ic_sea"
+                    android:drawableEnd="@drawable/ic_sea"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </RadioGroup>
 
             <CheckBox   android:id="@+id/chkPool"
                 android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"

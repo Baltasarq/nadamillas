@@ -3,6 +3,7 @@
 package com.devbaltasarq.nadamillas.core;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -72,7 +73,7 @@ public class Util {
                                 DATE_TIME.get( Calendar.SECOND ) );
     }
 
-    /** a year, as an int, from a given Date. */
+    /** A year, as an int, from a given Date. */
     public static int getYearFrom(Date date)
     {
         final Calendar DATE = Calendar.getInstance();
@@ -98,13 +99,23 @@ public class Util {
             locale = Locale.getDefault();
         }
 
-        final DateFormat F = DateFormat.getDateInstance( DateFormat.SHORT, locale );
+        final DateFormat DATE_FORMAT = DateFormat.getDateInstance( DateFormat.SHORT, locale );
+
+        if ( DATE_FORMAT instanceof SimpleDateFormat ) {
+            final SimpleDateFormat SDF = (SimpleDateFormat) DATE_FORMAT;
+
+            // To show Locale specific short date expression with full year
+            String pattern = SDF.toPattern().replaceAll( "y+", "yyyy" );
+            pattern = pattern.replaceAll( "M+", "MM" );
+            pattern = pattern.replaceAll( "d+", "dd" );
+            SDF.applyPattern( pattern );
+        }
 
         if ( d == null ) {
             d = getDate( locale ).getTime();
         }
 
-        return F.format( d );
+        return DATE_FORMAT.format( d );
     }
 
     /** @return the current full date. */

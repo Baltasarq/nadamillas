@@ -146,20 +146,20 @@ public class StatsActivity extends BaseActivity {
     }
 
     @Override
-    public void onPause()
-    {
-        super.onPause();
-
-        this.yearsAdapter.getCursor().close();
-    }
-
-    @Override
     public void onResume()
     {
         super.onResume();
 
         this.yearsAdapter.changeCursor( dataStore.getDescendingAllYearInfosCursor() );
         this.plotChart();
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+
+        this.yearsAdapter.getCursor().close();
     }
 
     private String createTag()

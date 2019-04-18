@@ -37,7 +37,7 @@ public class DataStore extends SQLiteOpenHelper {
     private static final String LOG_TAG = DataStore.class.getSimpleName();
     public static final String DIR_BACKUP_NAME = "backup";
     public static final String EXT_BACKUP_FILE = "json";
-    private static final int VERSION = 3;
+    private static final int VERSION = 4;
     private static final String NAME = "swimming_workouts";
     private static final String TABLE_YEARS = "years";
     private static final String TABLE_SESSIONS = "workouts";
@@ -58,23 +58,8 @@ public class DataStore extends SQLiteOpenHelper {
         try{
             db.beginTransaction();
 
-            db.execSQL(
-                    "CREATE TABLE IF NOT EXISTS " + TABLE_YEARS + "("
-                    + YearInfoStorage.FIELD_YEAR + " integer PRIMARY KEY,"
-                    + YearInfoStorage.FIELD_TARGET + " integer NOT NULL,"
-                    + YearInfoStorage.FIELD_TOTAL + " integer NOT NULL,"
-                    + YearInfoStorage.FIELD_TOTAL_POOL + " integer NOT NULL)"
-            );
-
-            db.execSQL(
-                    "CREATE TABLE IF NOT EXISTS " + TABLE_SESSIONS + "("
-                            + SessionStorage.FIELD_SESSION_ID + " integer PRIMARY KEY,"
-                            + SessionStorage.FIELD_YEAR + " integer NOT NULL,"
-                            + SessionStorage.FIELD_MONTH + " integer NOT NULL,"
-                            + SessionStorage.FIELD_DAY + " integer NOT NULL,"
-                            + SessionStorage.FIELD_DISTANCE + " integer NOT NULL,"
-                            + SessionStorage.FIELD_AT_POOL + " boolean NOT NULL)"
-            );
+            createYearsInfoTable( db );
+            createSessionsTable( db );
 
             db.setTransactionSuccessful();
             Log.d( LOG_TAG, "tables created");
@@ -90,25 +75,70 @@ public class DataStore extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
-        boolean deletedTables = false;
-
         Log.d( LOG_TAG, "upgrading database.");
 
         try{
             db.beginTransaction();
-            db.execSQL( "DROP TABLE IF EXISTS " + TABLE_YEARS );
-            db.execSQL( "DROP TABLE IF EXISTS " + TABLE_SESSIONS );
+
+            createYearsInfoTable( db );
+            createSessionsTable( db );
+            updateSessionsTable( db, oldVersion, newVersion );
+
             db.setTransactionSuccessful();
-            deletedTables = true;
-            Log.d( LOG_TAG, "tables removed");
+            Log.d( LOG_TAG, "tables updated");
         } catch(SQLException exc) {
-            Log.e( LOG_TAG, "error upgrading: deleting tables: " + exc.getMessage() );
+            Log.e( LOG_TAG, "error upgrading: updating tables: " + exc.getMessage() );
         } finally {
             db.endTransaction();
         }
 
-        if ( deletedTables ) {
-            this.onCreate( db );
+        this.onCreate( db );
+    }
+
+    private static void removeSessionsTable(SQLiteDatabase db)
+    {
+        db.execSQL( "DROP TABLE IF EXISTS " + TABLE_SESSIONS );
+    }
+
+    private static void createSessionsTable(SQLiteDatabase db)
+    {
+        db.execSQL(
+                "CREATE TABLE IF NOT EXISTS " + TABLE_SESSIONS + "("
+                        + SessionStorage.FIELD_SESSION_ID + " integer PRIMARY KEY,"
+                        + SessionStorage.FIELD_YEAR + " integer NOT NULL,"
+                        + SessionStorage.FIELD_MONTH + " integer NOT NULL,"
+                        + SessionStorage.FIELD_DAY + " integer NOT NULL,"
+                        + SessionStorage.FIELD_DISTANCE + " integer NOT NULL,"
+                        + SessionStorage.FIELD_AT_POOL + " boolean NOT NULL,"
+                        + SessionStorage.FIELD_SECONDS + " integer NOT NULL)"
+        );
+    }
+
+    private static void createYearsInfoTable(SQLiteDatabase db)
+    {
+        db.execSQL(
+                "CREATE TABLE IF NOT EXISTS " + TABLE_YEARS + "("
+                        + YearInfoStorage.FIELD_YEAR + " integer PRIMARY KEY,"
+                        + YearInfoStorage.FIELD_TARGET + " integer NOT NULL,"
+                        + YearInfoStorage.FIELD_TOTAL + " integer NOT NULL,"
+                        + YearInfoStorage.FIELD_TOTAL_POOL + " integer NOT NULL)"
+        );
+    }
+
+    private static void updateSessionsTable(SQLiteDatabase db, int oldVersion, int newVersion)
+    {
+        if ( newVersion > oldVersion ) {
+            createSessionsTable( db );
+
+            if ( oldVersion <= 3 ) {
+                // Add the time to the sessions table.
+                db.execSQL( "ALTER TABLE " + TABLE_SESSIONS
+                        + " ADD COLUMN " +  SessionStorage.FIELD_SECONDS
+                        + " integer NOT NULL DEFAULT 0;" );
+            }
+        } else {
+            // We know nothing about how to update, remove everything
+            removeSessionsTable( db );
         }
 
         return;

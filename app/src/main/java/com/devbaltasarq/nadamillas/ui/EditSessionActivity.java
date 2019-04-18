@@ -6,29 +6,31 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
+import com.devbaltasarq.nadamillas.core.Duration;
 import com.devbaltasarq.nadamillas.core.Session;
+import com.devbaltasarq.nadamillas.core.Settings;
 import com.devbaltasarq.nadamillas.core.Util;
 import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
-public class EditSessionActivity extends AppCompatActivity {
+public class EditSessionActivity extends BaseActivity {
     private static final String LOG_TAG = EditSessionActivity.class.getSimpleName();
     public static final String IS_EDIT = "is_edit";
 
@@ -46,6 +48,7 @@ public class EditSessionActivity extends AppCompatActivity {
         boolean isEdit = false;
 
         this.date = Util.getDate().getTime();
+        this.duration = new Duration( 0 );
 
         if ( DATA != null ) {
             final Session SESSION = SessionStorage.createFrom( DATA );
@@ -57,6 +60,7 @@ public class EditSessionActivity extends AppCompatActivity {
                 if ( isEdit ) {
                     this.atPool = SESSION.isAtPool();
                     this.distance = SESSION.getDistance();
+                    this.duration = SESSION.getDuration();
                 }
             } else {
                 long instant = DATA.getLong( SessionStorage.FIELD_DATE, this.date.getTime() );
@@ -74,16 +78,32 @@ public class EditSessionActivity extends AppCompatActivity {
         // Update view
         final ImageButton BT_BACK = this.findViewById( R.id.btCloseEditSession );
         final EditText ED_DATE = this.findViewById( R.id.edDate );
+        final EditText ED_HOURS = this.findViewById( R.id.edHours );
+        final EditText ED_MINUTES = this.findViewById( R.id.edMinutes );
+        final EditText ED_SECONDS = this.findViewById( R.id.edSeconds );
         final EditText ED_DISTANCE = this.findViewById( R.id.edDistance );
         final ImageButton BT_DATE = this.findViewById( R.id.btDate );
-        final CheckBox CHK_POOL = this.findViewById( R.id.chkPool );
-        final FloatingActionButton FB_SAVE = this.findViewById( R.id.fbSaveSession );
+        final RadioGroup GRD_WATER_TYPES = this.findViewById( R.id.grdWaters );
+        final RadioButton RBT_POOL = this.findViewById( R.id.rbtPool );
+        final RadioButton RBT_OPEN = this.findViewById( R.id.rbtOpen );
+        final ImageButton BT_SAVE = this.findViewById( R.id.btSaveSession );
 
         ED_DATE.setText( Util.getShortDate( this.date, null ) );
-        CHK_POOL.setChecked( true );
+
+        if ( this.atPool ) {
+            GRD_WATER_TYPES.check( RBT_POOL.getId() );
+        } else {
+            GRD_WATER_TYPES.check( RBT_OPEN.getId() );
+        }
 
         if ( this.distance > 0 ) {
-            ED_DISTANCE.setText( Integer.toString( this.distance ) );
+            ED_DISTANCE.setText( String.format( Locale.getDefault(), "%d", this.distance ) );
+        }
+
+        if ( this.duration.getTimeInSeconds() > 0 ) {
+            ED_HOURS.setText( String.valueOf( this.duration.getHours() ) );
+            ED_MINUTES.setText( String.valueOf( this.duration.getMinutes() ) );
+            ED_SECONDS.setText( String.valueOf( this.duration.getSeconds() ) );
         }
 
         // Set listeners
@@ -94,28 +114,30 @@ public class EditSessionActivity extends AppCompatActivity {
             }
         });
 
-        FB_SAVE.setOnClickListener(new View.OnClickListener() {
+        BT_SAVE.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 EditSessionActivity.this.save();
             }
         });
 
-        BT_DATE.setOnClickListener(new View.OnClickListener() {
+        BT_DATE.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 EditSessionActivity.this.chooseDate();
             }
         });
 
-        CHK_POOL.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        GRD_WATER_TYPES.setOnCheckedChangeListener( new RadioGroup.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                EditSessionActivity.this.setAtPool();
+            public void onCheckedChanged(RadioGroup grp, int id) {
+                int pos = ( id == RBT_POOL.getId() ) ? 0 : 1;
+
+                EditSessionActivity.this.setAtPool( pos );
             }
         });
 
-        ED_DISTANCE.addTextChangedListener(new TextWatcher() {
+        ED_DISTANCE.addTextChangedListener( new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -129,8 +151,71 @@ public class EditSessionActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 EditSessionActivity.this.storeDistance( s );
+                EditSessionActivity.this.calculateMeanSpeed();
             }
         });
+
+        ED_HOURS.addTextChangedListener( new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                EditSessionActivity.this.storeDuration();
+                EditSessionActivity.this.calculateMeanSpeed();
+            }
+        });
+
+        ED_MINUTES.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                EditSessionActivity.this.storeDuration();
+                EditSessionActivity.this.calculateMeanSpeed();
+            }
+        });
+
+        ED_SECONDS.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                EditSessionActivity.this.storeDuration();
+                EditSessionActivity.this.calculateMeanSpeed();
+            }
+        });
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        this.calculateMeanSpeed();
     }
 
     /** Launch a date picker dialog. */
@@ -153,12 +238,12 @@ public class EditSessionActivity extends AppCompatActivity {
         dlg.show();
     }
 
-    /** Update whether the session was done at the pool. */
-    private void setAtPool()
+    /** Update whether the session was done at the pool.
+      * pool == 0, open waters == 1
+      */
+    private void setAtPool(int pos)
     {
-        final CheckBox CHK_POOL = this.findViewById( R.id.chkPool );
-
-        this.atPool = CHK_POOL.isChecked();
+        this.atPool = ( pos == 0 );
     }
 
     /** Updates the date info, and reflects the change in the view. */
@@ -191,6 +276,49 @@ public class EditSessionActivity extends AppCompatActivity {
         return;
     }
 
+    /** Stores the duration. */
+    private void storeDuration()
+    {
+        final EditText ED_HOURS = this.findViewById( R.id.edHours );
+        final EditText ED_MINUTES = this.findViewById( R.id.edMinutes );
+        final EditText ED_SECONDS = this.findViewById( R.id.edSeconds );
+        int hours = 0;
+        int minutes = 0;
+        int seconds = 0;
+
+        try {
+            hours = Integer.parseInt( ED_HOURS.getText().toString() );
+        } catch(NumberFormatException exc) {
+            Log.d( LOG_TAG, "hours parsing exception: " + exc.getMessage() );
+        }
+
+        try {
+            minutes = Integer.parseInt( ED_MINUTES.getText().toString() );
+        } catch(NumberFormatException exc) {
+            Log.d( LOG_TAG, "minutes parsing exception: " + exc.getMessage() );
+        }
+
+        try {
+            seconds = Integer.parseInt( ED_SECONDS.getText().toString() );
+        } catch(NumberFormatException exc) {
+            Log.d( LOG_TAG, "seconds parsing exception: " + exc.getMessage() );
+        }
+
+        this.duration = new Duration( hours, minutes, seconds );
+    }
+
+    /** Calculates and shows the mean speed as data is entered. */
+    private void calculateMeanSpeed()
+    {
+        final TextView LBL_SPEED = this.findViewById( R.id.lblSpeed );
+        final Session FAKE_SESSION = new Session( this.date, this.distance, this.duration, this.atPool );
+
+        LBL_SPEED.setText( FAKE_SESSION.getSpeedAsString( settings )
+                            + " - "
+                            + FAKE_SESSION.getMeanTimeAsString( settings
+        ) );
+    }
+
     /** Saves the data and returns. */
     private void save()
     {
@@ -198,7 +326,7 @@ public class EditSessionActivity extends AppCompatActivity {
         final Intent RET_DATA = new Intent();
         final Bundle DATA = new Bundle();
 
-        new SessionStorage( new Session( this.date, this.distance, this.atPool ) ).toBundle( DATA );
+        new SessionStorage( new Session( this.date, this.distance, this.duration, this.atPool ) ).toBundle( DATA );
         RET_DATA.putExtras( DATA );
 
         // Finish
@@ -208,5 +336,6 @@ public class EditSessionActivity extends AppCompatActivity {
 
     private Date date;
     private int distance;
+    private Duration duration;
     private boolean atPool;
 }
