@@ -4,6 +4,7 @@ package com.devbaltasarq.nadamillas.ui;
 
 import android.content.DialogInterface;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -30,6 +31,8 @@ import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 import com.devbaltasarq.nadamillas.core.storage.SettingsStorage;
 import com.devbaltasarq.nadamillas.core.storage.YearInfoStorage;
 
+import java.util.Calendar;
+
 public class SettingsActivity extends BaseActivity {
     public final static String LOG_TAG = SettingsActivity.class.getSimpleName();
 
@@ -46,6 +49,7 @@ public class SettingsActivity extends BaseActivity {
         final Spinner CB_UNITS = this.findViewById( R.id.cbUnits );
         final ImageButton BT_RECALCULATE = this.findViewById( R.id.btRecalculate );
         final Spinner CB_YEARS = this.findViewById( R.id.cbYears );
+        final Spinner CB_FDoW = this.findViewById( R.id.cbFirstDayOfWeek );
         final ImageButton BT_EDIT_YEAR = this.findViewById( R.id.btEditYear );
         final ImageButton BT_NEW_YEAR = this.findViewById( R.id.btNewYear );
 
@@ -57,6 +61,16 @@ public class SettingsActivity extends BaseActivity {
 
         CB_UNITS.setAdapter( UNITS_ADAPTER );
         CB_UNITS.setSelection( settings.getDistanceUnits().ordinal() );
+
+        // Prepare first day of week spinner
+        final ArrayAdapter<CharSequence> FDoW_ADAPTER = ArrayAdapter.createFromResource(
+                    this,
+                     R.array.array_first_day_of_week,
+                     android.R.layout.simple_spinner_item
+        );
+
+        CB_FDoW.setAdapter( FDoW_ADAPTER );
+        CB_FDoW.setSelection( settings.getFirstDayOfWeek().ordinal() );
 
         // Prepare years spinner
         this.yearsAdapter = new SimpleCursorAdapter(
@@ -118,10 +132,22 @@ public class SettingsActivity extends BaseActivity {
             }
         });
 
+        CB_FDoW.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                SettingsActivity.this.updateFirstDayOfWeek();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
         BT_BACK.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SettingsActivity.this.finish();
+                SettingsActivity.this.onBackPressed();
             }
         });
     }
@@ -139,18 +165,16 @@ public class SettingsActivity extends BaseActivity {
     {
         super.onPause();
 
-        this.yearsAdapter.getCursor().close();
+        DataStore.close( this.yearsAdapter.getCursor() );
     }
 
     @Override
     public void onBackPressed()
     {
         if ( !this.recalculating ) {
-            super.onBackPressed();
-
             new SettingsStorage( this.getApplicationContext(), settings ).store();
 
-            settings = null;
+            super.onBackPressed();
             this.finish();
         }
 
@@ -192,8 +216,8 @@ public class SettingsActivity extends BaseActivity {
             }
         };
 
-        recalculationThread.start();
         this.recalculating = true;
+        recalculationThread.start();
     }
 
     /** Handler for the edit target event. */
@@ -270,7 +294,7 @@ public class SettingsActivity extends BaseActivity {
     /** Handler for the units changed event. */
     private void onUnitsChangedTo(int pos)
     {
-        settings.setDistanceUnits( Settings.DistanceUnits.values()[ pos ] );
+        settings.setDistanceUnits( Settings.DistanceUnits.fromOrdinal( pos ) );
         this.updateTarget();
     }
 
@@ -293,27 +317,34 @@ public class SettingsActivity extends BaseActivity {
         final TextView LBL_UNITS_TOTAL_DISTANCE = this.findViewById( R.id.lblUnitsTotalDistance );
         final Spinner CB_YEARS = this.findViewById( R.id.cbYears );
         final TextView ED_TARGET = this.findViewById( R.id.edTarget );
-
-        final Cursor CURSOR = dataStore.getDescendingAllYearInfosCursor();
         final Cursor SELECTED_YEAR_CURSOR = (Cursor) CB_YEARS.getSelectedItem();
+        Cursor cursor = null;
 
         if ( SELECTED_YEAR_CURSOR != null ) {
-            final int SELECTED_YEAR = SELECTED_YEAR_CURSOR.getInt(
-                    CURSOR.getColumnIndexOrThrow(
-                            YearInfoStorage.FIELD_YEAR ) );
-            final YearInfo INFO = dataStore.getInfoFor( SELECTED_YEAR );
+            try {
+                cursor = dataStore.getDescendingAllYearInfosCursor();
 
-            if ( INFO != null ) {
-                final String TARGET = Integer.toString( INFO.getTarget() / 1000 );
-                int displayUnits = R.string.label_km;
+                final int SELECTED_YEAR = SELECTED_YEAR_CURSOR.getInt(
+                        cursor.getColumnIndexOrThrow(
+                                YearInfoStorage.FIELD_YEAR ) );
+                final YearInfo INFO = dataStore.getInfoFor( SELECTED_YEAR );
 
-                if ( settings.getDistanceUnits() == Settings.DistanceUnits.mi ) {
-                    displayUnits = R.string.label_mi;
+                if ( INFO != null ) {
+                    final String TARGET = Integer.toString( INFO.getTarget() / 1000 );
+                    int displayUnits = R.string.label_km;
+
+                    if ( settings.getDistanceUnits() == Settings.DistanceUnits.mi ) {
+                        displayUnits = R.string.label_mi;
+                    }
+
+                    ED_TARGET.setText( TARGET );
+                    LBL_TOTAL_DISTANCE.setText( INFO.getTotalAsString( settings ) );
+                    LBL_UNITS_TOTAL_DISTANCE.setText( displayUnits );
                 }
-
-                ED_TARGET.setText( TARGET );
-                LBL_TOTAL_DISTANCE.setText( INFO.getTotalAsString( settings ) );
-                LBL_UNITS_TOTAL_DISTANCE.setText( displayUnits );
+            } catch(SQLException exc) {
+                Log.e( LOG_TAG, exc.getMessage() );
+            } finally {
+                DataStore.close( cursor );
             }
         } else {
             Log.d( LOG_TAG, "unable to update the target");
@@ -322,8 +353,16 @@ public class SettingsActivity extends BaseActivity {
         return;
     }
 
+    /** Changes the first day of week. */
+    private void updateFirstDayOfWeek()
+    {
+        final Spinner CB_FDoW = this.findViewById( R.id.cbFirstDayOfWeek );
+        final Settings.FirstDayOfWeek FIRST_DAY_OF_WEEK =
+                Settings.FirstDayOfWeek.fromOrdinal( CB_FDoW.getSelectedItemPosition() );
+
+        settings.setFirstDayOfWeek( FIRST_DAY_OF_WEEK );
+    }
+
     private boolean recalculating;
     private CursorAdapter yearsAdapter;
-
-    public static DataStore dataStore;
 }

@@ -31,6 +31,7 @@ public class HistoryActivity extends BaseActivity {
         final FloatingActionButton FB_NEW = this.findViewById( R.id.fbNew );
         final ImageButton BT_BACK = this.findViewById( R.id.btCloseHistory );
         final ImageButton BT_SHARE = this.findViewById( R.id.btShareHstory );
+        final ImageButton BT_SCRSHOT = this.findViewById( R.id.btTakeScrshotForHistory );
 
         FB_NEW.setOnClickListener( new View.OnClickListener() {
             @Override
@@ -50,7 +51,16 @@ public class HistoryActivity extends BaseActivity {
             public void onClick(View v) {
                 final HistoryActivity SELF = HistoryActivity.this;
 
-                SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG, dataStore ) );
+                SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
+            }
+        });
+
+        BT_SCRSHOT.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final HistoryActivity SELF = HistoryActivity.this;
+
+                SELF.save( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
             }
         });
 
@@ -70,7 +80,7 @@ public class HistoryActivity extends BaseActivity {
     {
         super.onPause();
 
-        this.sessionsCursor.getCursor().close();
+        DataStore.close( this.sessionsCursor.getCursor() );
     }
 
     @Override
@@ -80,13 +90,13 @@ public class HistoryActivity extends BaseActivity {
         if ( resultCode == Activity.RESULT_OK ) {
             switch( requestCode ) {
                 case RC_NEW_SESSION:
-                    this.storeNewSession( dataStore, data );
+                    this.storeNewSession( data );
                     this.updateAllSessionsList();
                     break;
                 case RC_EDIT_SESSION:
                     final Session SESSION = SessionStorage.createFrom( data );
 
-                    this.updateSession( dataStore, SESSION );
+                    this.updateSession( SESSION );
                     SessionCursorAdapter.updateViewWith( SESSION );
                     break;
             }
@@ -125,10 +135,9 @@ public class HistoryActivity extends BaseActivity {
     /** Listener for the delete session event. */
     public void onDeleteSession(Session session)
     {
-        this.deleteSession( dataStore, session );
+        this.deleteSession( session );
         this.updateAllSessionsList();
     }
 
     private SessionCursorAdapter sessionsCursor;
-    public static DataStore dataStore;
 }

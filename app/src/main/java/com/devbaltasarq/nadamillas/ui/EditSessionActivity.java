@@ -20,6 +20,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
+import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.Duration;
 import com.devbaltasarq.nadamillas.core.Session;
 import com.devbaltasarq.nadamillas.core.Settings;
@@ -87,6 +88,8 @@ public class EditSessionActivity extends BaseActivity {
         final RadioButton RBT_POOL = this.findViewById( R.id.rbtPool );
         final RadioButton RBT_OPEN = this.findViewById( R.id.rbtOpen );
         final ImageButton BT_SAVE = this.findViewById( R.id.btSaveSession );
+        final ImageButton BT_SHARE = this.findViewById( R.id.btShareSessionEdited );
+        final ImageButton BT_SCRSHOT = this.findViewById( R.id.btTakeScrshotForEditSession );
 
         ED_DATE.setText( Util.getShortDate( this.date, null ) );
 
@@ -111,6 +114,24 @@ public class EditSessionActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 EditSessionActivity.this.finish();
+            }
+        });
+
+        BT_SHARE.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final EditSessionActivity SELF = EditSessionActivity.this;
+
+                SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
+            }
+        });
+
+        BT_SCRSHOT.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final EditSessionActivity SELF = EditSessionActivity.this;
+
+                SELF.save( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
             }
         });
 

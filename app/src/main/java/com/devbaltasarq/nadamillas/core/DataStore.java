@@ -444,20 +444,29 @@ public class DataStore extends SQLiteOpenHelper {
       */
     private Session[] retrieveSessionsWith(String query, String[] queryArgs)
     {
+        Cursor cursor = null;
+        Session[] toret = null;
+
         Log.d( LOG_TAG, "Retrieve with query: " + stringFromQuery( query, queryArgs ) );
 
-        // Build query
-        final Cursor cursor = this.getAllSessionsCursorWith( query, queryArgs );
-        final Session[] toret = new Session[ cursor.getCount() ];
+        try {
+            // Build query
+            cursor = this.getAllSessionsCursorWith( query, queryArgs );
+            toret = new Session[ cursor.getCount() ];
 
-        // Retrieve sessions
-        if ( cursor.moveToFirst() ) {
-            int pos = 0;
+            // Retrieve sessions
+            if ( cursor.moveToFirst() ) {
+                int pos = 0;
 
-            do {
-                toret[ pos ] = SessionStorage.createFrom( cursor );
-                ++pos;
-            } while( cursor.moveToNext() );
+                do {
+                    toret[ pos ] = SessionStorage.createFrom( cursor );
+                    ++pos;
+                } while( cursor.moveToNext() );
+            }
+        } catch(SQLException exc) {
+            Log.e( LOG_TAG, exc.getMessage() );
+        } finally {
+            close( cursor );
         }
 
         Log.d( LOG_TAG, "retrieved #" + toret.length + " sessions" );
@@ -516,35 +525,40 @@ public class DataStore extends SQLiteOpenHelper {
 
     public void recalculate(int year)
     {
-        final Cursor CURSOR = this.getAllSessionsCursorFor( year );
-        final YearInfo INFO = this.getInfoFor( year );
+        Cursor cursor = null;
+        YearInfo info = null;
 
         int target = 0;
         int totalMeters = 0;
         int totalMetersPool = 0;
 
         try {
-            if ( CURSOR.moveToFirst() ) {
+            cursor = this.getAllSessionsCursorFor( year );
+            info = this.getInfoFor( year );
+
+            if ( cursor.moveToFirst() ) {
                 do {
-                    int distance = CURSOR.getInt(
-                                        CURSOR.getColumnIndexOrThrow( SessionStorage.FIELD_DISTANCE ) );
-                    boolean atPool = CURSOR.getInt(
-                                        CURSOR.getColumnIndexOrThrow( SessionStorage.FIELD_AT_POOL) ) > 0;
+                    int distance = cursor.getInt(
+                                        cursor.getColumnIndexOrThrow( SessionStorage.FIELD_DISTANCE ) );
+                    boolean atPool = cursor.getInt(
+                                        cursor.getColumnIndexOrThrow( SessionStorage.FIELD_AT_POOL) ) > 0;
 
                     totalMeters += distance;
 
                     if ( atPool ) {
                         totalMetersPool += distance;
                     }
-                } while( CURSOR.moveToNext() );
+                } while( cursor.moveToNext() );
             }
         } catch(SQLException exc) {
-            Log.e( LOG_TAG, "field not found: " + exc.getMessage() );
+            Log.e( LOG_TAG, exc.getMessage() );
+        } finally {
+            close( cursor );
         }
 
-        // Get the target
-        if ( INFO != null ) {
-            target = INFO.getTarget();
+        // Build & store the target
+        if ( info != null ) {
+            target = info.getTarget();
         }
 
         final YearInfo TORET = new YearInfo( year, totalMeters, totalMetersPool );
@@ -691,29 +705,45 @@ public class DataStore extends SQLiteOpenHelper {
 
     private void allYearInfosTo(JsonWriter jsonWriter) throws IOException
     {
-        final Cursor CURSOR_YEAR_INFO = this.getAllYearInfosCursorWith( null, null );
+        Cursor cursorYearInfo = null;
 
         jsonWriter.beginArray();
-        while ( CURSOR_YEAR_INFO.moveToNext() ) {
-            new YearInfoStorage(
-                    YearInfoStorage.createFrom( CURSOR_YEAR_INFO ) ).toJSON( jsonWriter );
+
+        try {
+            cursorYearInfo = this.getAllYearInfosCursorWith( null, null );
+
+            while ( cursorYearInfo.moveToNext() ) {
+                new YearInfoStorage(
+                        YearInfoStorage.createFrom( cursorYearInfo ) ).toJSON( jsonWriter );
+            }
+        } catch(SQLException exc) {
+            Log.e( LOG_TAG, exc.getMessage() );
+        } finally {
+            close( cursorYearInfo );
         }
-        CURSOR_YEAR_INFO.close();
+
         jsonWriter.endArray();
     }
 
     private void allSessionsTo(JsonWriter jsonWriter) throws IOException
     {
-        final Cursor CURSOR_SESSIONS = this.getAllSessionsCursor();
+        Cursor cursorSessions = null;
 
         jsonWriter.beginArray();
 
-        while ( CURSOR_SESSIONS.moveToNext() ) {
-            new SessionStorage(
-                    SessionStorage.createFrom( CURSOR_SESSIONS ) ).toJSON( jsonWriter );
+        try {
+            cursorSessions = this.getAllSessionsCursor();
+
+            while ( cursorSessions.moveToNext() ) {
+                new SessionStorage(
+                        SessionStorage.createFrom( cursorSessions ) ).toJSON( jsonWriter );
+            }
+        } catch(SQLException exc) {
+            Log.e( LOG_TAG, exc.getMessage() );
+        } finally {
+            close( cursorSessions );
         }
 
-        CURSOR_SESSIONS.close();
         jsonWriter.endArray();
     }
 
@@ -973,9 +1003,9 @@ public class DataStore extends SQLiteOpenHelper {
      * @param os The output stream object of the destination.
      * @throws IOException if something goes wrong while copying.
      */
-    private static void copy(InputStream is, OutputStream os) throws IOException
+    public static void copy(InputStream is, OutputStream os) throws IOException
     {
-        final byte[] buffer = new byte[1024];
+        final byte[] buffer = new byte[ 1024 ];
         int length;
 
         try {
@@ -994,6 +1024,17 @@ public class DataStore extends SQLiteOpenHelper {
             } catch(IOException exc) {
                 Log.e( LOG_TAG, "Copying file: error closing streams: " + exc.getMessage() );
             }
+        }
+
+        return;
+    }
+
+    public static void close(Cursor cursor)
+    {
+        if ( cursor != null ) {
+            cursor.close();
+        } else {
+            Log.e( LOG_TAG, "cursor to close was null" );
         }
 
         return;
@@ -1023,7 +1064,7 @@ public class DataStore extends SQLiteOpenHelper {
         return dataStore;
     }
 
-    private static File getDirDownloads()
+    public static File getDirDownloads()
     {
         if ( DIR_DOWNLOADS == null ) {
             DIR_DOWNLOADS = Environment.getExternalStoragePublicDirectory(

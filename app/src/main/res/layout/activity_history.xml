@@ -44,6 +44,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
+            <ImageButton    android:id="@+id/btTakeScrshotForHistory"
+                android:layout_gravity="end"
+                app:srcCompat="@drawable/btn_camera"
+                app:backgroundTint="#00000000"
+                android:tint="#ffffffff"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
             <ImageButton    android:id="@+id/btShareHstory"
                 android:layout_gravity="end"
                 app:srcCompat="@drawable/ic_share"

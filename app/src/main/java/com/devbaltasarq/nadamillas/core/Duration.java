@@ -6,7 +6,14 @@ import java.util.Locale;
 
 /** Represents duration in minutes and seconds. */
 public class Duration {
-    public enum TimeUnit { Seconds, Minutes }
+    public enum TimeUnit { Seconds, Minutes;
+
+        /** @return the corresponding enum value, given its position. */
+        public static TimeUnit fromOrdinal(int pos)
+        {
+            return TimeUnit.values()[ pos ];
+        }
+    }
 
     /** Creates a new duration, given time in minutes and seconds.
       * @param hrs The duration time, in hours.
@@ -70,16 +77,6 @@ public class Duration {
         return toret;
     }
 
-    /** Sets this duration to a given number of seconds.
-      * @param secs the new number of seconds.
-      * @return itself.
-      */
-    public Duration set(int secs)
-    {
-        this.secs = secs;
-        return this;
-    }
-
     /** Adds a number of seconds to this duration.
       * @param secs the number of seconds to add.
       * @return itself.
@@ -96,24 +93,34 @@ public class Duration {
         return this.secs;
     }
 
-    /** @return The time in seconds, once minutes discounted. */
-    public int getSeconds()
-    {
-        return this.secs % 60;
-    }
-
     /** @return The amount of minutes in this duration. */
-    public int getMinutes()
+    public int getTimeInMinutes()
     {
         return this.secs / 60;
     }
 
-    /** @return The amount of hours in this duration. */
+    /** @return The hours part of this duration. */
     public int getHours()
     {
         return this.secs / 3600;
     }
 
+    /** @return The minutes part of this duration. */
+    public int getMinutes()
+    {
+        int hourSeconds = this.getHours() * 3600;
+
+        return ( this.secs - hourSeconds ) / 60;
+    }
+
+    /** @return The seconds part of this duration. */
+    public int getSeconds()
+    {
+        int hourSeconds = this.secs - ( this.getHours() * 3600 );
+        int minutesSeconds = hourSeconds - ( this.getMinutes() * 60 );
+
+        return minutesSeconds % 60;
+    }
 
     /** Parses the time as the user enters it.
       * @param mode 0 for seconds, 1 for minutes.
@@ -122,12 +129,12 @@ public class Duration {
     public void parse(int mode, String txt) throws NumberFormatException
     {
         if ( mode < 0
-                || mode >= TimeUnit.values().length )
+          || mode >= TimeUnit.values().length )
         {
             mode = 0;
         }
 
-        parse( TimeUnit.values()[ mode ], txt );
+        parse( TimeUnit.fromOrdinal( mode ), txt );
     }
 
     /** Parses the time as the user enters it.

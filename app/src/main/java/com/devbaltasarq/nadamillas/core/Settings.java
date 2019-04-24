@@ -4,19 +4,52 @@ package com.devbaltasarq.nadamillas.core;
 
 import android.util.Log;
 
+import java.util.Calendar;
 import java.util.Locale;
 
 /** Represents the possible settings of the app. */
 public class Settings {
     public static final String LOG_TAG = Settings.class.getSimpleName();
-    public enum DistanceUnits { km, mi };
+    public enum DistanceUnits { km, mi;
+
+        /** @return the corresponding enum value, given its position. */
+        public static DistanceUnits fromOrdinal(int pos)
+        {
+            return DistanceUnits.values()[ pos ];
+        }
+    }
+
+    public enum FirstDayOfWeek {
+        MONDAY(Calendar.MONDAY), SUNDAY(Calendar.SUNDAY);
+
+        FirstDayOfWeek(int value)
+        {
+            this.value = value;
+        }
+
+        /** @return the equivalent value of the java.util.Calendar. */
+        public int getCalendarValue()
+        {
+            return this.value;
+        }
+
+        /** @return the corresponding enum value, given its position. */
+        public static FirstDayOfWeek fromOrdinal(int pos)
+        {
+            return FirstDayOfWeek.values()[ pos ];
+        }
+
+        private final int value;
+    }
 
     /** Creates a new settings object with the given values.
       * @param units the DistanceUnits to be used.
+      * @param firstDayOfWeek the first day of week, as a Calendar constant.
       */
-    private Settings(DistanceUnits units)
+    private Settings(DistanceUnits units, FirstDayOfWeek firstDayOfWeek)
     {
         this.units = units;
+        this.firstDayOfWeek = firstDayOfWeek;
     }
 
     /** @return get the distance units to be used. */
@@ -65,6 +98,20 @@ public class Settings {
         return String.format( Locale.getDefault(), "%7.2f", value );
     }
 
+    /** @return the first day of week. */
+    public FirstDayOfWeek getFirstDayOfWeek()
+    {
+        return this.firstDayOfWeek;
+    }
+
+    /** Changes the first day of week.
+     * @param firstDayOfWeek the first day of week, as a Calendar constant.
+     */
+    public void setFirstDayOfWeek(FirstDayOfWeek firstDayOfWeek)
+    {
+        this.firstDayOfWeek = firstDayOfWeek;
+    }
+
     @Override
     public String toString()
     {
@@ -83,12 +130,13 @@ public class Settings {
         return settings;
     }
 
-    public static Settings createFrom(DistanceUnits distanceUnits)
+    public static Settings createFrom(DistanceUnits distanceUnits, FirstDayOfWeek firstDayOfWeek)
     {
-        settings = new Settings( distanceUnits );
+        settings = new Settings( distanceUnits, firstDayOfWeek );
         return settings;
     }
 
     private DistanceUnits units;
     private static Settings settings;
+    private FirstDayOfWeek firstDayOfWeek;
 }

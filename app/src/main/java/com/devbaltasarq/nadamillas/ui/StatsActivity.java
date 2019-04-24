@@ -2,14 +2,12 @@
 
 package com.devbaltasarq.nadamillas.ui;
 
-import java.lang.reflect.Array;
 import java.text.DateFormatSymbols;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.graphics.Color;
 import android.graphics.PointF;
-import android.media.Image;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -18,28 +16,31 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CursorAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.Session;
-import com.devbaltasarq.nadamillas.core.Util;
 import com.devbaltasarq.nadamillas.core.YearInfo;
 import com.devbaltasarq.nadamillas.core.storage.YearInfoStorage;
 import com.devbaltasarq.nadamillas.ui.graph.BarChart;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 
 public class StatsActivity extends BaseActivity {
     private int NUM_COLUMNS_IN_GRAPH = 10;
     private final static String LOG_TAG = StatsActivity.class.getSimpleName();
-    private enum GraphType { Weekly, Monthly, Yearly }
+    private enum GraphType { Weekly, Monthly, Yearly;
+
+        /** @return the corresponding enum value, given its position. */
+        public static GraphType fromOrdinal(int pos)
+        {
+            return GraphType.values()[ pos ];
+        }
+    }
 
     @Override @SuppressWarnings("ClickableViewAccessibility")
     protected void onCreate(Bundle savedInstanceState)
@@ -52,7 +53,8 @@ public class StatsActivity extends BaseActivity {
         final Spinner CB_YEARS = this.findViewById( R.id.cbGraphYear );
         final Spinner CB_MONTHS = this.findViewById( R.id.cbGrapMonth );
         final Spinner CB_TIME_SEGMENT = this.findViewById( R.id.cbTimeSegment );
-        final ImageButton BT_SHARE = this.findViewById( R.id.btShareGraph );
+        final ImageButton BT_SHARE = this.findViewById( R.id.btShareStats);
+        final ImageButton BT_SCRSHOT = this.findViewById( R.id.btTakeScrshotForStats );
         final ImageButton BT_BACK = this.findViewById( R.id.btCloseStats );
 
         // Prepares time segment spinner
@@ -77,14 +79,13 @@ public class StatsActivity extends BaseActivity {
         CB_MONTHS.setSelection( Calendar.getInstance().get( Calendar.MONTH ), false );
 
         // Prepare years spinner
-        this.yearsAdapter = new SimpleCursorAdapter(
+        final ArrayAdapter<String> CB_YEARS_ADAPTER = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
-                null,
-                new String[]{ YearInfoStorage.FIELD_YEAR },
-                new int[]{ android.R.id.text1 });
+                this.retrieveAllYearInfos()
+        );
 
-        CB_YEARS.setAdapter( this.yearsAdapter );
+        CB_YEARS.setAdapter( CB_YEARS_ADAPTER );
 
         // Chart image viewer
         final StandardGestures GESTURES = new StandardGestures( this );
@@ -133,7 +134,16 @@ public class StatsActivity extends BaseActivity {
             public void onClick(View v) {
                 final StatsActivity SELF = StatsActivity.this;
 
-                SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG, dataStore ) );
+                SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
+            }
+        });
+
+        BT_SCRSHOT.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final StatsActivity SELF = StatsActivity.this;
+
+                SELF.save( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
             }
         });
 
@@ -145,26 +155,32 @@ public class StatsActivity extends BaseActivity {
         });
     }
 
-    @Override
-    public void onResume()
+    private String[] retrieveAllYearInfos()
     {
-        super.onResume();
+        Cursor cursor = null;
+        String[] toret = null;
 
-        this.yearsAdapter.changeCursor( dataStore.getDescendingAllYearInfosCursor() );
-        this.plotChart();
-    }
+        try {
+            cursor = dataStore.getDescendingAllYearInfosCursor();
 
-    @Override
-    public void onPause()
-    {
-        super.onPause();
+            toret = new String[ cursor.getCount() ];
 
-        this.yearsAdapter.getCursor().close();
-    }
+            int i = 0;
+            while( cursor.moveToNext() ) {
+                final int YEAR = cursor.getInt(
+                                    cursor.getColumnIndexOrThrow(
+                                            YearInfoStorage.FIELD_YEAR ) );
 
-    private String createTag()
-    {
-        return this.getString( R.string.label_meter );
+                toret[ i ] = String.valueOf( YEAR );
+                ++i;
+            }
+        } catch(SQLException exc) {
+            Log.e( LOG_TAG, exc.getMessage() );
+        } finally {
+            DataStore.close( cursor );
+        }
+
+        return toret;
     }
 
     private void loadDataForYearsGraph(int year, final ArrayList<BarChart.SeriesInfo> SERIES)
@@ -242,54 +258,59 @@ public class StatsActivity extends BaseActivity {
 
     private void loadDataForWeeksGraph(int year, int month, final ArrayList<BarChart.SeriesInfo> SERIES)
     {
-        final BarChart.SeriesInfo SERIE_TOTAL =
-                new BarChart.SeriesInfo(
+        final BarChart.SeriesInfo SERIE_TOTAL = new BarChart.SeriesInfo(
                         this.getString( R.string.label_total ), Color.BLUE );
-        final BarChart.SeriesInfo SERIE_OPEN =
-                new BarChart.SeriesInfo(
+        final BarChart.SeriesInfo SERIE_OPEN = new BarChart.SeriesInfo(
                         this.getString( R.string.label_open_waters ), Color.CYAN );
         final Calendar DATE = Calendar.getInstance();
-        final Session[] SESSIONS = dataStore.getSessionsForMonth( year, month );
         final ArrayList<Integer> metersTotalPerWeek = new ArrayList<>( 6 );
         final ArrayList<Integer> metersOpenPerWeek = new ArrayList<>( 6 );
-        int weekIndex;
+        final int LAST_DAY_OF_MONTH = DATE.getActualMaximum( Calendar.DAY_OF_MONTH );
+        int firstDayOfWeek = settings.getFirstDayOfWeek().getCalendarValue();
+        int weekIndex = 0;
 
-        // Extract first week of year of the month
-        DATE.set( year, month, 1 );
-        final int FIRST_MONTH_WEEK = DATE.get( Calendar.WEEK_OF_YEAR );
-        weekIndex = FIRST_MONTH_WEEK - 1;
+        // Prepare initial week
+        metersTotalPerWeek.add( 0 );
+        metersOpenPerWeek.add( 0 );
 
-        // Evaluate sessions
-        for(Session session: SESSIONS) {
-            DATE.setTime( session.getDate() );
-            final int WEEK_NUMBER = DATE.get( Calendar.WEEK_OF_YEAR );
+        // Run all over the dates of that month
+        for(int i = 1; i <= LAST_DAY_OF_MONTH; ++i) {
+            DATE.set( year, month, i );
 
-            if ( WEEK_NUMBER != weekIndex ) {
-                final int NUM_WEEKS_TO_ADD = WEEK_NUMBER - weekIndex;
-
-                for(int i = 0; i < NUM_WEEKS_TO_ADD; ++i) {
-                    metersTotalPerWeek.add( 0 );
-                    metersOpenPerWeek.add( 0 );
-                }
-
-                weekIndex = WEEK_NUMBER;
+            // Change of week ?
+            if ( DATE.get( Calendar.DAY_OF_WEEK ) == firstDayOfWeek
+              && i != 1 )
+            {
+                metersTotalPerWeek.add( 0 );
+                metersOpenPerWeek.add( 0 );
+                ++weekIndex;
             }
 
-            final int LAST_INDEX = metersTotalPerWeek.size() - 1;
-            metersTotalPerWeek.set( LAST_INDEX, metersTotalPerWeek.get( LAST_INDEX ) + session.getDistance() );
+            // Retrieve the sessions for this date
+            final Session[] SESSIONS = dataStore.getSessionsForDay( DATE.getTime() );
 
-            if ( !session.isAtPool() ) {
-                metersOpenPerWeek.set( LAST_INDEX, metersOpenPerWeek.get( LAST_INDEX ) + session.getDistance() );
+            for(Session session: SESSIONS) {
+                metersTotalPerWeek.set( weekIndex,
+                                        metersTotalPerWeek.get( weekIndex )
+                                        + session.getDistance() );
+
+                if ( !session.isAtPool() ) {
+                    metersOpenPerWeek.set( weekIndex,
+                                           metersOpenPerWeek.get( weekIndex )
+                                         + session.getDistance() );
+                }
             }
         }
 
         // Pass sesssions to points
         for(int i = 0; i < metersTotalPerWeek.size(); ++i) {
-            SERIE_TOTAL.add( new BarChart.Point( i + 1, metersTotalPerWeek.get( i ) / 1000 ) );
+            SERIE_TOTAL.add(
+                    new BarChart.Point( i + 1, metersTotalPerWeek.get( i ) / 1000 ) );
         }
 
         for(int i = 0; i < metersOpenPerWeek.size(); ++i) {
-            SERIE_OPEN.add( new BarChart.Point( i + 1, metersOpenPerWeek.get( i ) / 1000 ) );
+            SERIE_OPEN.add(
+                    new BarChart.Point( i + 1, metersOpenPerWeek.get( i ) / 1000 ) );
         }
 
         SERIES.add( SERIE_TOTAL );
@@ -302,21 +323,9 @@ public class StatsActivity extends BaseActivity {
         final Spinner CB_MONTHS = this.findViewById( R.id.cbGrapMonth );
         final Spinner CB_TIME_SEGMENT = this.findViewById( R.id.cbTimeSegment );
 
-        this.graphType = GraphType.values()[ CB_TIME_SEGMENT.getSelectedItemPosition() ];
+        this.graphType = GraphType.fromOrdinal( CB_TIME_SEGMENT.getSelectedItemPosition() );
         this.selectedMonth = CB_MONTHS.getSelectedItemPosition();
-
-        try {
-            final Cursor CURSOR = (Cursor) CB_YEARS.getSelectedItem();
-
-            if ( CURSOR != null ) {
-                this.selectedYear = CURSOR.getInt( CURSOR.getColumnIndexOrThrow( YearInfoStorage.FIELD_YEAR ) );
-            } else {
-                throw new SQLException( "no cursor" );
-            }
-        } catch(SQLException exc) {
-            this.selectedYear = Util.getYearFrom( Util.getDate().getTime() );
-            Log.e( LOG_TAG, "unable to get selected year from cursor" );
-        }
+        this.selectedYear = Integer.valueOf( (String) CB_YEARS.getSelectedItem() );
 
         Log.d( LOG_TAG, String.format( "selected year: %d, month %d, graphtype: %d",
                                         this.selectedYear,
@@ -379,10 +388,8 @@ public class StatsActivity extends BaseActivity {
     private int selectedMonth;
     private GraphType graphType;
     private ImageView chartView;
-    private CursorAdapter yearsAdapter;
     private ArrayAdapter<String> segmentAdapter;
     private ArrayAdapter<String> monthsAdapter;
-    public static DataStore dataStore;
 
     /** Manages gestures. */
     public class StandardGestures implements View.OnTouchListener,

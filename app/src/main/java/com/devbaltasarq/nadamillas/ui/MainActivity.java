@@ -3,7 +3,6 @@
 package com.devbaltasarq.nadamillas.ui;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -33,7 +32,6 @@ import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.AppInfo;
-import com.devbaltasarq.nadamillas.core.Settings;
 import com.devbaltasarq.nadamillas.core.Util;
 import com.devbaltasarq.nadamillas.core.YearInfo;
 import com.devbaltasarq.nadamillas.core.DataStore;
@@ -47,8 +45,8 @@ import java.util.Calendar;
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    public static final int RC_ASK_PERMISSION = 111;
     private static final int RC_PICK_FILE = 0x813;
+    public static final int RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_EXPORT = 111;
 
     private static String LOG_TAG = MainActivity.class.getSimpleName();
     private final static int RC_SETTINGS = 998;
@@ -62,6 +60,7 @@ public class MainActivity extends BaseActivity
         this.setSupportActionBar( TOOL_BAR );
 
         final ImageButton BT_SHARE = this.findViewById( R.id.btShareSummary );
+        final ImageButton BT_SCRSHOT = this.findViewById( R.id.btTakeScrshotForSummary );
         final FloatingActionButton FB_NEW = this.findViewById( R.id.fbNew );
         final FloatingActionButton FB_BROWSE = this.findViewById( R.id.fbBrowse );
         final FloatingActionButton FB_STATS = this.findViewById( R.id.fbStats );
@@ -74,7 +73,16 @@ public class MainActivity extends BaseActivity
             public void onClick(View v) {
             final MainActivity SELF = MainActivity.this;
 
-            SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG, dataStore ) );
+            SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
+            }
+        });
+
+        BT_SCRSHOT.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final MainActivity SELF = MainActivity.this;
+
+                SELF.save( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
             }
         });
 
@@ -113,6 +121,7 @@ public class MainActivity extends BaseActivity
 
         final NavigationView NAVIGATION_VIEW = this.findViewById( R.id.nav_view );
         NAVIGATION_VIEW.setNavigationItemSelectedListener( this );
+        this.createNotificationChannel();
     }
 
     @Override
@@ -123,14 +132,14 @@ public class MainActivity extends BaseActivity
         final Context APP_CONTEXT = this.getApplicationContext();
         final Calendar DATE = Util.getDate();
 
-        this.dataStore = DataStore.createFor( APP_CONTEXT );
+        dataStore = DataStore.createFor( APP_CONTEXT );
         settings = SettingsStorage.restore( APP_CONTEXT );
 
         if ( DATE.get( Calendar.DAY_OF_WEEK ) == Calendar.MONDAY ) {
             Thread backupThread = new Thread() {
                 @Override
                 public void run() {
-                    MainActivity.this.dataStore.backup();
+                    dataStore.backup();
                 }
             };
 
@@ -240,10 +249,12 @@ public class MainActivity extends BaseActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
     {
+        super.onActivityResult( requestCode, resultCode, data );
+
         switch( requestCode ) {
             case RC_NEW_SESSION:
-                if ( resultCode == Activity.RESULT_OK ) {
-                    this.storeNewSession( this.dataStore, data );
+                if ( resultCode == RESULT_OK ) {
+                    this.storeNewSession( data );
                 }
                 break;
             case RC_SETTINGS:
@@ -264,7 +275,26 @@ public class MainActivity extends BaseActivity
                 break;
         }
 
-        super.onActivityResult( requestCode, resultCode, data );
+        return;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult( requestCode, permissions, grantResults );
+
+        switch ( requestCode ) {
+            case RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_EXPORT: {
+                if ( grantResults.length > 0
+                  && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED )
+                {
+                    this.doExport();
+                }
+            }
+        }
+
+        return;
     }
 
     /** Updates the on-screen totals. */
@@ -277,7 +307,7 @@ public class MainActivity extends BaseActivity
         final TextView LBL_OPEN_WATERS = this.findViewById( R.id.lblOpenWaters );
         final TextView LBL_DATE = this.findViewById( R.id.lblDate );
         final TextView LBL_PROGRESS = this.findViewById( R.id.lblProgress );
-        final YearInfo INFO = this.dataStore.getCurrentYearInfo();
+        final YearInfo INFO = dataStore.getCurrentYearInfo();
         String total = "0";
         String target = YearInfo.NOT_APPLYABLE;
         String totalPool = "0";
@@ -285,11 +315,11 @@ public class MainActivity extends BaseActivity
         String progress = YearInfo.NOT_APPLYABLE;
 
         if ( INFO != null ) {
-            total = INFO.getTotalAsString( this.settings );
-            target = INFO.getTargetAsString( this.settings );
+            total = INFO.getTotalAsString( settings );
+            target = INFO.getTargetAsString( settings );
             progress = INFO.getProgressAsString();
-            totalPool = INFO.getTotalPoolAsString( this.settings );
-            totalOpenWaters = INFO.getTotalOpenWaterAsString( this.settings );
+            totalPool = INFO.getTotalPoolAsString( settings );
+            totalOpenWaters = INFO.getTotalOpenWaterAsString( settings );
         }
 
         LBL_TOTAL.setText( total );
@@ -298,7 +328,7 @@ public class MainActivity extends BaseActivity
         LBL_OPEN_WATERS.setText( totalOpenWaters );
         LBL_PROGRESS.setText( progress );
         LBL_DATE.setText( Util.getFullDate() );
-        LBL_UNITS.setText( this.settings.getDistanceUnits().toString() );
+        LBL_UNITS.setText( settings.getDistanceUnits().toString() );
     }
 
     /** The new session handler. */
@@ -309,8 +339,6 @@ public class MainActivity extends BaseActivity
 
     private void onHistory()
     {
-        HistoryActivity.dataStore = this.dataStore;
-        HistoryActivity.settings = settings;
         this.startActivity( new Intent( this, HistoryActivity.class ) );
     }
 
@@ -319,22 +347,18 @@ public class MainActivity extends BaseActivity
     {
         final Intent SETTINGS_DATA = new Intent( this, SettingsActivity.class );
 
-        SettingsActivity.settings = this.settings;
-        SettingsActivity.dataStore = this.dataStore;
         this.startActivityForResult( SETTINGS_DATA, RC_SETTINGS );
     }
 
     /** The browse sessions handler. */
     private void onBrowse()
     {
-        BrowseActivity.dataStore = this.dataStore;
         this.startActivity( new Intent( this, BrowseActivity.class ) );
     }
 
     /** The browse sessions handler. */
     private void onStats()
     {
-        StatsActivity.dataStore = this.dataStore;
         this.startActivity( new Intent( this, StatsActivity.class ) );
     }
 
@@ -417,7 +441,7 @@ public class MainActivity extends BaseActivity
                     try {
                         final InputStream IN = SELF.getContentResolver().openInputStream( uri );
 
-                        SELF.dataStore.importFrom( IN, fromScratch );
+                        dataStore.importFrom( IN, fromScratch );
                         SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_finished ) );
                     } catch(IOException exc) {
                         SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_io_error ) );
@@ -427,7 +451,7 @@ public class MainActivity extends BaseActivity
                     SELF.runOnUiThread( new Runnable() {
                         @Override
                         public void run() {
-                        SELF.dataStore.recalculate();
+                        dataStore.recalculate();
                         SELF.updateTotals();
                         }
                     });
@@ -458,7 +482,7 @@ public class MainActivity extends BaseActivity
         if ( RESULT_REQUEST != PackageManager.PERMISSION_GRANTED ) {
             ActivityCompat.requestPermissions( this,
                     new String[]{ PERMISSION },
-                    RC_ASK_PERMISSION );
+                    RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_EXPORT );
         } else {
             this.doExport();
         }
@@ -476,7 +500,7 @@ public class MainActivity extends BaseActivity
                 final MainActivity SELF = MainActivity.this;
 
                 try {
-                    SELF.dataStore.exportTo( null );
+                    dataStore.exportTo( null );
                     SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_finished ) );
                 } catch(IOException exc) {
                     SELF.showStatus( LOG_TAG,
@@ -488,6 +512,4 @@ public class MainActivity extends BaseActivity
 
         EXPORT_THREAD.start();
     }
-
-    private DataStore dataStore;
 }
