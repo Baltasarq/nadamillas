@@ -109,6 +109,15 @@ public class EditSessionActivity extends BaseActivity {
             ED_SECONDS.setText( String.valueOf( this.duration.getSeconds() ) );
         }
 
+        /* Workaround: KitKat (4.4 api 19), up until Marshmallow (5.0, api 21)
+           does not support drawables in radio buttons.
+           It makes the whole app chrash.
+        */
+        if ( android.os.Build.VERSION.SDK_INT >= 21 ) {
+            RBT_POOL.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_pool, 0);
+            RBT_OPEN.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_sea, 0);
+        }
+
         // Set listeners
         BT_BACK.setOnClickListener( new View.OnClickListener() {
             @Override

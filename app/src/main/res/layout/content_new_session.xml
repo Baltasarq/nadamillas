@@ -162,8 +162,6 @@
                     android:text="@string/label_pool"
                     android:textAlignment="center"
                     android:layout_gravity="center_horizontal|center_vertical"
-                    android:drawableRight="@drawable/ic_pool"
-                    android:drawableEnd="@drawable/ic_pool"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
@@ -171,8 +169,6 @@
                     android:text="@string/label_open_waters"
                     android:textAlignment="center"
                     android:layout_gravity="center_horizontal|center_vertical"
-                    android:drawableRight="@drawable/ic_sea"
-                    android:drawableEnd="@drawable/ic_sea"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
