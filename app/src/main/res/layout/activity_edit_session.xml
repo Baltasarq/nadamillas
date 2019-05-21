@@ -74,6 +74,14 @@
         </android.support.v7.widget.Toolbar>
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_new_session" />
+    <include layout="@layout/content_edit_session" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fbSaveSession"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:tint="#ffffffff"
+        app:srcCompat="@drawable/btn_save" />
 
 </android.support.design.widget.CoordinatorLayout>

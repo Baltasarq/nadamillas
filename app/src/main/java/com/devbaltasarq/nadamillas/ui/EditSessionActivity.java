@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -78,6 +79,7 @@ public class EditSessionActivity extends BaseActivity {
 
         // Update view
         final ImageButton BT_BACK = this.findViewById( R.id.btCloseEditSession );
+        final FloatingActionButton FB_SAVE = this.findViewById( R.id.fbSaveSession );
         final EditText ED_DATE = this.findViewById( R.id.edDate );
         final EditText ED_HOURS = this.findViewById( R.id.edHours );
         final EditText ED_MINUTES = this.findViewById( R.id.edMinutes );
@@ -147,6 +149,12 @@ public class EditSessionActivity extends BaseActivity {
         BT_SAVE.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                EditSessionActivity.this.save();
+            }
+        });
+        FB_SAVE.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 EditSessionActivity.this.save();
             }
         });

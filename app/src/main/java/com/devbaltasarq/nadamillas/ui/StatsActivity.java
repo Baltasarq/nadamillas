@@ -325,12 +325,16 @@ public class StatsActivity extends BaseActivity {
 
         this.graphType = GraphType.fromOrdinal( CB_TIME_SEGMENT.getSelectedItemPosition() );
         this.selectedMonth = CB_MONTHS.getSelectedItemPosition();
-        this.selectedYear = Integer.valueOf( (String) CB_YEARS.getSelectedItem() );
+        this.selectedYear = -1;
+
+        if ( CB_YEARS.getSelectedItemPosition() >= 0 ) {
+            this.selectedYear = Integer.valueOf( (String) CB_YEARS.getSelectedItem() );
+        }
 
         Log.d( LOG_TAG, String.format( "selected year: %d, month %d, graphtype: %d",
-                                        this.selectedYear,
-                                        this.selectedMonth,
-                                        this.graphType.ordinal() ));
+                this.selectedYear,
+                this.selectedMonth,
+                this.graphType.ordinal() ));
     }
 
     /** Plots the chart in a drawable and shows it. */
