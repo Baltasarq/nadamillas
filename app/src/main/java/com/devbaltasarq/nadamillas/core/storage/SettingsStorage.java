@@ -55,13 +55,21 @@ public class SettingsStorage {
     {
         final SharedPreferences PREFS = openPreferences( appContext );
         final int POS_DIST_UNITS = PREFS.getInt( TAG_DISTANCE_UNITS, 0 );
-        final int POS_FDoW = PREFS.getInt( TAG_FIRST_DAY_OF_WEEK, 0 );
-        final Settings.FirstDayOfWeek FDoW =
-                Settings.FirstDayOfWeek.fromOrdinal( POS_FDoW );
         final Settings.DistanceUnits DIST_UNITS =
-            Settings.DistanceUnits.fromOrdinal( POS_DIST_UNITS );
+                Settings.DistanceUnits.fromOrdinal( POS_DIST_UNITS );
 
-        return Settings.createFrom( DIST_UNITS, FDoW );
+        int posFdow = PREFS.getInt( TAG_FIRST_DAY_OF_WEEK, -1 );
+        Settings.FirstDayOfWeek fDoW;
+
+        if ( posFdow < 0 ) {
+            final int FIRST_DAY_OF_WEEK = Calendar.getInstance().getFirstDayOfWeek();
+
+            fDoW = Settings.FirstDayOfWeek.fromCalendarValue( FIRST_DAY_OF_WEEK );
+        } else {
+            fDoW = Settings.FirstDayOfWeek.fromOrdinal( posFdow );
+        }
+
+        return Settings.createFrom( DIST_UNITS, fDoW );
     }
 
     private Settings settings;

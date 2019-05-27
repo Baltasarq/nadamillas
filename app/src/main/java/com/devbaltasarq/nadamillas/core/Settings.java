@@ -39,6 +39,21 @@ public class Settings {
             return FirstDayOfWeek.values()[ pos ];
         }
 
+        /** Builds a new FirstDayOfWeek from a calendar value.
+          * @param value a Calendar constant, such as Calendar.MONDAY.
+          * @return the corresponding enum value, honoring the given calendar value.
+          */
+        public static FirstDayOfWeek fromCalendarValue(int value)
+        {
+            FirstDayOfWeek toret = FirstDayOfWeek.MONDAY;
+
+            if ( value == Calendar.SUNDAY ) {
+                toret = FirstDayOfWeek.SUNDAY;
+            }
+
+            return toret;
+        }
+
         private final int value;
     }
 

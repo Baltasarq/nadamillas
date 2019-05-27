@@ -273,6 +273,11 @@ public class EditSessionActivity extends BaseActivity {
                 DATA_DATE[ 1 ],
                 DATA_DATE[ 2 ]
         );
+
+        dlg.getDatePicker()
+                .setFirstDayOfWeek(
+                        settings.getFirstDayOfWeek().getCalendarValue() );
+
         dlg.show();
     }
 
