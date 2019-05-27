@@ -42,30 +42,22 @@ public class SessionCursorAdapter extends CursorAdapter {
     public void bindView(final View VIEW, Context context, final Cursor CURSOR)
     {
         final HistoryActivity ACTIVITY = (HistoryActivity) context;
-        final ImageButton BT_DELETE = VIEW.findViewById( R.id.btDelete );
-        final ImageButton BT_EDIT = VIEW.findViewById( R.id.btEdit );
+        final ImageButton BT_MENU = VIEW.findViewById( R.id.btEntryOpsMenu );
         final Session SESSION = SessionStorage.createFrom( CURSOR );
 
         historyActivity = ACTIVITY;
 
         updateViewWith( VIEW, SESSION );
 
-        // Set button listeners
-        BT_EDIT.setOnClickListener( new View.OnClickListener() {
+        // Set entry menu listener
+        BT_MENU.setOnClickListener( new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
-                editedView = VIEW;
+            public void onClick(View v) {
                 historyActivity = ACTIVITY;
-                ACTIVITY.onEditSession( SESSION );
-            }
-        });
+                selectedSession = SESSION;
+                editedView = VIEW;
 
-        BT_DELETE.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v)
-            {
-                ACTIVITY.onDeleteSession( SESSION );
+                ACTIVITY.onEntryOpsMenu();
             }
         });
     }
@@ -83,16 +75,14 @@ public class SessionCursorAdapter extends CursorAdapter {
         final TextView LBL_SPEED = view.findViewById( R.id.lblSpeed );
         final ImageView IV_LOGO = view.findViewById( R.id.ivLogo );
         final String DATE = Util.getShortDate( session.getDate(), null );
-        int units = R.string.label_meter;
-
-        if ( settings.getDistanceUnits() == Settings.DistanceUnits.mi ) {
-            units = R.string.label_yard;
-        }
 
         if ( session.getDistance() > 0
           && session.getDuration().getTimeInSeconds() > 0 )
         {
+            LBL_SPEED.setVisibility( View.VISIBLE );
             LBL_SPEED.setText( session.getWholeSpeedFormattedString( settings ) );
+        } else {
+            LBL_SPEED.setVisibility( View.GONE );
         }
 
         // Basic data
@@ -111,6 +101,7 @@ public class SessionCursorAdapter extends CursorAdapter {
     }
 
     private static View editedView;
+    public static Session selectedSession;
     private static Settings settings;
     private static HistoryActivity historyActivity;
 }

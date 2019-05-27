@@ -7,13 +7,13 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.Session;
-import com.devbaltasarq.nadamillas.core.Settings;
 import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 import com.devbaltasarq.nadamillas.ui.adapters.SessionCursorAdapter;
 
@@ -103,6 +103,42 @@ public class HistoryActivity extends BaseActivity {
         }
 
         return;
+    }
+
+    /** Handle the ops menu event. */
+    public void onEntryOpsMenu()
+    {
+        final IconListAlertDialog DLG = new IconListAlertDialog( this,
+                                        R.drawable.ic_swimming_figure,
+                                        R.string.title_activity_edit_session,
+                                        new int[]{
+                                                R.drawable.btn_pencil,
+                                                R.drawable.btn_delete
+                                        },
+                                        new int[]{
+                                                R.string.action_modify,
+                                                R.string.action_delete
+                                        } );
+
+        DLG.setItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                final Session SESSION = SessionCursorAdapter.selectedSession;
+                final boolean isModify = ( position == 0 );
+
+                DLG.hide();
+                DLG.dismiss();
+
+                if ( isModify ) {
+                    HistoryActivity.this.onEditSession( SESSION );
+                } else {
+                    HistoryActivity.this.onDeleteSession( SESSION );
+                }
+            }
+        });
+
+        DLG.show();
     }
 
     /** Handle the 'new session' event. */

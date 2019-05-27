@@ -5,49 +5,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:layout_margin="10dp"
-    android:layout_gravity="center_vertical">
+    android:layout_gravity="center_vertical|start"
+    android:gravity="center_vertical|center_horizontal">
 
-    <LinearLayout
-        android:layout_weight=".2"
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
+    <ImageButton    android:id="@+id/btEntryOpsMenu"
+        android:layout_weight=".1"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical|center_horizontal">
-
-        <ImageButton    android:id="@+id/btEdit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:backgroundTint="#00000000"
-            app:srcCompat="@drawable/btn_pencil"/>
-
-        <ImageButton    android:id="@+id/btDelete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:backgroundTint="#00000000"
-            app:srcCompat="@drawable/btn_delete"/>
-
-    </LinearLayout>
+        app:backgroundTint="#00000000"
+        android:tint="#ff707070"
+        android:layout_gravity="start"
+        app:srcCompat="@drawable/btn_menu"/>
 
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="10dp"
-        android:layout_weight=".7">
+        android:layout_weight=".8">
 
         <TextView   android:id="@+id/lblData"
             app:fontFamily="monospace"
             android:textStyle="bold"
-            android:layout_gravity="center"
-            android:layout_width="wrap_content"
+            android:gravity="center"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:text="2019-02-15 10000m" />
 
         <TextView   android:id="@+id/lblSpeed"
             app:fontFamily="monospace"
-            android:layout_gravity="center"
-            android:layout_width="wrap_content"
+            android:gravity="center_horizontal"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </LinearLayout>
 
@@ -55,6 +44,6 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_weight=".1"
-        android:gravity="center_vertical"/>
+        android:gravity="center_vertical|end"/>
 
 </LinearLayout>

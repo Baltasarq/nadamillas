@@ -35,7 +35,6 @@ public class ListViewSessionArrayAdapter extends ArrayAdapter<Session> {
     @Override
     public @NonNull View getView(int position, View rowView, @NonNull ViewGroup parent)
     {
-        final Locale LOCALE = Locale.getDefault();
         final Session SESSION = this.getItem( position );
         final BrowseActivity ACTIVITY = (BrowseActivity) this.getContext();
 
@@ -44,22 +43,16 @@ public class ListViewSessionArrayAdapter extends ArrayAdapter<Session> {
 
             rowView = LAYOUT_INFLATER.inflate( R.layout.listview_session_entry, null );
 
-            final ImageButton BT_EDIT = rowView.findViewById( R.id.btEdit );
-            final ImageButton BT_DELETE = rowView.findViewById( R.id.btDelete );
+            final ImageButton BT_MENU = rowView.findViewById( R.id.btEntryOpsMenu );
 
-            BT_EDIT.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v)
-                {
-                    ACTIVITY.onEditSession( SESSION );
-                }
-            });
 
-            BT_DELETE.setOnClickListener(new View.OnClickListener() {
+            // Set entry menu listener
+            BT_MENU.setOnClickListener( new View.OnClickListener() {
                 @Override
-                public void onClick(View v)
-                {
-                    ACTIVITY.onDeleteSession( SESSION );
+                public void onClick(View v) {
+                    ListViewSessionArrayAdapter.selectedSession = SESSION;
+
+                    ACTIVITY.onEntryOpsMenu();
                 }
             });
         }
@@ -83,9 +76,14 @@ public class ListViewSessionArrayAdapter extends ArrayAdapter<Session> {
         if ( SESSION.getDistance() > 0
           && SESSION.getDuration().getTimeInSeconds() > 0 )
         {
+            LBL_SPEED.setVisibility( View.VISIBLE );
             LBL_SPEED.setText( SESSION.getWholeSpeedFormattedString( settings ) );
+        } else {
+            LBL_SPEED.setVisibility( View.GONE );
         }
 
         return rowView;
     }
+
+    public static Session selectedSession;
 }
