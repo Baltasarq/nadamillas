@@ -7,36 +7,6 @@
     android:layout_margin="10dp"
     android:layout_gravity="center_vertical">
 
-    <ImageView      android:id="@+id/ivLogo"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_weight=".1"
-        android:gravity="center_vertical"/>
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight=".7">
-
-        <TextView   android:id="@+id/lblData"
-            android:gravity="end"
-            app:fontFamily="monospace"
-            android:textStyle="bold"
-            android:layout_gravity="end"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:text="2019-02-15 10000m" />
-
-        <TextView   android:id="@+id/lblSpeed"
-            android:gravity="end"
-            app:fontFamily="monospace"
-            android:layout_gravity="end"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
     <LinearLayout
         android:layout_weight=".2"
         android:orientation="horizontal"
@@ -56,6 +26,35 @@
             app:backgroundTint="#00000000"
             app:srcCompat="@drawable/btn_delete"/>
 
-   </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_weight=".7">
+
+        <TextView   android:id="@+id/lblData"
+            app:fontFamily="monospace"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:text="2019-02-15 10000m" />
+
+        <TextView   android:id="@+id/lblSpeed"
+            app:fontFamily="monospace"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <ImageView      android:id="@+id/ivLogo"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_weight=".1"
+        android:gravity="center_vertical"/>
 
 </LinearLayout>

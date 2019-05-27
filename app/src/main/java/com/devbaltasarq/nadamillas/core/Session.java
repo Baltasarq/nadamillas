@@ -2,6 +2,10 @@
 
 package com.devbaltasarq.nadamillas.core;
 
+import android.content.Context;
+
+import com.devbaltasarq.nadamillas.R;
+
 import java.util.Date;
 import java.util.Locale;
 
@@ -84,6 +88,21 @@ public class Session {
         return atPool;
     }
 
+    /** @return the formatted distance. */
+    public String getFormattedDistance(Context cntx, Settings settings)
+    {
+        final Locale LOCALE = Locale.getDefault();
+        int units = R.string.label_meter;
+
+        if ( settings.getDistanceUnits() == Settings.DistanceUnits.mi ) {
+            units = R.string.label_yard;
+        }
+
+        return String.format( LOCALE, "%6d%s",
+                this.getDistance(),
+                cntx.getString( units ) );
+    }
+
     /** @return the mean time for each 100m. */
     public Duration getMeanTime()
     {
@@ -131,6 +150,13 @@ public class Session {
 
         return String.format( Locale.getDefault(), "%5.2f%s",
                               this.getSpeed( settings ), SPEED_UNITS );
+    }
+
+    /** @return get the whole speed information, as a formatted string. */
+    public String getWholeSpeedFormattedString(Settings settings)
+    {
+        return this.getSpeedAsString( settings )
+                + " - " + this.getMeanTimeAsString( settings );
     }
 
     /** Creates a new session with a given id and session number.

@@ -15,7 +15,12 @@ import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.Session;
+import com.devbaltasarq.nadamillas.core.Settings;
 import com.devbaltasarq.nadamillas.ui.BrowseActivity;
+
+import java.util.Locale;
+
+import static com.devbaltasarq.nadamillas.ui.BaseActivity.settings;
 
 
 /** An array adapter for presenting a customized ListView of Session. */
@@ -30,13 +35,14 @@ public class ListViewSessionArrayAdapter extends ArrayAdapter<Session> {
     @Override
     public @NonNull View getView(int position, View rowView, @NonNull ViewGroup parent)
     {
+        final Locale LOCALE = Locale.getDefault();
         final Session SESSION = this.getItem( position );
         final BrowseActivity ACTIVITY = (BrowseActivity) this.getContext();
 
         if ( rowView == null ) {
             final LayoutInflater LAYOUT_INFLATER = LayoutInflater.from( this.getContext() );
 
-            rowView = LAYOUT_INFLATER.inflate( R.layout.listview_session_in_day_entry, null );
+            rowView = LAYOUT_INFLATER.inflate( R.layout.listview_session_entry, null );
 
             final ImageButton BT_EDIT = rowView.findViewById( R.id.btEdit );
             final ImageButton BT_DELETE = rowView.findViewById( R.id.btDelete );
@@ -59,7 +65,7 @@ public class ListViewSessionArrayAdapter extends ArrayAdapter<Session> {
         }
 
         final ImageView IV_LOGO = rowView.findViewById( R.id.ivLogo );
-        final TextView LBL_DISTANCE = rowView.findViewById( R.id.lblDistance );
+        final TextView LBL_DATA = rowView.findViewById( R.id.lblData );
         final TextView LBL_SPEED = rowView.findViewById( R.id.lblSpeed );
 
         // Set appropriate icon
@@ -72,12 +78,12 @@ public class ListViewSessionArrayAdapter extends ArrayAdapter<Session> {
         IV_LOGO.setImageDrawable( AppCompatResources.getDrawable( ACTIVITY, drawableId ) );
 
         // Set data
-        LBL_DISTANCE.setText( Integer.toString( SESSION.getDistance() ) );
+        LBL_DATA.setText( SESSION.getFormattedDistance( ACTIVITY, settings ) );
 
         if ( SESSION.getDistance() > 0
           && SESSION.getDuration().getTimeInSeconds() > 0 )
         {
-            LBL_SPEED.setText( SESSION.getMeanTimeAsString( BrowseActivity.settings ) );
+            LBL_SPEED.setText( SESSION.getWholeSpeedFormattedString( settings ) );
         }
 
         return rowView;

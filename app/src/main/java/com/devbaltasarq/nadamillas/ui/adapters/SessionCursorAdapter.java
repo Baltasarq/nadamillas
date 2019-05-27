@@ -83,8 +83,6 @@ public class SessionCursorAdapter extends CursorAdapter {
         final TextView LBL_SPEED = view.findViewById( R.id.lblSpeed );
         final ImageView IV_LOGO = view.findViewById( R.id.ivLogo );
         final String DATE = Util.getShortDate( session.getDate(), null );
-        final String FORMATTED_DISTANCE = String.format( LOCALE, "%6d", session.getDistance() );
-        final String FORMATTED_DATE = String.format( LOCALE, "%10s", DATE );
         int units = R.string.label_meter;
 
         if ( settings.getDistanceUnits() == Settings.DistanceUnits.mi ) {
@@ -94,14 +92,12 @@ public class SessionCursorAdapter extends CursorAdapter {
         if ( session.getDistance() > 0
           && session.getDuration().getTimeInSeconds() > 0 )
         {
-            LBL_SPEED.setText( session.getSpeedAsString( HistoryActivity.settings )
-                    + " - " + session.getMeanTimeAsString( HistoryActivity.settings ) );
+            LBL_SPEED.setText( session.getWholeSpeedFormattedString( settings ) );
         }
 
         // Basic data
-        LBL_DATA.setText( FORMATTED_DATE
-                            + " " + FORMATTED_DISTANCE
-                            + historyActivity.getString( units ) );
+        LBL_DATA.setText( String.format( LOCALE, "%10s", DATE )
+                            + " " + session.getFormattedDistance( historyActivity, settings ) );
 
         // Logo
         int drawableId = R.drawable.ic_sea;
