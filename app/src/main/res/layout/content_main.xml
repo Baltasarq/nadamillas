@@ -192,7 +192,6 @@
             android:layout_width="match_parent"
             android:layout_height="150dp"
             android:gravity="center"
-            android:tint="@color/design_default_color_primary_dark"
             app:srcCompat="@drawable/ic_swimming_figure"/>
 
     </LinearLayout>

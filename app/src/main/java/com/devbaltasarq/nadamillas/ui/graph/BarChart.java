@@ -168,7 +168,8 @@ public class BarChart extends Drawable {
      */
     private void calculateDataMinMax()
     {
-        this.minX = this.minY = Double.MAX_VALUE;
+        this.minY = 0;
+        this.minX = Double.MAX_VALUE;
         this.maxX = this.maxY = Double.MIN_VALUE;
 
         for(Point[] seriePoints: this.points) {
@@ -178,7 +179,6 @@ public class BarChart extends Drawable {
 
                 this.minX = Math.min( this.minX, X );
                 this.maxX = Math.max( this.maxX, X );
-                this.minY = Math.min( this.minY, Y );
                 this.maxY = Math.max( this.maxY, Y );
             }
         }
@@ -417,15 +417,16 @@ public class BarChart extends Drawable {
     /** @return the normalized value for x, right for drawing in the screen. */
     private int translateX(double x)
     {
+        final double X = Math.max( x, this.minX ) - this.minX;
         final int BAR_WIDTH = this.getBarWidth();
 
-        return (int) Math.round( this.chartBounds.left + ( BAR_WIDTH * ( x - this.minX ) ) );
+        return (int) Math.round( this.chartBounds.left + ( BAR_WIDTH * X ) );
     }
 
     /** @return the normalized value for y, right for drawing in the screen. */
     private int translateY(double y)
     {
-        final double Y = y - this.minY;
+        final double Y = Math.max( y, this.minY ) - this.minY;
         final int NORM_Y = (int) ( ( Y * this.chartBounds.height() ) / ( this.maxY - this.minY ) );
 
         return this.chartBounds.bottom - NORM_Y;
