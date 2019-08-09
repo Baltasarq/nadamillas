@@ -8,180 +8,198 @@
     tools:context=".ui.EditSessionActivity"
     tools:showIn="@layout/activity_edit_session">
 
-    <LinearLayout
-        android:layout_margin="10dp"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
+    <ScrollView
         android:layout_height="match_parent"
-        android:gravity="center_vertical">
+        android:layout_width="match_parent"
+        android:fillViewport="true"
+        android:padding="10dp"
+        android:gravity="center_horizontal|center_vertical" >
 
         <LinearLayout
-            android:padding="5dp"
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:layout_margin="10dp"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
 
-            <TextView
-                android:layout_marginRight="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                android:text="Date"/>
-
-            <EditText android:id="@+id/edDate"
-                android:layout_weight=".8"
-                android:layout_width="wrap_content"
-                android:clickable="false"
-                android:focusable="false"
-                android:textAlignment="textEnd"
-                android:gravity="end"
-                android:layout_height="wrap_content" />
-
-            <ImageButton android:id="@+id/btDate"
-                android:layout_marginLeft="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#00000000"
-                app:srcCompat="@drawable/btn_calendar" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:padding="5dp"
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:layout_marginRight="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                android:text="Distance"/>
-
-            <EditText   android:id="@+id/edDistance"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAlignment="textEnd"
-                android:gravity="end"
-                android:inputType="number"/>
-        </LinearLayout>
+                android:orientation="horizontal"
+                android:padding="5dp">
 
-        <LinearLayout
-            android:padding="5dp"
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
+                    android:text="@string/label_date"
+                    android:labelFor="@id/edDate"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
 
-            <TextView
-                android:layout_marginRight="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                android:text="@string/label_duration"/>
+                <EditText
+                    android:id="@+id/edDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".8"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:gravity="end"
+                    android:textAlignment="textEnd" />
 
-            <EditText   android:id="@+id/edHours"
-                android:hint="0"
-                android:layout_weight=".2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAlignment="textEnd"
-                android:gravity="end"
-                android:inputType="number"/>
+                <ImageButton
+                    android:id="@+id/btDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:contentDescription="@string/label_date"
+                    android:background="#00000000"
+                    app:srcCompat="@drawable/btn_calendar" />
+            </LinearLayout>
 
-            <TextView
-                android:layout_marginRight="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                android:text=":"/>
-
-            <EditText   android:id="@+id/edMinutes"
-                android:hint="0"
-                android:layout_weight=".2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAlignment="textEnd"
-                android:gravity="end"
-                android:inputType="number"/>
-
-            <TextView
-                android:layout_marginRight="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                android:text=":"/>
-
-            <EditText   android:id="@+id/edSeconds"
-                android:hint="0"
-                android:layout_weight=".2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAlignment="textEnd"
-                android:gravity="end"
-                android:inputType="number"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:padding="5dp"
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:layout_marginRight="5dp"
-                android:layout_marginEnd="10dp"
-                android:text="@string/label_speed"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
-
-            <TextView   android:id="@+id/lblSpeed"
-                android:gravity="end"
-                android:layout_weight=".8"
-                android:textColor="@android:color/darker_gray"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:padding="5dp"
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <RadioGroup     android:id="@+id/grdWaters"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="10dp">
+                android:orientation="horizontal"
+                android:padding="5dp">
 
-                <RadioButton    android:id="@+id/rbtPool"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
+                    android:text="@string/label_distance"
+                    android:labelFor="@id/edDistance"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+
+                <EditText
+                    android:id="@+id/edDistance"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:inputType="number"
+                    android:hint="0"
+                    android:textAlignment="textEnd" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
+                    android:text="@string/label_duration"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+
+                <EditText
+                    android:id="@+id/edHours"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".2"
+                    android:gravity="end"
+                    android:hint="0"
+                    android:inputType="number"
+                    android:textAlignment="textEnd" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
+                    android:text=":"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+
+                <EditText
+                    android:id="@+id/edMinutes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".2"
+                    android:gravity="end"
+                    android:hint="0"
+                    android:inputType="number"
+                    android:textAlignment="textEnd" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
+                    android:text=":"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+
+                <EditText
+                    android:id="@+id/edSeconds"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".2"
+                    android:gravity="end"
+                    android:hint="0"
+                    android:inputType="number"
+                    android:textAlignment="textEnd" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:text="@string/label_speed"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+
+                <TextView
+                    android:id="@+id/lblSpeed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".8"
+                    android:gravity="end"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                    android:textColor="@android:color/darker_gray" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="5dp">
+
+                <RadioGroup
+                    android:id="@+id/grdWaters"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp">
+
+                    <RadioButton
+                        android:id="@+id/rbtPool"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal|center_vertical"
+                        android:text="@string/label_pool"
+                        android:textAlignment="center" />
+
+                    <RadioButton
+                        android:id="@+id/rbtOpen"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal|center_vertical"
+                        android:text="@string/label_open_waters"
+                        android:textAlignment="center" />
+
+                </RadioGroup>
+
+                <CheckBox
+                    android:id="@+id/chkPool"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
                     android:text="@string/label_pool"
-                    android:textAlignment="center"
-                    android:layout_gravity="center_horizontal|center_vertical"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+            </LinearLayout>
 
-                <RadioButton    android:id="@+id/rbtOpen"
-                    android:text="@string/label_open_waters"
-                    android:textAlignment="center"
-                    android:layout_gravity="center_horizontal|center_vertical"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-            </RadioGroup>
-
-            <CheckBox   android:id="@+id/chkPool"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Pool"
-                android:gravity="end"/>
         </LinearLayout>
-
-    </LinearLayout>
-
+    </ScrollView>
 </android.support.constraint.ConstraintLayout>

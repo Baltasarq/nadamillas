@@ -31,10 +31,10 @@
 
             <ImageView
                 app:srcCompat="@drawable/btn_pencil"
+                android:contentDescription="@string/title_activity_edit_session"
                 android:tint="#ffffffff"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="10dp"
                 android:layout_marginEnd="10dp"/>
 
             <TextView   android:id="@+id/lblTitle"
@@ -45,6 +45,7 @@
                 android:layout_height="wrap_content" />
 
             <ImageButton    android:id="@+id/btShareSessionEdited"
+                android:contentDescription="@string/action_share"
                 android:layout_gravity="end"
                 app:srcCompat="@drawable/ic_share"
                 app:backgroundTint="#00000000"
@@ -53,6 +54,7 @@
                 android:layout_height="wrap_content" />
 
             <ImageButton    android:id="@+id/btTakeScrshotForEditSession"
+                android:contentDescription="@string/message_screenshot"
                 android:layout_gravity="end"
                 app:srcCompat="@drawable/btn_camera"
                 app:backgroundTint="#00000000"
@@ -61,7 +63,6 @@
                 android:layout_height="wrap_content" />
 
             <ImageButton android:id="@+id/btSaveSession"
-                android:layout_marginRight="10dp"
                 android:layout_marginEnd="10dp"
                 android:contentDescription="@string/label_ok"
                 android:layout_gravity="end"

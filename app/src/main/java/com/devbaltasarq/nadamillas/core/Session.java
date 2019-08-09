@@ -159,6 +159,12 @@ public class Session {
                 + " - " + this.getMeanTimeAsString( settings );
     }
 
+    public String getTimeAndWholeSpeedFormattedString(Settings settings)
+    {
+        return this.getDuration().toString()
+                + "\n" + this.getWholeSpeedFormattedString( settings );
+    }
+
     /** Creates a new session with a given id and session number.
       * @param id the new id for the session.
       * @return a new Session.

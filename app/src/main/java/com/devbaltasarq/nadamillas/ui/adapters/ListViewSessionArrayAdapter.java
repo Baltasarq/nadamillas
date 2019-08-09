@@ -77,7 +77,7 @@ public class ListViewSessionArrayAdapter extends ArrayAdapter<Session> {
           && SESSION.getDuration().getTimeInSeconds() > 0 )
         {
             LBL_SPEED.setVisibility( View.VISIBLE );
-            LBL_SPEED.setText( SESSION.getWholeSpeedFormattedString( settings ) );
+            LBL_SPEED.setText( SESSION.getTimeAndWholeSpeedFormattedString( settings ) );
         } else {
             LBL_SPEED.setVisibility( View.GONE );
         }

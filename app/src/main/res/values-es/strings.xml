@@ -25,6 +25,8 @@
     <string name="action_settings">Preferencias</string>
     <string name="action_modify">Modificar</string>
     <string name="action_delete">Eliminar</string>
+    <string name="label_date">Fecha</string>
+    <string name="label_distance">Distancia</string>
     <string name="label_back">Atrás</string>
     <string name="label_communicate">Comunicaciones</string>
     <string name="label_speed">Velocidad</string>

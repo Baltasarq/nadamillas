@@ -30,6 +30,8 @@
     <string name="action_delete">Delete</string>
 
     <!-- Labels -->
+    <string name="label_date">Date</string>
+    <string name="label_distance">Distance</string>
     <string name="label_back">Back</string>
     <string name="label_communicate">Communicate</string>
     <string name="label_speed">Speed</string>

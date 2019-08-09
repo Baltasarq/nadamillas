@@ -80,7 +80,7 @@ public class SessionCursorAdapter extends CursorAdapter {
           && session.getDuration().getTimeInSeconds() > 0 )
         {
             LBL_SPEED.setVisibility( View.VISIBLE );
-            LBL_SPEED.setText( session.getWholeSpeedFormattedString( settings ) );
+            LBL_SPEED.setText( session.getTimeAndWholeSpeedFormattedString( settings ) );
         } else {
             LBL_SPEED.setVisibility( View.GONE );
         }
