@@ -8,6 +8,8 @@ This is an Android App that manages your workouts on the water. You can take int
 
 *Esta es una aplicación para Android que gestiona tus entrenamientos en el agua. Puedes tomar en cuenta si fue una sesión de aguas abiertas o en la piscina, hojear las sesiones en los meses anteriores y explorar secuencialmente el histórico de entrenamientos. La aplicación genera gráficos para resultados de metros por semana, mes y año.*
 
+[Privacy policy](privacy.html).
+
 ![The main screen, showing the progress and the year's objective.](res/scr-main.png)
 
 ### Languages
