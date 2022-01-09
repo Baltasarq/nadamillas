@@ -1,31 +1,25 @@
 // NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
 
+
 package com.devbaltasarq.nadamillas.ui;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.widget.AdapterView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.appcompat.widget.Toolbar;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
-import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.Session;
 import com.devbaltasarq.nadamillas.core.Util;
-import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 import com.devbaltasarq.nadamillas.ui.adapters.ListViewSessionArrayAdapter;
-import com.devbaltasarq.nadamillas.ui.adapters.SessionCursorAdapter;
 import com.github.sundeepk.compactcalendarview.CompactCalendarView;
 import com.github.sundeepk.compactcalendarview.domain.Event;
 
 import java.util.Date;
+
 
 public class BrowseActivity extends BaseActivity {
     private static final String LOG_TAG = BrowseActivity.class.getSimpleName();
@@ -62,50 +56,19 @@ public class BrowseActivity extends BaseActivity {
         CV_CALENDAR.setUseThreeLetterAbbreviation( true );
         CV_CALENDAR.shouldDrawIndicatorsBelowSelectedDays( true );
 
-        FB_NEW.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                BrowseActivity.this.onNewSession();
-            }
-        } );
+        FB_NEW.setOnClickListener( v -> BrowseActivity.this.onNewSession() );
+        BT_BACK.setOnClickListener( v -> BrowseActivity.this.finish() );
+        BT_PREVIOUS.setOnClickListener( v -> CV_CALENDAR.scrollLeft() );
+        BT_NEXT.setOnClickListener( v -> CV_CALENDAR.scrollRight() );
+        BT_SHARE.setOnClickListener( v -> {
+            final BrowseActivity SELF = BrowseActivity.this;
 
-        BT_BACK.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                BrowseActivity.this.finish();
-            }
+            SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
         });
+        BT_SCRSHOT.setOnClickListener( v -> {
+            final BrowseActivity SELF = BrowseActivity.this;
 
-        BT_SHARE.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final BrowseActivity SELF = BrowseActivity.this;
-
-                SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
-            }
-        });
-
-        BT_SCRSHOT.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final BrowseActivity SELF = BrowseActivity.this;
-
-                SELF.save( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
-            }
-        });
-
-        BT_PREVIOUS.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                CV_CALENDAR.scrollLeft();
-            }
-        });
-
-        BT_NEXT.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                CV_CALENDAR.scrollRight();
-            }
+            SELF.saveScreenShotToDownloads( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
         });
     }
 
@@ -124,29 +87,7 @@ public class BrowseActivity extends BaseActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-    {
-        super.onActivityResult( requestCode, resultCode, data );
-
-        if ( resultCode == Activity.RESULT_OK ) {
-            switch( requestCode ) {
-                case RC_NEW_SESSION:
-                    this.storeNewSession( data );
-                    break;
-                case RC_EDIT_SESSION:
-                    final Session SESSION = SessionStorage.createFrom( data );
-
-                    this.updateSession( SESSION );
-                    break;
-            }
-
-            this.update();
-        }
-
-        return;
-    }
-
-    private void update()
+    protected void update()
     {
         this.updateSessions();
         this.highlightDays();
@@ -240,21 +181,17 @@ public class BrowseActivity extends BaseActivity {
                         R.string.action_delete
                 } );
 
-        DLG.setItemClickListener( new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-            {
-                final Session SESSION = ListViewSessionArrayAdapter.selectedSession;
-                final boolean isModify = ( position == 0 );
+        DLG.setItemClickListener( (parent, view, position, id) -> {
+            final Session SESSION = ListViewSessionArrayAdapter.selectedSession;
+            final boolean isModify = ( position == 0 );
 
-                DLG.hide();
-                DLG.dismiss();
+            DLG.hide();
+            DLG.dismiss();
 
-                if ( isModify ) {
-                    BrowseActivity.this.onEditSession( SESSION );
-                } else {
-                    BrowseActivity.this.onDeleteSession( SESSION );
-                }
+            if ( isModify ) {
+                BrowseActivity.this.onEditSession( SESSION );
+            } else {
+                BrowseActivity.this.onDeleteSession( SESSION );
             }
         });
 
@@ -271,7 +208,6 @@ public class BrowseActivity extends BaseActivity {
     public void onDeleteSession(Session session)
     {
         this.deleteSession( session );
-
         this.update();
     }
 

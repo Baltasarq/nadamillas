@@ -1,14 +1,18 @@
 // NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
 
+
 package com.devbaltasarq.nadamillas.core;
 
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
@@ -28,7 +32,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.nio.charset.Charset;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -48,6 +53,14 @@ public class DataStore extends SQLiteOpenHelper {
 
         this.context = context;
         Log.d( LOG_TAG, "database opened");
+
+        DIR_DOWNLOADS = null;
+        if ( android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q )
+        {
+            DIR_DOWNLOADS = Environment.getExternalStoragePublicDirectory( Environment.DIRECTORY_DOWNLOADS );
+        }
+
+        DIR_TEMP = context.getCacheDir();
     }
 
     @Override
@@ -207,7 +220,7 @@ public class DataStore extends SQLiteOpenHelper {
                 null,
                 query,
                 queryArgs,
-                null, null, null );
+                null, null, orderBy );
     }
 
     /** Creates a YearInfo object for the given data.
@@ -446,6 +459,7 @@ public class DataStore extends SQLiteOpenHelper {
     {
         Cursor cursor = null;
         Session[] toret = null;
+        int numSessions = 0;
 
         Log.d( LOG_TAG, "Retrieve with query: " + stringFromQuery( query, queryArgs ) );
 
@@ -463,13 +477,15 @@ public class DataStore extends SQLiteOpenHelper {
                     ++pos;
                 } while( cursor.moveToNext() );
             }
+
+            numSessions = toret.length;
         } catch(SQLException exc) {
             Log.e( LOG_TAG, exc.getMessage() );
         } finally {
             close( cursor );
         }
 
-        Log.d( LOG_TAG, "retrieved #" + toret.length + " sessions" );
+        Log.d( LOG_TAG, "retrieved " + numSessions + " sessions" );
         return toret;
     }
 
@@ -516,11 +532,30 @@ public class DataStore extends SQLiteOpenHelper {
                 orderBy );
     }
 
-    public void recalculate()
+    public void recalculateAll()
     {
-        final Calendar TODAY = Calendar.getInstance();
+        final Cursor YEAR_INFO_CURSOR = this.getDescendingAllYearInfosCursor();
 
-        this.recalculate( TODAY.get( Calendar.YEAR ) );
+        if ( YEAR_INFO_CURSOR.moveToFirst() ) {
+            do {
+                this.recalculate(
+                        YEAR_INFO_CURSOR.getInt(
+                            YEAR_INFO_CURSOR.getColumnIndexOrThrow(
+                                    YearInfoStorage.FIELD_YEAR
+                            )
+                        )
+                );
+            } while( YEAR_INFO_CURSOR.moveToNext() );
+        }
+
+        return;
+    }
+
+    public void recalculateCurrentYear()
+    {
+        final Calendar CALENDAR = Calendar.getInstance();
+
+        this.recalculate( CALENDAR.get( Calendar.YEAR ) );
     }
 
     public void recalculate(int year)
@@ -755,30 +790,38 @@ public class DataStore extends SQLiteOpenHelper {
     public void backup()
     {
         try {
-            this.exportTo( this.getBackupDir() );
+            this.saveTo( this.getBackupDir() );
         } catch(IOException exc)
         {
             Log.e( LOG_TAG, "unable to create backup." );
         }
     }
 
-    public void exportTo(File dir) throws IOException
+    public File saveTo(File dir) throws IOException
     {
+        File toret = null;
         final String EXPT_FILE_NAME = this.createExportFileName();
-        File exptFile = null;
-        File tempFile = null;
-        Writer exptStream = null;
 
         if ( dir == null ) {
-            dir = getDirDownloads();
+            if ( android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q ) {
+                throw new IOException( "unable to save directly to /Downloads" );
+            }
+
+            dir = DIR_DOWNLOADS;
         }
 
         try {
-            tempFile = this.createTempFile( NAME, Long.toString( Util.getDate().getTimeInMillis() ) );
-            exptFile = new File( dir, EXPT_FILE_NAME );
-            exptStream = openWriterFor( tempFile );
+            File tempFile = this.createTempFile( NAME, Long.toString( Util.getDate().getTimeInMillis() ) );
 
-            this.toJSON( exptStream );
+            try (Writer tempStream = openWriterFor( tempFile )) {
+                this.toJSON( tempStream );
+            }
+
+            toret = new File( dir, EXPT_FILE_NAME );
+            copyFile( tempFile, toret );
+            if ( !tempFile.delete() ) {
+                throw new IOException( "unable to delete: " + tempFile.getName() );
+            }
         } catch(IOException exc)
         {
             throw new IOException(
@@ -786,10 +829,38 @@ public class DataStore extends SQLiteOpenHelper {
                             + EXPT_FILE_NAME
                             + "' to '" + dir
                             + "': " + exc.getMessage() );
-        } finally {
-            close( exptStream );
-            copy( tempFile, exptFile );
         }
+
+        return toret;
+    }
+
+    public void saveToDownloads(String fn, String mimeType) throws IOException
+    {
+        if ( android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q )
+        {
+            final File INPUT_FILE = new File( fn );
+            final ContentValues VALUES = new ContentValues();
+            final ContentResolver FINDER = this.context.getContentResolver();
+
+            VALUES.put( MediaStore.MediaColumns.DISPLAY_NAME, INPUT_FILE.getName() );
+            VALUES.put( MediaStore.MediaColumns.MIME_TYPE, mimeType );
+            VALUES.put( MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS );
+
+            final Uri URI = FINDER.insert( MediaStore.Downloads.EXTERNAL_CONTENT_URI, VALUES );
+
+            if ( URI != null ) {
+                final InputStream IN = INPUT_FILE.toURI().toURL().openStream();
+                final OutputStream OUT = FINDER.openOutputStream( URI );
+
+                copyStream( IN, OUT );
+            } else {
+                throw new IOException( "unable to save to /Downloads" );
+            }
+        } else {
+            copyFile( new File( fn ), new File( DIR_DOWNLOADS, fn ) );
+        }
+
+        return;
     }
 
     public void fromJSON(Reader reader) throws IOException
@@ -894,7 +965,7 @@ public class DataStore extends SQLiteOpenHelper {
         try {
             final OutputStreamWriter outputStreamWriter = new OutputStreamWriter(
                     new FileOutputStream( f ),
-                    Charset.forName( "UTF-8" ).newEncoder() );
+                    StandardCharsets.UTF_8.newEncoder() );
 
             toret = new BufferedWriter( outputStreamWriter );
         } catch (IOException exc) {
@@ -923,7 +994,7 @@ public class DataStore extends SQLiteOpenHelper {
     {
         final InputStreamReader inputStreamReader = new InputStreamReader(
                 inStream,
-                Charset.forName( "UTF-8" ).newDecoder() );
+                StandardCharsets.UTF_8.newDecoder() );
 
         return new BufferedReader( inputStreamReader );
     }
@@ -978,7 +1049,7 @@ public class DataStore extends SQLiteOpenHelper {
      * @param dest The File object of the destination file.
      * @throws IOException if something goes wrong while copying.
      */
-    private static void copy(File source, File dest) throws IOException
+    private static void copyFile(File source, File dest) throws IOException
     {
         final String errorMsg = "error copying: " + source + " to: " + dest + ": ";
         InputStream is;
@@ -988,7 +1059,7 @@ public class DataStore extends SQLiteOpenHelper {
             is = new FileInputStream( source );
             os = new FileOutputStream( dest );
 
-            copy( is, os );
+            copyStream( is, os );
         } catch(IOException exc)
         {
             Log.e( LOG_TAG, errorMsg + exc.getMessage() );
@@ -1003,7 +1074,7 @@ public class DataStore extends SQLiteOpenHelper {
      * @param os The output stream object of the destination.
      * @throws IOException if something goes wrong while copying.
      */
-    public static void copy(InputStream is, OutputStream os) throws IOException
+    public static void copyStream(InputStream is, OutputStream os) throws IOException
     {
         final byte[] buffer = new byte[ 1024 ];
         int length;
@@ -1041,9 +1112,9 @@ public class DataStore extends SQLiteOpenHelper {
     }
 
     /** Creates a single copy of the data store, no matter how many times is called.
-      * @param context the application context for the database.
-      * @return a DataStore singleton.
-      */
+     * @param context the application context for the database.
+     * @return a DataStore singleton.
+     */
     public static DataStore createFor(Context context)
     {
         if ( dataStore == null ) {
@@ -1064,18 +1135,8 @@ public class DataStore extends SQLiteOpenHelper {
         return dataStore;
     }
 
-    public static File getDirDownloads()
-    {
-        if ( DIR_DOWNLOADS == null ) {
-            DIR_DOWNLOADS = Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOWNLOADS );
-            DIR_DOWNLOADS.mkdirs();
-        }
-
-        return DIR_DOWNLOADS;
-    }
-
-    private Context context;
+    private final Context context;
     private static DataStore dataStore;
     private static File DIR_DOWNLOADS;
+    public static File DIR_TEMP;
 }

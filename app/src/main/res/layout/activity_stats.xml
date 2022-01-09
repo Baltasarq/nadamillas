@@ -7,12 +7,12 @@
     android:layout_height="match_parent"
     tools:context=".ui.StatsActivity">
 
-    <android.support.design.widget.AppBarLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        <android.support.v7.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -27,15 +27,16 @@
                 android:layout_weight="1"
                 android:contentDescription="@string/label_back"
                 android:background="#00000000"
-                android:tint="#ffffffff"
-                app:srcCompat="?attr/actionModeCloseDrawable" />
+                app:srcCompat="?attr/actionModeCloseDrawable"
+                app:tint="#ffffffff" />
 
             <ImageView
                 app:srcCompat="@drawable/ic_stats"
-                android:tint="#ffffffff"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="10dp"/>
+                android:layout_marginEnd="10dp"
+                android:contentDescription="@string/title_activity_stats"
+                app:tint="#ffffffff" />
 
             <TextView
                 android:text="@string/title_activity_stats"
@@ -48,20 +49,22 @@
                 android:layout_gravity="end"
                 app:srcCompat="@drawable/ic_share"
                 app:backgroundTint="#00000000"
-                android:tint="#ffffffff"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/action_share"
+                app:tint="#ffffffff" />
 
             <ImageButton    android:id="@+id/btTakeScrshotForStats"
                 android:layout_gravity="end"
                 app:srcCompat="@drawable/btn_camera"
                 app:backgroundTint="#00000000"
-                android:tint="#ffffffff"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/take_screenshot"
+                app:tint="#ffffffff" />
 
-        </android.support.v7.widget.Toolbar>
-    </android.support.design.widget.AppBarLayout>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -74,25 +77,27 @@
         android:scrollbars="vertical">
 
         <LinearLayout
+            android:orientation="horizontal"
             android:padding="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <Spinner    android:id="@+id/cbTimeSegment"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_weight=".3" />
 
             <Spinner    android:id="@+id/cbGrapMonth"
-                android:layout_marginLeft="10dp"
                 android:layout_marginStart="10dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_weight=".4" />
 
             <Spinner    android:id="@+id/cbGraphYear"
                 android:layout_marginStart="10dp"
-                android:layout_marginLeft="10dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_weight=".3" />
         </LinearLayout>
 
         <ScrollView
@@ -102,6 +107,7 @@
             android:fillViewport="true">
 
             <ImageView  android:id="@+id/ivChartViewer"
+                android:contentDescription="@string/title_activity_stats"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 

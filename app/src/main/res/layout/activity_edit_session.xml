@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.EditSessionActivity">
 
-    <android.support.design.widget.AppBarLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        <android.support.v7.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -26,16 +26,16 @@
                 android:layout_weight="1"
                 android:contentDescription="@string/label_back"
                 android:background="#00000000"
-                android:tint="#ffffffff"
-                app:srcCompat="?attr/actionModeCloseDrawable" />
+                app:srcCompat="?attr/actionModeCloseDrawable"
+                app:tint="#ffffffff" />
 
             <ImageView
                 app:srcCompat="@drawable/btn_pencil"
                 android:contentDescription="@string/title_activity_edit_session"
-                android:tint="#ffffffff"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"/>
+                android:layout_marginEnd="10dp"
+                app:tint="#ffffffff" />
 
             <TextView   android:id="@+id/lblTitle"
                 android:text="@string/title_activity_edit_session"
@@ -49,41 +49,42 @@
                 android:layout_gravity="end"
                 app:srcCompat="@drawable/ic_share"
                 app:backgroundTint="#00000000"
-                android:tint="#ffffffff"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                app:tint="#ffffffff" />
 
             <ImageButton    android:id="@+id/btTakeScrshotForEditSession"
                 android:contentDescription="@string/message_screenshot"
                 android:layout_gravity="end"
                 app:srcCompat="@drawable/btn_camera"
                 app:backgroundTint="#00000000"
-                android:tint="#ffffffff"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                app:tint="#ffffffff" />
 
             <ImageButton android:id="@+id/btSaveSession"
                 android:layout_marginEnd="10dp"
                 android:contentDescription="@string/label_ok"
                 android:layout_gravity="end"
                 android:background="#00000000"
-                android:tint="#ffffffff"
                 app:srcCompat="@drawable/btn_save"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                app:tint="#ffffffff" />
 
-        </android.support.v7.widget.Toolbar>
-    </android.support.design.widget.AppBarLayout>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <include layout="@layout/content_edit_session" />
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fbSaveSession"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:tint="#ffffffff"
         android:layout_margin="@dimen/fab_margin"
+        android:contentDescription="@string/action_modify"
         app:srcCompat="@drawable/btn_save" />
 
-</android.support.design.widget.CoordinatorLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

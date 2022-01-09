@@ -1,3 +1,6 @@
+// NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
+
+
 package com.devbaltasarq.nadamillas.ui;
 
 import android.Manifest;
@@ -13,14 +16,18 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+
+import com.google.android.material.snackbar.Snackbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -33,15 +40,13 @@ import com.devbaltasarq.nadamillas.core.Util;
 import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
-public class BaseActivity extends AppCompatActivity {
+
+public abstract class BaseActivity extends AppCompatActivity {
     public static final int CHANNEL_STR_ID = R.string.app_name;
-    protected final static int RC_NEW_SESSION = 999;
-    public static final int RC_EDIT_SESSION = 554;
     private static final int RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_SAVE = 121;
 
     @Override
@@ -50,17 +55,14 @@ public class BaseActivity extends AppCompatActivity {
     {
         super.onRequestPermissionsResult( requestCode, permissions, grantResults );
 
-        switch ( requestCode ) {
-            case RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_SAVE: {
-                if ( grantResults.length > 0
-                        && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED )
-                {
-                    String[] SAVE_OPTS_PARTS = saveOptions.split( "|" );
+        if ( requestCode == RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_SAVE
+          && grantResults.length > 0
+          && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED )
+        {
+            final String[] SAVE_OPTS_PARTS = saveOptions.split( "|" );
 
-                    this.doSave( SAVE_OPTS_PARTS[ 0 ],
-                                 new File( SAVE_OPTS_PARTS[ 1 ] ) );
-                }
-            }
+            this.doSaveScreenShotToDownloads( SAVE_OPTS_PARTS[ 0 ],
+                         new File( SAVE_OPTS_PARTS[ 1 ] ) );
         }
 
         return;
@@ -83,7 +85,7 @@ public class BaseActivity extends AppCompatActivity {
             NEW_SESSION_DATA.putExtras( BUNDLE );
         }
 
-        this.startActivityForResult( NEW_SESSION_DATA, RC_NEW_SESSION );
+        this.LAUNCH_NEW_SESSION.launch( NEW_SESSION_DATA );
     }
 
     /** Launches the session editor with the "edit existing" profile. */
@@ -98,7 +100,7 @@ public class BaseActivity extends AppCompatActivity {
         new SessionStorage( session ).toBundle( BUNDLE );
         EDIT_SESSION_DATA.putExtras( BUNDLE );
 
-        this.startActivityForResult( EDIT_SESSION_DATA, RC_EDIT_SESSION );
+        this.LAUNCH_EDIT_SESSION.launch( EDIT_SESSION_DATA );
     }
 
     /** Stores a new session in the data store. */
@@ -167,14 +169,9 @@ public class BaseActivity extends AppCompatActivity {
         Log.d( LOG_TAG, MSG );
 
         BaseActivity.this.runOnUiThread(
-                new Runnable() {
-                   @Override
-                   public void run() {
-                       Snackbar.make(
-                               findViewById( android.R.id.content ), MSG, Snackbar.LENGTH_SHORT )
-                               .show();
-                   }
-                });
+            () -> Snackbar.make(
+                    findViewById( android.R.id.content ), MSG, Snackbar.LENGTH_SHORT )
+                    .show());
 
         return;
     }
@@ -221,7 +218,7 @@ public class BaseActivity extends AppCompatActivity {
         NOTIFY_MANAGER.notify( notificationId++, notification.build() );
     }
 
-    protected void save(String logTag, File f)
+    protected void saveScreenShotToDownloads(String logTag, File f)
     {
         final String PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE;
         final int RESULT_REQUEST = ContextCompat.checkSelfPermission( this, PERMISSION );
@@ -233,32 +230,27 @@ public class BaseActivity extends AppCompatActivity {
 
             saveOptions = logTag + "|" + f.getAbsolutePath();
         } else {
-            this.doSave( logTag, f );
+            this.doSaveScreenShotToDownloads( logTag, f );
         }
 
         return;
     }
 
-    protected void doSave(final String LOG_TAG, final File IN_FILE)
+    protected void doSaveScreenShotToDownloads(final String LOG_TAG, final File IN_FILE)
     {
         final Thread SAVE_THREAD = new Thread() {
             @Override
             public void run()
             {
                 final BaseActivity SELF = BaseActivity.this;
-                final File OUT_FILE = new File( DataStore.getDirDownloads(), IN_FILE.getName() );
 
                 try {
-                    final FileOutputStream OUT = new FileOutputStream( OUT_FILE );
-                    final FileInputStream IN = new FileInputStream( IN_FILE );
-
-                    DataStore.copy( IN, OUT );
-                    OUT.close();
-                    IN.close();
+                    dataStore.saveToDownloads( IN_FILE.getAbsolutePath(),
+                                     "image/jpeg" );
 
                     SELF.showStatus( LOG_TAG,
                             SELF.getString( R.string.message_finished )
-                                    + ": " + OUT_FILE.getName() );
+                                    + ": " + IN_FILE.getName() );
 
                     SELF.showNotification( android.R.drawable.stat_sys_download_done,
                             SELF.getString( R.string.message_screenshot ),
@@ -299,11 +291,11 @@ public class BaseActivity extends AppCompatActivity {
     /** @return a screenshot image file in the private storage. */
     protected File takeScreenshot(String logTag)
     {
-        return this.extractBitmap( logTag, this.getWindow().getDecorView().getRootView() );
+        return this.saveScreenBitmapToTempFile( logTag, this.getWindow().getDecorView().getRootView() );
     }
 
     /** @return an image file in the private storage. */
-    protected File extractBitmap(String logTag, final View V1)
+    protected File saveScreenBitmapToTempFile(String logTag, final View V1)
     {
         final int WIDTH = V1.getWidth();
         final int HEIGHT = V1.getHeight();
@@ -322,23 +314,21 @@ public class BaseActivity extends AppCompatActivity {
                     THEME.obtainStyledAttributes(
                             new int[] { android.R.attr.windowBackground } );
             final int BACKGROUND_RES_ID = BACKGROUND_STYLED_ATTRS.getResourceId( 0, 0 );
-            final Drawable BACKGROUND = this.getResources().getDrawable( BACKGROUND_RES_ID );
+            final Drawable BACKGROUND = ContextCompat.getDrawable( this, BACKGROUND_RES_ID );
+
+            if ( BACKGROUND == null ) {
+                throw new IOException( "unable to locate background" );
+            }
 
             // Draw the view in the canvas
             BACKGROUND.draw( CANVAS );
             V1.draw( CANVAS );
 
-            // Scale bitmap
-            final Bitmap SCALED_BITMAP =
-                    Bitmap.createScaledBitmap( BITMAP,
-                                        (int) Math.round( BITMAP.getWidth() / 2.5 ),
-                                        (int) Math.round( BITMAP.getHeight() / 2.5 ), true );
-
             // Save it
             final File TEMP_FILE = dataStore.createTempFile(
                     "scrshot", FMT_DATE_TIME + ".jpg" );
             final FileOutputStream OUTPUT = new FileOutputStream( TEMP_FILE );
-            SCALED_BITMAP.compress( Bitmap.CompressFormat.JPEG, 90, OUTPUT );
+            BITMAP.compress( Bitmap.CompressFormat.JPEG, 90, OUTPUT );
             OUTPUT.flush();
             OUTPUT.close();
             toret = TEMP_FILE;
@@ -349,9 +339,32 @@ public class BaseActivity extends AppCompatActivity {
         return toret;
     }
 
+    protected abstract void update();
+
     private int lastEditedSessionId;
 
-    public static int notificationId = -1000;
+    private final ActivityResultLauncher<Intent> LAUNCH_NEW_SESSION =
+            this.registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if ( result.getResultCode() == RESULT_OK ) {
+                            this.storeNewSession( result.getData() );
+                            this.update();
+                        }
+                    });
+
+    private final ActivityResultLauncher<Intent> LAUNCH_EDIT_SESSION =
+            this.registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if ( result.getResultCode() == RESULT_OK ) {
+                            final Session SESSION = SessionStorage.createFrom( result.getData() );
+                            this.updateSession( SESSION );
+                            this.update();
+                        }
+                    });
+
+    private static int notificationId = -1000;
     public static Settings settings;
     public static DataStore dataStore;
     private static String saveOptions;

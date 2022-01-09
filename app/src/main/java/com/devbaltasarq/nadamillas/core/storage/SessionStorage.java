@@ -1,5 +1,6 @@
 // NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
 
+
 package com.devbaltasarq.nadamillas.core.storage;
 
 import android.content.ContentValues;
@@ -15,6 +16,7 @@ import com.devbaltasarq.nadamillas.core.Util;
 
 import java.io.IOException;
 import java.util.Date;
+
 
 /** Represents a session stored in the database. */
 public class SessionStorage {
@@ -219,5 +221,5 @@ public class SessionStorage {
         return toret;
     }
 
-    private Session session;
+    private final Session session;
 }

@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="CMakeSettings">
-    <configurations>
-      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
-    </configurations>
-  </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_7" project-jdk-name="1.8" project-jdk-type="JavaSDK">
-    <output url="file://$PROJECT_DIR$/build/classes" />
-  </component>
-  <component name="ProjectType">
-    <option name="id" value="Android" />
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/drawable/ic_launcher_background.xml" value="0.22760416666666666" />
+        <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/drawable/ic_swimming_figure.xml" value="0.22760416666666666" />
+        <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/drawable/ic_sync_black_24dp.xml" value="0.22760416666666666" />
+        <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/drawable/side_nav_bar.xml" value="0.22760416666666666" />
+        <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/layout/activity_settings.xml" value="0.25" />
+        <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/menu/activity_main_drawer.xml" value="0.21145833333333333" />
+        <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/menu/entry_ops_menu.xml" value="0.21145833333333333" />
+        <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/menu/main.xml" value="0.21145833333333333" />
+        <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.22760416666666666" />
+        <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.22760416666666666" />
+      </map>
+    </option>
   </component>
 </project>

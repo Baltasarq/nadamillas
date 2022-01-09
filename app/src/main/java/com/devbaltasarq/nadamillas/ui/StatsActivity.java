@@ -1,5 +1,6 @@
 // NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
 
+
 package com.devbaltasarq.nadamillas.ui;
 
 import java.text.DateFormatSymbols;
@@ -9,7 +10,7 @@ import android.database.SQLException;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -30,8 +31,9 @@ import com.devbaltasarq.nadamillas.ui.graph.BarChart;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+
 public class StatsActivity extends BaseActivity {
-    private int NUM_COLUMNS_IN_GRAPH = 10;
+    private final int NUM_YEARS_IN_GRAPH = 10;
     private final static String LOG_TAG = StatsActivity.class.getSimpleName();
     private enum GraphType { Weekly, Monthly, Yearly;
 
@@ -47,6 +49,7 @@ public class StatsActivity extends BaseActivity {
     {
         super.onCreate(savedInstanceState);
         this.setContentView( R.layout.activity_stats );
+
         final Toolbar TOOL_BAR = this.findViewById( R.id.toolbar );
         this.setSupportActionBar( TOOL_BAR );
 
@@ -58,7 +61,7 @@ public class StatsActivity extends BaseActivity {
         final ImageButton BT_BACK = this.findViewById( R.id.btCloseStats );
 
         // Prepares time segment spinner
-        this.segmentAdapter = new ArrayAdapter<>(
+        final ArrayAdapter<String> SEGMENTS_ADAPTER = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
                 new String[]{
@@ -67,15 +70,15 @@ public class StatsActivity extends BaseActivity {
                         this.getString( R.string.label_year )
         });
 
-        CB_TIME_SEGMENT.setAdapter( this.segmentAdapter );
+        CB_TIME_SEGMENT.setAdapter( SEGMENTS_ADAPTER );
 
         // Prepare the months spinner
-        this.monthsAdapter = new ArrayAdapter<>(
+        final ArrayAdapter<String> MONTHS_ADAPTER = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
                 new DateFormatSymbols().getMonths() );
 
-        CB_MONTHS.setAdapter( this.monthsAdapter );
+        CB_MONTHS.setAdapter( MONTHS_ADAPTER );
         CB_MONTHS.setSelection( Calendar.getInstance().get( Calendar.MONTH ), false );
 
         // Prepare years spinner
@@ -96,7 +99,7 @@ public class StatsActivity extends BaseActivity {
         CB_YEARS.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                StatsActivity.this.plotChart();
+                StatsActivity.this.update();
             }
 
             @Override
@@ -108,7 +111,7 @@ public class StatsActivity extends BaseActivity {
         CB_MONTHS.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                StatsActivity.this.plotChart();
+                StatsActivity.this.update();
             }
 
             @Override
@@ -120,7 +123,7 @@ public class StatsActivity extends BaseActivity {
         CB_TIME_SEGMENT.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                StatsActivity.this.plotChart();
+                StatsActivity.this.update();
             }
 
             @Override
@@ -129,30 +132,19 @@ public class StatsActivity extends BaseActivity {
             }
         });
 
-        BT_SHARE.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        BT_SHARE.setOnClickListener( v -> {
                 final StatsActivity SELF = StatsActivity.this;
 
                 SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
-            }
         });
 
-        BT_SCRSHOT.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        BT_SCRSHOT.setOnClickListener( v -> {
                 final StatsActivity SELF = StatsActivity.this;
 
-                SELF.save( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
-            }
+                SELF.saveScreenShotToDownloads( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
         });
 
-        BT_BACK.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                StatsActivity.this.finish();
-            }
-        });
+        BT_BACK.setOnClickListener( v ->StatsActivity.this.finish() );
     }
 
     private String[] retrieveAllYearInfos()
@@ -197,12 +189,12 @@ public class StatsActivity extends BaseActivity {
 
         // Adjust years info
         if ( year != CURRENT_YEAR ) {
-            year -= NUM_COLUMNS_IN_GRAPH / 2;
+            year -= NUM_YEARS_IN_GRAPH / 2;
         } else {
-            year -= NUM_COLUMNS_IN_GRAPH - 1;
+            year -= NUM_YEARS_IN_GRAPH - 1;
         }
 
-        while( yearsRetrieved < NUM_COLUMNS_IN_GRAPH ) {
+        while( yearsRetrieved < NUM_YEARS_IN_GRAPH) {
             final int DISPLAY_YEAR = year % 1000;
             YearInfo yinfo = dataStore.getInfoFor( year );
 
@@ -213,8 +205,8 @@ public class StatsActivity extends BaseActivity {
             final int OPEN_METERS = yinfo.getTotal() - yinfo.getTotalPool();
 
 
-            TOTAL_SERIE.add( new BarChart.Point( DISPLAY_YEAR, yinfo.getTotal() / 1000 ) );
-            OPEN_SERIE.add( new BarChart.Point( DISPLAY_YEAR, OPEN_METERS / 1000 ) );
+            TOTAL_SERIE.add( new BarChart.Point( DISPLAY_YEAR, yinfo.getTotal() / 1000f ) );
+            OPEN_SERIE.add( new BarChart.Point( DISPLAY_YEAR, OPEN_METERS / 1000f ) );
             ++year;
             ++yearsRetrieved;
         }
@@ -247,8 +239,8 @@ public class StatsActivity extends BaseActivity {
                 totalMeters += session.getDistance();
             }
 
-            SERIE_TOTAL.add( new BarChart.Point( month + 1, totalMeters / 1000 ) );
-            SERIE_OPEN.add( new BarChart.Point( month + 1, totalOpenWaterMeters / 1000 ) );
+            SERIE_TOTAL.add( new BarChart.Point( month + 1, totalMeters / 1000f ) );
+            SERIE_OPEN.add( new BarChart.Point( month + 1, totalOpenWaterMeters / 1000f ) );
             ++month;
         }
 
@@ -305,12 +297,12 @@ public class StatsActivity extends BaseActivity {
         // Pass sesssions to points
         for(int i = 0; i < metersTotalPerWeek.size(); ++i) {
             SERIE_TOTAL.add(
-                    new BarChart.Point( i + 1, metersTotalPerWeek.get( i ) / 1000 ) );
+                    new BarChart.Point( i + 1, metersTotalPerWeek.get( i ) / 1000f ) );
         }
 
         for(int i = 0; i < metersOpenPerWeek.size(); ++i) {
             SERIE_OPEN.add(
-                    new BarChart.Point( i + 1, metersOpenPerWeek.get( i ) / 1000 ) );
+                    new BarChart.Point( i + 1, metersOpenPerWeek.get( i ) / 1000f ) );
         }
 
         SERIES.add( SERIE_TOTAL );
@@ -328,7 +320,7 @@ public class StatsActivity extends BaseActivity {
         this.selectedYear = -1;
 
         if ( CB_YEARS.getSelectedItemPosition() >= 0 ) {
-            this.selectedYear = Integer.valueOf( (String) CB_YEARS.getSelectedItem() );
+            this.selectedYear = Integer.parseInt( (String) CB_YEARS.getSelectedItem() );
         }
 
         Log.d( LOG_TAG, String.format( "selected year: %d, month %d, graphtype: %d",
@@ -338,7 +330,8 @@ public class StatsActivity extends BaseActivity {
     }
 
     /** Plots the chart in a drawable and shows it. */
-    private void plotChart()
+    @Override
+    protected void update()
     {
         final double DENSITY = this.getResources().getDisplayMetrics().scaledDensity;
         final ArrayList<BarChart.SeriesInfo> SERIES = new ArrayList<>();
@@ -370,17 +363,14 @@ public class StatsActivity extends BaseActivity {
 
                 final String LEGEND_X = SELF.getString( idForLegendX );
 
-                SELF.runOnUiThread( new Runnable() {
-                    @Override
-                    public void run() {
-                        final BarChart CHART = new BarChart( DENSITY, SERIES );
+                SELF.runOnUiThread( () -> {
+                    final BarChart CHART = new BarChart( DENSITY, SERIES );
 
-                        CHART.setLegendX( LEGEND_X );
-                        CHART.setLegendY( SELF.getString( R.string.label_meter ) );
-                        CHART.setShowLabels( true );
-                        SELF.chartView.setScaleType( ImageView.ScaleType.MATRIX );
-                        SELF.chartView.setImageDrawable( CHART );
-                    }
+                    CHART.setLegendX( LEGEND_X );
+                    CHART.setLegendY( SELF.getString( R.string.label_meter ) );
+                    CHART.setShowLabels( true );
+                    SELF.chartView.setScaleType( ImageView.ScaleType.MATRIX );
+                    SELF.chartView.setImageDrawable( CHART );
                 });
             }
         };
@@ -392,11 +382,9 @@ public class StatsActivity extends BaseActivity {
     private int selectedMonth;
     private GraphType graphType;
     private ImageView chartView;
-    private ArrayAdapter<String> segmentAdapter;
-    private ArrayAdapter<String> monthsAdapter;
 
     /** Manages gestures. */
-    public class StandardGestures implements View.OnTouchListener,
+    public static class StandardGestures implements View.OnTouchListener,
             ScaleGestureDetector.OnScaleGestureListener
     {
         public StandardGestures(Context c)
@@ -465,9 +453,9 @@ public class StatsActivity extends BaseActivity {
         {
         }
 
-        private PointF position;
         private View view;
-        private ScaleGestureDetector gestureScale;
         private float scaleFactor = 1;
+        private final PointF position;
+        private final ScaleGestureDetector gestureScale;
     }
 }

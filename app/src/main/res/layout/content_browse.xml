@@ -53,7 +53,6 @@
             </LinearLayout>
 
             <com.github.sundeepk.compactcalendarview.CompactCalendarView
-                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/cvCalendar"
                 android:layout_width="match_parent"
                 android:layout_height="250dp"
@@ -76,10 +75,9 @@
             <ListView       android:id="@+id/lvSessionsPerDay"
                 android:layout_margin="10dp"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                tools:ignore="NestedScrolling" />
 
         </LinearLayout>
 
     </ScrollView>
-
-<!-- </android.support.constraint.ConstraintLayout> -->

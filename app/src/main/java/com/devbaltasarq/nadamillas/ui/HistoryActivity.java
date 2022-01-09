@@ -1,21 +1,20 @@
+// NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
+
+
 package com.devbaltasarq.nadamillas.ui;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.widget.AdapterView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.appcompat.widget.Toolbar;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.Session;
-import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 import com.devbaltasarq.nadamillas.ui.adapters.SessionCursorAdapter;
+
 
 public class HistoryActivity extends BaseActivity {
     private static final String LOG_TAG = BaseActivity.class.getSimpleName();
@@ -33,35 +32,18 @@ public class HistoryActivity extends BaseActivity {
         final ImageButton BT_SHARE = this.findViewById( R.id.btShareHstory );
         final ImageButton BT_SCRSHOT = this.findViewById( R.id.btTakeScrshotForHistory );
 
-        FB_NEW.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                HistoryActivity.this.onNew();
-            }
-        });
-        BT_BACK.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HistoryActivity.this.finish();
-            }
+        FB_NEW.setOnClickListener( v -> HistoryActivity.this.onNew() );
+        BT_BACK.setOnClickListener( v -> HistoryActivity.this.finish() );
+        BT_SHARE.setOnClickListener( v -> {
+            final HistoryActivity SELF = HistoryActivity.this;
+
+            SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
         });
 
-        BT_SHARE.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        BT_SCRSHOT.setOnClickListener( v -> {
                 final HistoryActivity SELF = HistoryActivity.this;
 
-                SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
-            }
-        });
-
-        BT_SCRSHOT.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final HistoryActivity SELF = HistoryActivity.this;
-
-                SELF.save( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
-            }
+                SELF.saveScreenShotToDownloads( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
         });
 
         this.createAllSessionsList();
@@ -83,28 +65,6 @@ public class HistoryActivity extends BaseActivity {
         DataStore.close( this.sessionsCursor.getCursor() );
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult( requestCode, resultCode, data );
-
-        if ( resultCode == Activity.RESULT_OK ) {
-            switch( requestCode ) {
-                case RC_NEW_SESSION:
-                    this.storeNewSession( data );
-                    this.updateAllSessionsList();
-                    break;
-                case RC_EDIT_SESSION:
-                    final Session SESSION = SessionStorage.createFrom( data );
-
-                    this.updateSession( SESSION );
-                    SessionCursorAdapter.updateViewWith( SESSION );
-                    break;
-            }
-        }
-
-        return;
-    }
-
     /** Handle the ops menu event. */
     public void onEntryOpsMenu()
     {
@@ -120,21 +80,17 @@ public class HistoryActivity extends BaseActivity {
                                                 R.string.action_delete
                                         } );
 
-        DLG.setItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-            {
-                final Session SESSION = SessionCursorAdapter.selectedSession;
-                final boolean isModify = ( position == 0 );
+        DLG.setItemClickListener( (parent, view, position, id) -> {
+            final Session SESSION = SessionCursorAdapter.selectedSession;
+            final boolean isModify = ( position == 0 );
 
-                DLG.hide();
-                DLG.dismiss();
+            DLG.hide();
+            DLG.dismiss();
 
-                if ( isModify ) {
-                    HistoryActivity.this.onEditSession( SESSION );
-                } else {
-                    HistoryActivity.this.onDeleteSession( SESSION );
-                }
+            if ( isModify ) {
+                HistoryActivity.this.onEditSession( SESSION );
+            } else {
+                HistoryActivity.this.onDeleteSession( SESSION );
             }
         });
 
@@ -151,6 +107,12 @@ public class HistoryActivity extends BaseActivity {
     private void updateAllSessionsList()
     {
         this.sessionsCursor.changeCursor( dataStore.getAllDescendingSessionsCursor() );
+    }
+
+    @Override
+    protected void update()
+    {
+        this.updateAllSessionsList();
     }
 
     /** Updates the list view, since it has probably changed. */

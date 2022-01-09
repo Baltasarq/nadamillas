@@ -28,6 +28,7 @@
     <string name="action_settings">Settings</string>
     <string name="action_modify">Modify</string>
     <string name="action_delete">Delete</string>
+    <string name="take_screenshot">Take screenshot</string>
 
     <!-- Labels -->
     <string name="label_date">Date</string>

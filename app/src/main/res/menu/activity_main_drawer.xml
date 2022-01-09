@@ -21,25 +21,14 @@
             android:title="@string/action_history" />
         <item
             android:id="@+id/nav_stats"
+            android:iconTint="#ffffffff"
             android:icon="@drawable/ic_stats"
             android:title="@string/action_stats" />
         <item
             android:id="@+id/nav_settings"
+            android:iconTint="#ffffffff"
             android:icon="@drawable/ic_settings"
             android:title="@string/action_settings" />
     </group>
-
-    <item android:title="@string/label_communicate">
-        <menu>
-            <item
-                android:id="@+id/nav_export"
-                android:icon="@drawable/ic_export"
-                android:title="@string/action_export" />
-            <item
-                android:id="@+id/nav_import"
-                android:icon="@drawable/ic_import"
-                android:title="@string/action_import" />
-        </menu>
-    </item>
 
 </menu>

@@ -1,5 +1,6 @@
 // NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
 
+
 package com.devbaltasarq.nadamillas.core;
 
 import java.text.DateFormat;
@@ -7,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+
 
 public class Util {
     /** @return the current date with the default locale. */
@@ -124,10 +126,10 @@ public class Util {
         return getFullDate( null, Locale.getDefault() );
     }
 
-    /** Gets the current full date.
+    /** Gets a full date.
      * @param d a given date. If null, current is assumed.
      * @param locale a given Locale, or null for default one.
-     * @return the current date with the given locale.
+     * @return the full date with the given locale, as a string.
      */
     public static String getFullDate(Date d, Locale locale)
     {
@@ -135,13 +137,49 @@ public class Util {
             locale = Locale.getDefault();
         }
 
+        if ( d == null ) {
+            d = getDate( locale ).getTime();
+        }
+
         final DateFormat F = DateFormat.getDateInstance( DateFormat.FULL, locale );
+        return F.format( d );
+    }
+
+    /** Gets the semi full date (no week day).
+     * @param d a given date. If null, current is assumed.
+     * @param locale a given Locale, or null for default one.
+     * @return the semi full date with the given locale, as string.
+     */
+    public static String getSemiFullDate(Date d, Locale locale)
+    {
+        if ( locale == null ) {
+            locale = Locale.getDefault();
+        }
 
         if ( d == null ) {
             d = getDate( locale ).getTime();
         }
 
+        final DateFormat F = DateFormat.getDateInstance( DateFormat.LONG, locale );
         return F.format( d );
+    }
+
+    /** Gets the week day for a given date.
+     * @param d a given date. If null, current is assumed.
+     * @param locale a given Locale, or null for default one.
+     * @return the week day name, as string.
+     */
+    public static String getWeekDay(Date d, Locale locale)
+    {
+        if ( locale == null ) {
+            locale = Locale.getDefault();
+        }
+
+        if ( d == null ) {
+            d = getDate( locale ).getTime();
+        }
+
+        return String.format( "%tA", d );
     }
 
     /** @return the current date as an ISO-formatted date. */

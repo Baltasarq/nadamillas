@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.MainActivity">
 
-    <android.support.design.widget.AppBarLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        <android.support.v7.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -20,10 +21,10 @@
 
             <ImageView
                 app:srcCompat="@drawable/ic_swimming_figure"
-                android:tint="#ffffffff"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="10dp"/>
+                android:layout_marginEnd="10dp"
+                tools:ignore="ContentDescription" />
 
             <TextView   android:id="@+id/lblTitle"
                 android:text="@string/app_name"
@@ -36,33 +37,29 @@
                 android:layout_gravity="end"
                 app:srcCompat="@drawable/ic_share"
                 app:backgroundTint="#00000000"
-                android:tint="#ffffffff"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/action_share"
+                app:tint="#ffffffff" />
 
             <ImageButton    android:id="@+id/btTakeScrshotForSummary"
                 android:layout_gravity="end"
                 app:srcCompat="@drawable/btn_camera"
                 app:backgroundTint="#00000000"
-                android:tint="#ffffffff"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/take_screenshot"
+                app:tint="#ffffffff" />
 
-            <ProgressBar    android:id="@+id/pbProgressMain"
-                android:visibility="gone"
-                android:indeterminateOnly="true"
-                android:layout_gravity="end"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+        </androidx.appcompat.widget.Toolbar>
 
-        </android.support.v7.widget.Toolbar>
-
-    </android.support.design.widget.AppBarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <include layout="@layout/content_main" />
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fbNew"
+        android:contentDescription="@string/action_new"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
@@ -70,8 +67,9 @@
         android:tint="#ffffffff"
         app:srcCompat="@drawable/btn_add" />
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fbBrowse"
+        android:contentDescription="@string/action_browse"
         app:fabSize="mini"
         android:scaleType="center"
         app:useCompatPadding="true"
@@ -84,8 +82,9 @@
         app:layout_anchor="@id/fbNew"
         app:layout_anchorGravity="top" />
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fbStats"
+        android:contentDescription="@string/action_stats"
         app:fabSize="mini"
         android:scaleType="center"
         app:useCompatPadding="true"
@@ -98,4 +97,4 @@
         app:layout_anchor="@id/fbBrowse"
         app:layout_anchorGravity="top" />
 
-</android.support.design.widget.CoordinatorLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

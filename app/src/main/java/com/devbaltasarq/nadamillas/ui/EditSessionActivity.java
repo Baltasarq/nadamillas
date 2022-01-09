@@ -6,14 +6,11 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.appcompat.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.View;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
@@ -21,10 +18,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
-import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.Duration;
 import com.devbaltasarq.nadamillas.core.Session;
-import com.devbaltasarq.nadamillas.core.Settings;
 import com.devbaltasarq.nadamillas.core.Util;
 import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 
@@ -111,68 +106,32 @@ public class EditSessionActivity extends BaseActivity {
             ED_SECONDS.setText( String.valueOf( this.duration.getSeconds() ) );
         }
 
-        /* Workaround: KitKat (4.4 api 19), up until Marshmallow (5.0, api 21)
-           does not support drawables in radio buttons.
-           It makes the whole app chrash.
-        */
-        if ( android.os.Build.VERSION.SDK_INT >= 21 ) {
-            RBT_POOL.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_pool, 0);
-            RBT_OPEN.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_sea, 0);
-        }
+        RBT_POOL.setCompoundDrawablesWithIntrinsicBounds( 0, 0, R.drawable.ic_pool, 0 );
+        RBT_OPEN.setCompoundDrawablesWithIntrinsicBounds( 0, 0, R.drawable.ic_sea, 0 );
 
         // Set listeners
-        BT_BACK.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EditSessionActivity.this.finish();
-            }
+        BT_BACK.setOnClickListener( v -> EditSessionActivity.this.finish() );
+
+        BT_SHARE.setOnClickListener( v -> {
+            final EditSessionActivity SELF = EditSessionActivity.this;
+
+            SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
         });
 
-        BT_SHARE.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final EditSessionActivity SELF = EditSessionActivity.this;
+        BT_SCRSHOT.setOnClickListener( v -> {
+            final EditSessionActivity SELF = EditSessionActivity.this;
 
-                SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
-            }
+            SELF.saveScreenShotToDownloads( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
         });
 
-        BT_SCRSHOT.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final EditSessionActivity SELF = EditSessionActivity.this;
+        BT_SAVE.setOnClickListener( v -> EditSessionActivity.this.save() );
+        FB_SAVE.setOnClickListener( v -> EditSessionActivity.this.save() );
+        BT_DATE.setOnClickListener( v -> EditSessionActivity.this.chooseDate() );
 
-                SELF.save( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
-            }
-        });
+        GRD_WATER_TYPES.setOnCheckedChangeListener( (grp, id) -> {
+            int pos = ( id == RBT_POOL.getId() ) ? 0 : 1;
 
-        BT_SAVE.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                EditSessionActivity.this.save();
-            }
-        });
-        FB_SAVE.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EditSessionActivity.this.save();
-            }
-        });
-
-        BT_DATE.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EditSessionActivity.this.chooseDate();
-            }
-        });
-
-        GRD_WATER_TYPES.setOnCheckedChangeListener( new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup grp, int id) {
-                int pos = ( id == RBT_POOL.getId() ) ? 0 : 1;
-
-                EditSessionActivity.this.setAtPool( pos );
-            }
+            EditSessionActivity.this.setAtPool( pos );
         });
 
         ED_DISTANCE.addTextChangedListener( new TextWatcher() {
@@ -246,6 +205,9 @@ public class EditSessionActivity extends BaseActivity {
                 EditSessionActivity.this.calculateMeanSpeed();
             }
         });
+
+        // Set focus
+        ED_DISTANCE.requestFocus();
     }
 
     @Override
@@ -263,12 +225,9 @@ public class EditSessionActivity extends BaseActivity {
         final DatePickerDialog dlg = new DatePickerDialog(
                 this,
                 R.style.DialogTheme,
-                new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker dp, int y, int m, int d) {
-                        EditSessionActivity.this.setDate( Util.dateFromData( y, m ,d ) );
-                    }
-                },
+                (dp, y, m, d) ->
+                        EditSessionActivity.this.setDate(
+                                Util.dateFromData( y, m ,d ) ),
                 DATA_DATE[ 0 ],
                 DATA_DATE[ 1 ],
                 DATA_DATE[ 2 ]
@@ -360,6 +319,12 @@ public class EditSessionActivity extends BaseActivity {
                             + " - "
                             + FAKE_SESSION.getMeanTimeAsString( settings
         ) );
+    }
+
+    @Override
+    protected void update()
+    {
+        this.calculateMeanSpeed();
     }
 
     /** Saves the data and returns. */

@@ -18,14 +18,6 @@
         android:title="@string/action_stats"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_import"
-        android:title="@string/action_import"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_export"
-        android:title="@string/action_export"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/action_settings"
         android:title="@string/action_settings"
         app:showAsAction="never" />

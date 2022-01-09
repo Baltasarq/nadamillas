@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -24,23 +25,29 @@
 
         <LinearLayout
             android:gravity="center_vertical|center_horizontal"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp">
 
-            <TextView   android:id="@+id/lblDate"
-                android:layout_marginRight="5dp"
+            <TextView   android:id="@+id/lblWeekDayName"
                 android:layout_marginEnd="5dp"
                 android:textSize="20sp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="2019-03-13" />
+                android:text="" />
+
+            <TextView   android:id="@+id/lblDate"
+                android:layout_marginEnd="5dp"
+                android:textSize="20sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="" />
 
         </LinearLayout>
 
         <TableLayout
-            android:padding="10dp"
+            android:layout_margin="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -50,9 +57,9 @@
                 android:layout_height="wrap_content">
 
                 <TextView   android:id="@+id/lblUnits"
-                    android:layout_marginLeft="10dp"
+                    android:textAlignment="textEnd"
+                    android:gravity="end"
                     android:layout_marginStart="10dp"
-                    android:layout_marginRight="10dp"
                     android:layout_marginEnd="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -61,10 +68,10 @@
                     android:textStyle="bold"/>
 
                 <TextView
-                    android:layout_marginLeft="10dp"
                     android:layout_marginStart="10dp"
-                    android:layout_marginRight="10dp"
                     android:layout_marginEnd="10dp"
+                    android:textAlignment="textEnd"
+                    android:gravity="end"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_total"
@@ -72,10 +79,10 @@
                     android:textStyle="bold"/>
 
                 <TextView
-                    android:layout_marginLeft="10dp"
                     android:layout_marginStart="10dp"
-                    android:layout_marginRight="10dp"
                     android:layout_marginEnd="10dp"
+                    android:textAlignment="textEnd"
+                    android:gravity="end"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_target"
@@ -89,22 +96,26 @@
                 android:layout_height="wrap_content">
 
                 <TextView   android:id="@+id/lblTotal"
-                    android:layout_marginLeft="10dp"
                     android:layout_marginStart="10dp"
-                    android:layout_marginRight="10dp"
                     android:layout_marginEnd="10dp"
-                    android:layout_column="1"
-                    android:text="100"
+                    android:text=""
                     android:textAlignment="textEnd"
                     android:gravity="end"
                     android:textSize="15sp"/>
 
-                <TextView   android:id="@+id/lblTarget"
-                    android:layout_marginLeft="10dp"
+                <TextView   android:id="@+id/lblProgress"
+                    android:textAlignment="textEnd"
                     android:layout_marginStart="10dp"
-                    android:layout_marginRight="10dp"
                     android:layout_marginEnd="10dp"
-                    android:text="100"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="15sp" />
+
+                <TextView   android:id="@+id/lblTarget"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:text=""
                     android:textAlignment="textEnd"
                     android:gravity="end"
                     android:textSize="15sp"/>
@@ -116,10 +127,10 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:layout_marginLeft="10dp"
                     android:layout_marginStart="10dp"
-                    android:layout_marginRight="10dp"
                     android:layout_marginEnd="10dp"
+                    android:textAlignment="textEnd"
+                    android:gravity="end"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_column="1"
@@ -127,10 +138,10 @@
                     android:textSize="20sp"
                     android:textStyle="bold"/>
                 <TextView
-                    android:layout_marginLeft="10dp"
                     android:layout_marginStart="10dp"
-                    android:layout_marginRight="10dp"
                     android:layout_marginEnd="10dp"
+                    android:textAlignment="textEnd"
+                    android:gravity="end"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_open_waters"
@@ -144,22 +155,18 @@
                 android:layout_height="wrap_content">
 
                 <TextView   android:id="@+id/lblPool"
-                    android:layout_marginLeft="10dp"
                     android:layout_marginStart="10dp"
-                    android:layout_marginRight="10dp"
                     android:layout_marginEnd="10dp"
                     android:layout_column="1"
                     android:textAlignment="textEnd"
                     android:gravity="end"
-                    android:text="90"
+                    android:text=""
                     android:textSize="15sp"/>
 
                 <TextView   android:id="@+id/lblOpenWaters"
-                    android:layout_marginLeft="10dp"
                     android:layout_marginStart="10dp"
-                    android:layout_marginRight="10dp"
                     android:layout_marginEnd="10dp"
-                    android:text="10"
+                    android:text=""
                     android:textAlignment="textEnd"
                     android:gravity="end"
                     android:textSize="15sp"/>
@@ -167,34 +174,16 @@
 
         </TableLayout>
 
-        <LinearLayout
+        <com.devbaltasarq.nadamillas.ui.ProgressView
+            android:id="@+id/pvProgress"
+            tools:ignore="ContentDescription"
             android:padding="10dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_horizontal">
-
-            <TextView   android:id="@+id/lblProgress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="100"
-                android:textSize="80sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="%"
-                android:textSize="75sp" />
-        </LinearLayout>
-
-        <ImageView
-            android:padding="10dp"
-            android:layout_width="match_parent"
+            android:layout_margin="10dp"
+            android:layout_width="150dp"
             android:layout_height="150dp"
-            android:gravity="center"
-            app:srcCompat="@drawable/ic_swimming_figure"/>
+            android:gravity="center" />
 
     </LinearLayout>
     </ScrollView>
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

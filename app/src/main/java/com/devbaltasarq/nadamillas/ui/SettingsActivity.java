@@ -1,17 +1,29 @@
 // NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
 
+
 package com.devbaltasarq.nadamillas.ui;
 
-import android.content.DialogInterface;
+import android.Manifest;
+import android.content.ContentResolver;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.SQLException;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CursorAdapter;
@@ -23,18 +35,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.devbaltasarq.nadamillas.R;
+import com.devbaltasarq.nadamillas.core.AppInfo;
 import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.Settings;
 import com.devbaltasarq.nadamillas.core.Util;
 import com.devbaltasarq.nadamillas.core.YearInfo;
-import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 import com.devbaltasarq.nadamillas.core.storage.SettingsStorage;
 import com.devbaltasarq.nadamillas.core.storage.YearInfoStorage;
 
-import java.util.Calendar;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
 
 public class SettingsActivity extends BaseActivity {
     public final static String LOG_TAG = SettingsActivity.class.getSimpleName();
+    public static final int RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_EXPORT = 111;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -48,10 +64,16 @@ public class SettingsActivity extends BaseActivity {
         final ImageButton BT_BACK = this.findViewById( R.id.btCloseSettings );
         final Spinner CB_UNITS = this.findViewById( R.id.cbUnits );
         final ImageButton BT_RECALCULATE = this.findViewById( R.id.btRecalculate );
+        final ImageButton BT_IMPORT = this.findViewById( R.id.btImport );
+        final ImageButton BT_EXPORT = this.findViewById( R.id.btExport );
         final Spinner CB_YEARS = this.findViewById( R.id.cbYears );
         final Spinner CB_FDoW = this.findViewById( R.id.cbFirstDayOfWeek );
         final ImageButton BT_EDIT_YEAR = this.findViewById( R.id.btEditYear );
         final ImageButton BT_NEW_YEAR = this.findViewById( R.id.btNewYear );
+        final TextView LBL_ABOUT = this.findViewById( R.id.lblAbout );
+
+        // Prepare the "about" label
+        LBL_ABOUT.setText( AppInfo.getAuthoringMessage() );
 
         // Prepare units spinner
         final ArrayAdapter<Settings.DistanceUnits> UNITS_ADAPTER = new ArrayAdapter<>(
@@ -78,12 +100,13 @@ public class SettingsActivity extends BaseActivity {
                 android.R.layout.simple_spinner_item,
                 null,
                 new String[]{ YearInfoStorage.FIELD_YEAR },
-                new int[]{ android.R.id.text1 });
+                new int[]{ android.R.id.text1 },
+                0 );
 
         CB_YEARS.setAdapter( this.yearsAdapter );
 
         // Set the initial values
-        this.recalculating = false;
+        this.working = false;
 
         // Set the listeners
         CB_UNITS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -99,28 +122,14 @@ public class SettingsActivity extends BaseActivity {
             }
         });
 
-        BT_RECALCULATE.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            SettingsActivity.this.onRecalculate();
-            }
-        });
+        BT_RECALCULATE.setOnClickListener( v -> this.onRecalculate() );
+        BT_EDIT_YEAR.setOnClickListener( v -> this.onEditTarget() );
+        BT_NEW_YEAR.setOnClickListener( v -> this.onNewYear() );
+        BT_BACK.setOnClickListener( v -> this.onBackPressed() );
+        BT_IMPORT.setOnClickListener( v -> this.pickFile() );
+        BT_EXPORT.setOnClickListener( v -> this.onExport() );
 
-        BT_EDIT_YEAR.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            SettingsActivity.this.onEditTarget();
-            }
-        });
-
-        BT_NEW_YEAR.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            SettingsActivity.this.onNewYear();
-            }
-        });
-
-        CB_YEARS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        CB_YEARS.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 SettingsActivity.this.updateTarget();
@@ -132,7 +141,7 @@ public class SettingsActivity extends BaseActivity {
             }
         });
 
-        CB_FDoW.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        CB_FDoW.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 SettingsActivity.this.updateFirstDayOfWeek();
@@ -143,13 +152,6 @@ public class SettingsActivity extends BaseActivity {
 
             }
         });
-
-        BT_BACK.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SettingsActivity.this.onBackPressed();
-            }
-        });
     }
 
     @Override
@@ -157,7 +159,7 @@ public class SettingsActivity extends BaseActivity {
     {
         super.onResume();
 
-        this.updateSpinners();
+        this.update();
     }
 
     @Override
@@ -171,7 +173,7 @@ public class SettingsActivity extends BaseActivity {
     @Override
     public void onBackPressed()
     {
-        if ( !this.recalculating ) {
+        if ( !this.working) {
             new SettingsStorage( this.getApplicationContext(), settings ).store();
 
             super.onBackPressed();
@@ -181,42 +183,50 @@ public class SettingsActivity extends BaseActivity {
         return;
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult( requestCode, permissions, grantResults );
+
+        if ( requestCode == RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_EXPORT
+                && grantResults.length > 0
+                && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED )
+        {
+            this.doExport();
+        }
+
+        return;
+    }
+
     /** Listener for the recalculate button. */
     private void onRecalculate()
     {
-        final ProgressBar PROGRESS_BAR = this.findViewById( R.id.pbProgress );
+        final ProgressBar PROGRESS = this.findViewById( R.id.pbRecalculationProgress );
         final ImageButton BT_RECALCULATE = this.findViewById( R.id.btRecalculate );
-
-        BT_RECALCULATE.setEnabled( false );
 
         Thread recalculationThread = new Thread() {
             @Override
             public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        PROGRESS_BAR.setVisibility( View.VISIBLE );
-                        PROGRESS_BAR.setIndeterminate( true );
-                    }
+                runOnUiThread( () -> {
+                    PROGRESS.setVisibility( View.VISIBLE );
+                    BT_RECALCULATE.setVisibility( View.GONE );
                 });
 
-                dataStore.recalculate();
+                dataStore.recalculateAll();
 
-                runOnUiThread( new Runnable() {
-                    @Override
-                    public void run() {
-                        PROGRESS_BAR.setVisibility( View.GONE );
-                        BT_RECALCULATE.setEnabled( true );
-                        SettingsActivity.this.updateSpinners();
-                        Toast.makeText( SettingsActivity.this,
-                                R.string.message_finished, Toast.LENGTH_LONG ).show();
-                    }
+                runOnUiThread( () -> {
+                    PROGRESS.setVisibility( View.GONE );
+                    BT_RECALCULATE.setVisibility( View.VISIBLE );
+                    SettingsActivity.this.update();
+                    Toast.makeText( SettingsActivity.this,
+                            R.string.message_finished, Toast.LENGTH_LONG ).show();
                 });
-                SettingsActivity.this.recalculating = false;
+                SettingsActivity.this.working = false;
             }
         };
 
-        this.recalculating = true;
+        this.working = true;
         recalculationThread.start();
     }
 
@@ -275,16 +285,13 @@ public class SettingsActivity extends BaseActivity {
         final Spinner CB_YEAR = VIEW.findViewById( R.id.cbYears );
         CB_YEAR.setAdapter( YEARS_ADAPTER );
 
-        DLG.setPositiveButton( R.string.label_ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                final String SELECTED_YEAR = (String) CB_YEAR.getSelectedItem();
-                final int THE_YEAR = Integer.parseInt( SELECTED_YEAR );
+        DLG.setPositiveButton( R.string.label_ok, (dialog, which) -> {
+            final String SELECTED_YEAR = (String) CB_YEAR.getSelectedItem();
+            final int THE_YEAR = Integer.parseInt( SELECTED_YEAR );
 
-                dataStore.add( new YearInfo( THE_YEAR, 0, 0 ) );
-                Toast.makeText( SettingsActivity.this, R.string.message_year_info_created, Toast.LENGTH_LONG ).show();
-                SettingsActivity.this.updateSpinners();
-            }
+            dataStore.add( new YearInfo( THE_YEAR, 0, 0 ) );
+            Toast.makeText( SettingsActivity.this, R.string.message_year_info_created, Toast.LENGTH_LONG ).show();
+            SettingsActivity.this.update();
         });
 
         DLG.setNegativeButton( R.string.label_cancel, null );
@@ -299,7 +306,8 @@ public class SettingsActivity extends BaseActivity {
     }
 
     /** Updates the spinners info. */
-    private void updateSpinners()
+    @Override
+    protected void update()
     {
         final Spinner CB_YEARS = this.findViewById( R.id.cbYears );
         final Cursor CURSOR = dataStore.getDescendingAllYearInfosCursor();
@@ -363,6 +371,165 @@ public class SettingsActivity extends BaseActivity {
         settings.setFirstDayOfWeek( FIRST_DAY_OF_WEEK );
     }
 
-    private boolean recalculating;
+    /** Lets the user choose a backup file for importing. */
+    private void pickFile()
+    {
+        this.SELECT_MEDIA.launch( "*/*" );
+    }
+
+    /** The import event handler. */
+    private void onImport(Uri uri)
+    {
+        if ( uri != null ) {
+            final String FILE_EXTENSION = MimeTypeMap.getFileExtensionFromUrl( uri
+                    .toString().toLowerCase() );
+            final String BCKUP_FILE_EXT = DataStore.EXT_BACKUP_FILE.toLowerCase();
+
+            if ( ( uri.getScheme().equals( ContentResolver.SCHEME_FILE )
+                    && FILE_EXTENSION.equals( BCKUP_FILE_EXT ) )
+                || uri.getScheme().equals( ContentResolver.SCHEME_CONTENT ) )
+            {
+                final android.app.AlertDialog.Builder DLG = new android.app.AlertDialog.Builder( this );
+
+                DLG.setTitle( R.string.action_import );
+                DLG.setItems( R.array.array_import_options, ( dialog, which ) -> {
+                    if ( which < 2 ) {
+                        SettingsActivity.this.importFile( uri, which == 0 );
+                    } else {
+                        dialog.dismiss();
+                    }
+                });
+
+                DLG.create().show();
+            } else {
+                this.showStatus( LOG_TAG, this.getString( R.string.message_unsupported_file_type_error ) );
+            }
+        } else {
+            this.showStatus( LOG_TAG, this.getString( R.string.message_file_not_found ) );
+        }
+
+        return;
+    }
+
+    /** Import a given json file. */
+    private void importFile(final Uri uri, final boolean fromScratch)
+    {
+        final Thread IMPORT_THREAD = new Thread() {
+            @Override
+            public void run()
+            {
+                final SettingsActivity SELF = SettingsActivity.this;
+                final ProgressBar PROGRESS_BAR = SELF.findViewById( R.id.pbImportProgress );
+                final ImageButton BT_IMPORT = SELF.findViewById( R.id.btImport );
+
+                SELF.working = true;
+
+                runOnUiThread( () -> {
+                    BT_IMPORT.setVisibility( View.GONE );
+                    PROGRESS_BAR.setVisibility( View.VISIBLE );
+                    PROGRESS_BAR.setIndeterminate( true );
+                });
+
+                if ( uri != null
+                        && uri.getScheme() != null
+                        && ( uri.getScheme().equals( ContentResolver.SCHEME_CONTENT )
+                        ||  uri.getScheme().equals( ContentResolver.SCHEME_FILE ) ) )
+                {
+                    try {
+                        final InputStream IN = SELF.getContentResolver().openInputStream( uri );
+
+                        dataStore.importFrom( IN, fromScratch );
+                        dataStore.recalculateAll();
+                        SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_finished ) );
+                    } catch(IOException exc) {
+                        SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_io_error ) );
+                        Log.e( LOG_TAG, exc.getMessage() );
+                    }
+
+                    SELF.runOnUiThread( SELF::update );
+                } else {
+                    SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_unsupported_file_type_error ) );
+                }
+
+                runOnUiThread( () -> {
+                    PROGRESS_BAR.setVisibility( View.GONE );
+                    BT_IMPORT.setVisibility( View.VISIBLE );
+                });
+
+                SELF.working = false;
+            }
+        };
+
+        IMPORT_THREAD.start();
+    }
+
+    /** The export handler. */
+    private void onExport()
+    {
+        final String PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+        final int RESULT_REQUEST = ContextCompat.checkSelfPermission( this, PERMISSION );
+
+        if ( RESULT_REQUEST != PackageManager.PERMISSION_GRANTED ) {
+            ActivityCompat.requestPermissions( this,
+                    new String[]{ PERMISSION },
+                    RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_EXPORT );
+        } else {
+            this.doExport();
+        }
+
+        return;
+    }
+
+    /** It just exports, asking permission is assumed to have been asked elsewhere. */
+    private void doExport()
+    {
+        final Thread EXPORT_THREAD = new Thread() {
+            @Override
+            public void run()
+            {
+                final SettingsActivity SELF = SettingsActivity.this;
+                final ProgressBar PROGRESS_BAR = SELF.findViewById( R.id.pbImportProgress );
+                final ImageButton BT_EXPORT = SELF.findViewById( R.id.btImport );
+
+                SELF.working = true;
+
+                runOnUiThread( () -> {
+                    PROGRESS_BAR.setVisibility( View.VISIBLE );
+                    BT_EXPORT.setVisibility( View.GONE );
+                });
+
+                try {
+                    File bckup = dataStore.saveTo( DataStore.DIR_TEMP );
+                    dataStore.saveToDownloads( bckup.getAbsolutePath(), "application/json"  );
+                    SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_finished ) );
+                } catch(IOException exc) {
+                    SELF.showStatus( LOG_TAG,
+                            SELF.getString( R.string.message_io_error )
+                                    + ": " + exc.getMessage() );
+                }
+
+                runOnUiThread( () -> {
+                    PROGRESS_BAR.setVisibility( View.GONE );
+                    BT_EXPORT.setVisibility( View.VISIBLE );
+                });
+
+                SELF.working = false;
+            }
+        };
+
+        EXPORT_THREAD.start();
+    }
+
+    private final ActivityResultLauncher<String> SELECT_MEDIA = this.registerForActivityResult(
+            new ActivityResultContracts.GetContent(),
+            uri -> {
+                if ( uri != null ) {
+                    this.onImport( uri );
+                } else {
+                    this.showStatus( LOG_TAG, this.getString( R.string.message_io_error) );
+                }
+            });
+
+    private boolean working;
     private CursorAdapter yearsAdapter;
 }

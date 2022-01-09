@@ -2,8 +2,8 @@ package com.devbaltasarq.nadamillas.ui.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.annotation.NonNull;
-import android.support.v7.content.res.AppCompatResources;
+import androidx.annotation.NonNull;
+import androidx.appcompat.content.res.AppCompatResources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,17 +55,10 @@ public class SessionCursorAdapter extends CursorAdapter {
             public void onClick(View v) {
                 historyActivity = ACTIVITY;
                 selectedSession = SESSION;
-                editedView = VIEW;
 
                 ACTIVITY.onEntryOpsMenu();
             }
         });
-    }
-
-    public static void updateViewWith(@NonNull Session session)
-    {
-        updateViewWith( editedView, session );
-        editedView = null;
     }
 
     private static void updateViewWith(@NonNull View view, @NonNull Session session)
@@ -100,7 +93,6 @@ public class SessionCursorAdapter extends CursorAdapter {
         historyActivity = null;
     }
 
-    private static View editedView;
     public static Session selectedSession;
     private static Settings settings;
     private static HistoryActivity historyActivity;
