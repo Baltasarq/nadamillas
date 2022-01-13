@@ -16,4 +16,4 @@ The sources for this app are shared using the [MIT License](LICENSE).
 
 - [Check out the docs!](https://baltasarq.github.io/nadamillas/)
 
-- [Download it from the google store!](https://play.google.com/store/apps/details?id=com.devbaltasarq.nadamillas)
+- [Download it from google's Play Store!](https://play.google.com/store/apps/details?id=com.devbaltasarq.nadamillas)
