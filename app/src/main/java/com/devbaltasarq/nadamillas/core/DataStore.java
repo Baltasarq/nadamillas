@@ -857,7 +857,9 @@ public class DataStore extends SQLiteOpenHelper {
                 throw new IOException( "unable to save to /Downloads" );
             }
         } else {
-            copyFile( new File( fn ), new File( DIR_DOWNLOADS, fn ) );
+            final File FN = new File( fn );
+
+            copyFile( FN, new File( DIR_DOWNLOADS, FN.getName() ) );
         }
 
         return;
@@ -1051,19 +1053,18 @@ public class DataStore extends SQLiteOpenHelper {
      */
     private static void copyFile(File source, File dest) throws IOException
     {
-        final String errorMsg = "error copying: " + source + " to: " + dest + ": ";
-        InputStream is;
-        OutputStream os;
 
-        try {
-            is = new FileInputStream( source );
-            os = new FileOutputStream( dest );
-
-            copyStream( is, os );
-        } catch(IOException exc)
+        try (InputStream is = new FileInputStream( source );
+             OutputStream os = new FileOutputStream( dest ))
         {
-            Log.e( LOG_TAG, errorMsg + exc.getMessage() );
-            throw new IOException( errorMsg );
+            copyStream( is, os );
+        } catch (IOException exc) {
+            final String ERROR_MSG = "error copying: " + source
+                    + " to: " + dest
+                    + ": " + exc.getMessage();
+
+            Log.e( LOG_TAG, ERROR_MSG );
+            throw new IOException( ERROR_MSG );
         }
 
         return;

@@ -15,7 +15,6 @@
             <option value="$USER_HOME$/Dropbox/Prys/Android/nadamillas/app" />
           </set>
         </option>
-        <option name="resolveModulePerSourceSet" value="false" />
       </GradleProjectSettings>
       <GradleProjectSettings>
         <option name="testRunner" value="GRADLE" />
@@ -29,7 +28,6 @@
             <option value="$USER_HOME$/Dropbox/Prys/Android/nadamillas/app" />
           </set>
         </option>
-        <option name="resolveModulePerSourceSet" value="false" />
       </GradleProjectSettings>
     </option>
   </component>
