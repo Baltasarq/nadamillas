@@ -4,10 +4,13 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/drawable/ic_launcher_background.xml" value="0.22760416666666666" />
+        <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/drawable/ic_settings.xml" value="0.1" />
+        <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/drawable/ic_stats.xml" value="0.1" />
         <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/drawable/ic_swimming_figure.xml" value="0.22760416666666666" />
         <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/drawable/ic_sync_black_24dp.xml" value="0.22760416666666666" />
         <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/drawable/side_nav_bar.xml" value="0.22760416666666666" />
         <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/layout/activity_settings.xml" value="0.25" />
+        <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/layout/activity_stats.xml" value="0.1" />
         <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/menu/activity_main_drawer.xml" value="0.21145833333333333" />
         <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/menu/entry_ops_menu.xml" value="0.21145833333333333" />
         <entry key="../../../Dropbox/Prys/Android/nadamillas/app/src/main/res/menu/main.xml" value="0.21145833333333333" />

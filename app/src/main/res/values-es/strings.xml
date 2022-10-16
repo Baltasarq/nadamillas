@@ -69,4 +69,6 @@
     <string name="label_monday">Lunes</string>
     <string name="label_sunday">Domingo</string>
     <string name="take_screenshot">Capturar pantalla</string>
+    <string name="label_graph">Gráfico</string>
+    <string name="label_report">Informe</string>
 </resources>

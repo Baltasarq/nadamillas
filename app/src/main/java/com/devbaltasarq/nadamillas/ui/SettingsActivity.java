@@ -1,4 +1,4 @@
-// NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019/22 Baltasar MIT License <baltasarq@gmail.com>
 
 
 package com.devbaltasarq.nadamillas.ui;
@@ -236,24 +236,30 @@ public class SettingsActivity extends BaseActivity {
         final Spinner CB_YEARS = this.findViewById( R.id.cbYears );
         final TextView ED_TARGET = this.findViewById( R.id.edTarget );
         final Cursor SELECTED_YEAR_CURSOR = (Cursor) CB_YEARS.getSelectedItem();
-        final int SELECTED_YEAR = SELECTED_YEAR_CURSOR.getInt(
-                SELECTED_YEAR_CURSOR.getColumnIndexOrThrow(
-                        YearInfoStorage.FIELD_YEAR ) );
-        final YearInfo INFO = dataStore.getInfoFor( SELECTED_YEAR );
-        final String STR_TARGET = ED_TARGET.getText().toString();
 
-        // Convert to integer
-        int target = 0;
+        if ( SELECTED_YEAR_CURSOR != null ) {
+            final int SELECTED_YEAR = SELECTED_YEAR_CURSOR.getInt(
+                    SELECTED_YEAR_CURSOR.getColumnIndexOrThrow(
+                            YearInfoStorage.FIELD_YEAR ) );
+            final YearInfo INFO = dataStore.getInfoFor( SELECTED_YEAR );
+            final String STR_TARGET = ED_TARGET.getText().toString();
 
-        try {
-            target = Integer.parseInt( STR_TARGET ) * 1000;
-        } catch(NumberFormatException exc) {
-            Log.d( LOG_TAG, "error converting target: " + STR_TARGET );
+            // Convert to integer
+            int target = 0;
+
+            try {
+                target = Integer.parseInt( STR_TARGET ) * 1000;
+            } catch(NumberFormatException exc) {
+                Log.d( LOG_TAG, "error converting target: " + STR_TARGET );
+            }
+
+            INFO.setTarget( target );
+            dataStore.add( INFO );
+            Toast.makeText( this, R.string.message_target_updated, Toast.LENGTH_LONG ).show();
+        } else {
+            Toast.makeText( this, this.getString( R.string.label_year ) + "?",
+                            Toast.LENGTH_LONG ).show();
         }
-
-        INFO.setTarget( target );
-        dataStore.add( INFO );
-        Toast.makeText( this, R.string.message_target_updated, Toast.LENGTH_LONG ).show();
     }
 
     /** Handler for the create new year event. */

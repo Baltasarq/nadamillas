@@ -1,4 +1,5 @@
-// NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019/22 Baltasar MIT License <baltasarq@gmail.com>
+
 
 package com.devbaltasarq.nadamillas.core;
 
@@ -6,6 +7,7 @@ import android.util.Log;
 
 import java.util.Calendar;
 import java.util.Locale;
+
 
 /** Represents the possible settings of the app. */
 public class Settings {
@@ -84,13 +86,13 @@ public class Settings {
     /** @return the given meters as kilometers. */
     public double toKm(int meters)
     {
-        return (double) meters / 1000;
+        return (double) meters / 1000f;
     }
 
     /** @return the given yards as nautical miles. */
     public double toMi(int yards)
     {
-        return (double) yards / 1852;
+        return (double) yards / 1650f;
     }
 
     /** @return the given distance in km or mi, depending on settings. */

@@ -1,4 +1,4 @@
-// NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019/22 Baltasar MIT License <baltasarq@gmail.com>
 
 
 package com.devbaltasarq.nadamillas.ui;
@@ -19,7 +19,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.DataStore;
@@ -30,6 +32,7 @@ import com.devbaltasarq.nadamillas.ui.graph.BarChart;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Locale;
 
 
 public class StatsActivity extends BaseActivity {
@@ -54,11 +57,13 @@ public class StatsActivity extends BaseActivity {
         this.setSupportActionBar( TOOL_BAR );
 
         final Spinner CB_YEARS = this.findViewById( R.id.cbGraphYear );
-        final Spinner CB_MONTHS = this.findViewById( R.id.cbGrapMonth );
+        final Spinner CB_MONTHS = this.findViewById( R.id.cbGraphMonth );
         final Spinner CB_TIME_SEGMENT = this.findViewById( R.id.cbTimeSegment );
         final ImageButton BT_SHARE = this.findViewById( R.id.btShareStats);
         final ImageButton BT_SCRSHOT = this.findViewById( R.id.btTakeScrshotForStats );
         final ImageButton BT_BACK = this.findViewById( R.id.btCloseStats );
+        final ImageButton BT_SHOW_GRAPH = this.findViewById( R.id.btShowGraph );
+        final ImageButton BT_SHOW_REPORT = this.findViewById( R.id.btShowReport );
 
         // Prepares time segment spinner
         final ArrayAdapter<String> SEGMENTS_ADAPTER = new ArrayAdapter<>(
@@ -132,6 +137,12 @@ public class StatsActivity extends BaseActivity {
             }
         });
 
+        // View choice listener
+        BT_SHOW_GRAPH.setOnClickListener( v -> this.chooseViewGraph() );
+        BT_SHOW_REPORT.setOnClickListener( v -> this.chooseViewReport() );
+        this.chooseViewGraph();
+
+        // Main activity buttons
         BT_SHARE.setOnClickListener( v -> {
                 final StatsActivity SELF = StatsActivity.this;
 
@@ -175,7 +186,7 @@ public class StatsActivity extends BaseActivity {
         return toret;
     }
 
-    private void loadDataForYearsGraph(int year, final ArrayList<BarChart.SeriesInfo> SERIES)
+    private void loadDataForYearsGraphAndReport(int year, final ArrayList<BarChart.SeriesInfo> SERIES)
     {
         final BarChart.SeriesInfo TOTAL_SERIE =
                             new BarChart.SeriesInfo(
@@ -185,6 +196,11 @@ public class StatsActivity extends BaseActivity {
                         this.getString( R.string.label_open_waters ), Color.CYAN );
         final Calendar DATE = Calendar.getInstance();
         final int CURRENT_YEAR = DATE.get( Calendar.YEAR );
+        final TextView TXT_REPORT = this.findViewById( R.id.txtReport );
+        final String STR_UNITS = settings.getDistanceUnits().toString();
+        final String LBL_TOTAL = this.getString( R.string.label_total );
+        final String LBL_DISTANCE = this.getString( R.string.label_distance );
+        final String LBL_OPEN_WATERS = this.getString( R.string.label_open_waters );
         int yearsRetrieved = 0;
 
         // Adjust years info
@@ -194,7 +210,8 @@ public class StatsActivity extends BaseActivity {
             year -= NUM_YEARS_IN_GRAPH - 1;
         }
 
-        while( yearsRetrieved < NUM_YEARS_IN_GRAPH) {
+        TXT_REPORT.setText( "" );
+        while( yearsRetrieved < NUM_YEARS_IN_GRAPH ) {
             final int DISPLAY_YEAR = year % 1000;
             YearInfo yinfo = dataStore.getInfoFor( year );
 
@@ -202,11 +219,25 @@ public class StatsActivity extends BaseActivity {
                 yinfo = new YearInfo( year, 0, 0 );
             }
 
-            final int OPEN_METERS = yinfo.getTotal() - yinfo.getTotalPool();
+            // Graph
+            final int TOTAL_K = yinfo.getTotal();
+            final int TOTAL_OW = yinfo.getTotal() - yinfo.getTotalPool();
+            final String STR_TOTAL_K = settings.toUnitsAsString( TOTAL_K ) + STR_UNITS;
+            final String STR_TOTAL_OW = settings.toUnitsAsString( TOTAL_OW ) + STR_UNITS;
 
+            TOTAL_SERIE.add( new BarChart.Point( DISPLAY_YEAR, TOTAL_K ) );
+            OPEN_SERIE.add( new BarChart.Point( DISPLAY_YEAR, TOTAL_OW ) );
 
-            TOTAL_SERIE.add( new BarChart.Point( DISPLAY_YEAR, yinfo.getTotal() / 1000f ) );
-            OPEN_SERIE.add( new BarChart.Point( DISPLAY_YEAR, OPEN_METERS / 1000f ) );
+            // Report
+            TXT_REPORT.append( capitalize( LBL_TOTAL ) + ": "
+                                + yinfo.getYearAsString() + '\n' );
+            TXT_REPORT.append( capitalize( LBL_DISTANCE ) + ": "
+                                + STR_TOTAL_K + '\n' );
+            TXT_REPORT.append( capitalize( LBL_OPEN_WATERS ) + ": "
+                                + STR_TOTAL_OW + '\n' );
+            TXT_REPORT.append( "\n" );
+
+            // Next
             ++year;
             ++yearsRetrieved;
         }
@@ -215,7 +246,7 @@ public class StatsActivity extends BaseActivity {
         SERIES.add( OPEN_SERIE );
     }
 
-    private void loadDataForMonthsGraph(int year, final ArrayList<BarChart.SeriesInfo> SERIES)
+    private void loadDataForMonthsGraphAndReport(int year, final ArrayList<BarChart.SeriesInfo> SERIES)
     {
         final BarChart.SeriesInfo SERIE_TOTAL =
                 new BarChart.SeriesInfo(
@@ -224,8 +255,14 @@ public class StatsActivity extends BaseActivity {
                 new BarChart.SeriesInfo(
                         this.getString( R.string.label_open_waters), Color.CYAN );
         final int NUM_COLUMNS_IN_MONTHLY_GRAPH = 12;
+        final String STR_UNITS = settings.getDistanceUnits().toString();
+        final String LBL_TOTAL = this.getString( R.string.label_total );
+        final String LBL_DISTANCE = this.getString( R.string.label_distance );
+        final String LBL_OPEN_WATERS = this.getString( R.string.label_open_waters );
+        final TextView TXT_REPORT = this.findViewById( R.id.txtReport );
         int month = 0;
 
+        TXT_REPORT.setText( "" );
         while( month < NUM_COLUMNS_IN_MONTHLY_GRAPH ) {
             final Session[] SESSIONS = dataStore.getSessionsForMonth( year, month );
             int totalMeters = 0;
@@ -239,8 +276,25 @@ public class StatsActivity extends BaseActivity {
                 totalMeters += session.getDistance();
             }
 
-            SERIE_TOTAL.add( new BarChart.Point( month + 1, totalMeters / 1000f ) );
-            SERIE_OPEN.add( new BarChart.Point( month + 1, totalOpenWaterMeters / 1000f ) );
+            final double TOTAL_K = settings.toUnits( totalMeters );
+            final double TOTAL_OW = settings.toUnits( totalOpenWaterMeters );
+            final String STR_TOTAL_K = settings.toUnitsAsString( totalMeters ) + STR_UNITS;
+            final String STR_TOTAL_OW = settings.toUnitsAsString( totalOpenWaterMeters ) + STR_UNITS;
+
+            // Graph
+            SERIE_TOTAL.add( new BarChart.Point( month + 1, TOTAL_K ) );
+            SERIE_OPEN.add( new BarChart.Point( month + 1, TOTAL_OW ) );
+
+            // Report
+            TXT_REPORT.append( capitalize( LBL_TOTAL ) + ": "
+                                + year + "-" + ( month + 1) + '\n' );
+            TXT_REPORT.append( capitalize( LBL_DISTANCE ) + ": "
+                                + STR_TOTAL_K + '\n' );
+            TXT_REPORT.append( capitalize( LBL_OPEN_WATERS ) + ": "
+                                + STR_TOTAL_OW + '\n' );
+            TXT_REPORT.append( "\n" );
+
+            // Next
             ++month;
         }
 
@@ -248,22 +302,37 @@ public class StatsActivity extends BaseActivity {
         SERIES.add( SERIE_OPEN );
     }
 
-    private void loadDataForWeeksGraph(int year, int month, final ArrayList<BarChart.SeriesInfo> SERIES)
+    private void loadDataForWeeksGraphAndReport(int year, int month, final ArrayList<BarChart.SeriesInfo> SERIES)
     {
         final BarChart.SeriesInfo SERIE_TOTAL = new BarChart.SeriesInfo(
                         this.getString( R.string.label_total ), Color.BLUE );
         final BarChart.SeriesInfo SERIE_OPEN = new BarChart.SeriesInfo(
                         this.getString( R.string.label_open_waters ), Color.CYAN );
         final Calendar DATE = Calendar.getInstance();
+        final TextView TXT_REPORT = this.findViewById( R.id.txtReport );
         final ArrayList<Integer> metersTotalPerWeek = new ArrayList<>( 6 );
         final ArrayList<Integer> metersOpenPerWeek = new ArrayList<>( 6 );
         final int LAST_DAY_OF_MONTH = DATE.getActualMaximum( Calendar.DAY_OF_MONTH );
+        final String LBL_DISTANCE = this.getString( R.string.label_distance );
+        final String LBL_OPEN_WATERS = this.getString( R.string.label_open_waters );
+        final String LBL_TOTAL = this.getString( R.string.label_total );
+        final String LBL_WEEK = this.getString( R.string.label_week );
+        final String LBL_MONTH = this.getString( R.string.label_month );
+        final String STR_UNITS = settings.getDistanceUnits().toString();
         int firstDayOfWeek = settings.getFirstDayOfWeek().getCalendarValue();
         int weekIndex = 0;
+
+        // Prepare report
+        TXT_REPORT.setText( String.format( Locale.getDefault(),
+                      "%s: %d-%d (/%s)\n\n",
+                             capitalize( LBL_MONTH ),
+                             year, month + 1, LBL_WEEK.toLowerCase() ) );
 
         // Prepare initial week
         metersTotalPerWeek.add( 0 );
         metersOpenPerWeek.add( 0 );
+        int totalMeters = 0;
+        int owMeters = 0;
 
         // Run all over the dates of that month
         for(int i = 1; i <= LAST_DAY_OF_MONTH; ++i) {
@@ -282,11 +351,13 @@ public class StatsActivity extends BaseActivity {
             final Session[] SESSIONS = dataStore.getSessionsForDay( DATE.getTime() );
 
             for(Session session: SESSIONS) {
+                totalMeters += session.getDistance();
                 metersTotalPerWeek.set( weekIndex,
                                         metersTotalPerWeek.get( weekIndex )
                                         + session.getDistance() );
 
                 if ( !session.isAtPool() ) {
+                    owMeters += session.getDistance();
                     metersOpenPerWeek.set( weekIndex,
                                            metersOpenPerWeek.get( weekIndex )
                                          + session.getDistance() );
@@ -296,14 +367,38 @@ public class StatsActivity extends BaseActivity {
 
         // Pass sesssions to points
         for(int i = 0; i < metersTotalPerWeek.size(); ++i) {
+            final double TOTAL_PER_WEEK_K = settings.toUnits( metersTotalPerWeek.get( i ) );
+
             SERIE_TOTAL.add(
-                    new BarChart.Point( i + 1, metersTotalPerWeek.get( i ) / 1000f ) );
+                    new BarChart.Point( i + 1, TOTAL_PER_WEEK_K ) );
         }
 
         for(int i = 0; i < metersOpenPerWeek.size(); ++i) {
+            final double TOTAL_OW_PER_WEEK_K = settings.toUnits( metersOpenPerWeek.get( i ) );
+
             SERIE_OPEN.add(
-                    new BarChart.Point( i + 1, metersOpenPerWeek.get( i ) / 1000f ) );
+                    new BarChart.Point( i + 1, TOTAL_OW_PER_WEEK_K ) );
         }
+
+        // Report
+        for(int i = 0; i < metersTotalPerWeek.size(); ++i) {
+            final String STR_TOTAL_PER_WEEK_K = settings.toUnitsAsString( metersTotalPerWeek.get( i ) );
+            final String STR_TOTAL_OW_PER_WEEK_K = settings.toUnitsAsString( metersOpenPerWeek.get( i ) );
+
+            TXT_REPORT.append( capitalize( LBL_WEEK ) + " " + ( i + 1 ) + '\n' );
+            TXT_REPORT.append( capitalize( LBL_DISTANCE ) + ": " + STR_TOTAL_PER_WEEK_K + STR_UNITS + '\n' );
+            TXT_REPORT.append( capitalize( LBL_OPEN_WATERS ) + ": " + STR_TOTAL_OW_PER_WEEK_K + STR_UNITS + '\n' );
+            TXT_REPORT.append( "\n" );
+        }
+
+        TXT_REPORT.append( capitalize( LBL_TOTAL ) + ": "
+                           + settings.toUnitsAsString( totalMeters )
+                           + STR_UNITS + "\n" );
+
+        TXT_REPORT.append( capitalize( LBL_TOTAL )
+                + " (" + LBL_OPEN_WATERS + "): "
+                + settings.toUnitsAsString( owMeters )
+                + STR_UNITS + "\n" );
 
         SERIES.add( SERIE_TOTAL );
         SERIES.add( SERIE_OPEN );
@@ -312,7 +407,7 @@ public class StatsActivity extends BaseActivity {
     private void getSelections()
     {
         final Spinner CB_YEARS = this.findViewById( R.id.cbGraphYear );
-        final Spinner CB_MONTHS = this.findViewById( R.id.cbGrapMonth );
+        final Spinner CB_MONTHS = this.findViewById( R.id.cbGraphMonth );
         final Spinner CB_TIME_SEGMENT = this.findViewById( R.id.cbTimeSegment );
 
         this.graphType = GraphType.fromOrdinal( CB_TIME_SEGMENT.getSelectedItemPosition() );
@@ -340,34 +435,40 @@ public class StatsActivity extends BaseActivity {
             @Override
             public void run() {
                 final StatsActivity SELF = StatsActivity.this;
-                int idForLegendX = R.string.label_year;
+                int idForLegendX = R.string.label_week;
 
                 SELF.getSelections();
 
-                switch( SELF.graphType ) {
-                    case Yearly:
-                        SELF.loadDataForYearsGraph( SELF.selectedYear, SERIES );
-                        break;
-                    case Monthly:
-                        SELF.loadDataForMonthsGraph( SELF.selectedYear, SERIES );
-                        idForLegendX = R.string.label_month;
-                        break;
-                    case Weekly:
-                        SELF.loadDataForWeeksGraph(
-                                SELF.selectedYear, SELF.selectedMonth, SERIES );
-                        idForLegendX = R.string.label_week;
-                        break;
-                    default:
-                        Log.e( LOG_TAG, "unsupported graph type" );
+                if( SELF.graphType == GraphType.Yearly ) {
+                    idForLegendX = R.string.label_year;
+                }
+                else
+                if( SELF.graphType == GraphType.Monthly ) {
+                    idForLegendX = R.string.label_month;
                 }
 
                 final String LEGEND_X = SELF.getString( idForLegendX );
 
                 SELF.runOnUiThread( () -> {
+                    switch( SELF.graphType ) {
+                        case Yearly:
+                            SELF.loadDataForYearsGraphAndReport( SELF.selectedYear, SERIES );
+                            break;
+                        case Monthly:
+                            SELF.loadDataForMonthsGraphAndReport( SELF.selectedYear, SERIES );
+                            break;
+                        case Weekly:
+                            SELF.loadDataForWeeksGraphAndReport(
+                                    SELF.selectedYear, SELF.selectedMonth, SERIES );
+                            break;
+                        default:
+                            Log.e( LOG_TAG, "unsupported graph type" );
+                    }
+
                     final BarChart CHART = new BarChart( DENSITY, SERIES );
 
                     CHART.setLegendX( LEGEND_X );
-                    CHART.setLegendY( SELF.getString( R.string.label_meter ) );
+                    CHART.setLegendY( settings.getDistanceUnits().toString() );
                     CHART.setShowLabels( true );
                     SELF.chartView.setScaleType( ImageView.ScaleType.MATRIX );
                     SELF.chartView.setImageDrawable( CHART );
@@ -376,6 +477,35 @@ public class StatsActivity extends BaseActivity {
         };
 
         LOAD_GRAPH.start();
+    }
+
+    private static String capitalize(String s)
+    {
+        return s.substring( 0, 1 ).toUpperCase()
+                + s.substring( 1 ).toLowerCase();
+    }
+
+    private void chooseViewReport()
+    {
+        final LinearLayout LY_GRAPH = this.findViewById( R.id.lyGraph );
+        final LinearLayout LY_REPORT = this.findViewById( R.id.lyReport );
+
+        this.chooseView( LY_GRAPH, LY_REPORT );
+    }
+
+    private void chooseViewGraph()
+    {
+        final LinearLayout LY_GRAPH = this.findViewById( R.id.lyGraph );
+        final LinearLayout LY_REPORT = this.findViewById( R.id.lyReport );
+
+        this.chooseView( LY_REPORT, LY_GRAPH );
+    }
+
+    private void chooseView(final LinearLayout SHOWN, final LinearLayout HIDDEN)
+    {
+        // Hide the one shown and vice-versa
+        SHOWN.setVisibility( View.GONE );
+        HIDDEN.setVisibility( View.VISIBLE );
     }
 
     private int selectedYear;
