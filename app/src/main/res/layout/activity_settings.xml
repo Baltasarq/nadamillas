@@ -92,6 +92,15 @@
                         android:gravity="end"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
+
+                    <ImageButton    android:id="@+id/btNewYear"
+                        android:padding="5dp"
+                        android:layout_gravity="end"
+                        app:srcCompat="@drawable/btn_add"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/action_new"
+                        app:backgroundTint="#00000000" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -159,15 +168,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:contentDescription="@string/action_modify"
-                        app:backgroundTint="#00000000" />
-
-                    <ImageButton    android:id="@+id/btNewYear"
-                        android:padding="5dp"
-                        android:layout_gravity="end"
-                        app:srcCompat="@drawable/btn_add"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:contentDescription="@string/action_new"
                         app:backgroundTint="#00000000" />
                 </LinearLayout>
             </LinearLayout>
