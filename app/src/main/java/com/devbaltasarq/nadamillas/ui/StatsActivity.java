@@ -186,7 +186,7 @@ public class StatsActivity extends BaseActivity {
         return toret;
     }
 
-    private void loadDataForYearsGraphAndReport(int year, final ArrayList<BarChart.SeriesInfo> SERIES)
+    private void calculateDataForYearsStats(int year, final ArrayList<BarChart.SeriesInfo> SERIES)
     {
         final BarChart.SeriesInfo TOTAL_SERIE =
                             new BarChart.SeriesInfo(
@@ -194,8 +194,7 @@ public class StatsActivity extends BaseActivity {
         final BarChart.SeriesInfo OPEN_SERIE =
                 new BarChart.SeriesInfo(
                         this.getString( R.string.label_open_waters ), Color.CYAN );
-        final Calendar DATE = Calendar.getInstance();
-        final int CURRENT_YEAR = DATE.get( Calendar.YEAR );
+        final int CURRENT_YEAR = Calendar.getInstance().get( Calendar.YEAR );
         final TextView TXT_REPORT = this.findViewById( R.id.txtReport );
         final String STR_UNITS = settings.getDistanceUnits().toString();
         final String LBL_TOTAL = this.getString( R.string.label_total );
@@ -213,15 +212,11 @@ public class StatsActivity extends BaseActivity {
         TXT_REPORT.setText( "" );
         while( yearsRetrieved < NUM_YEARS_IN_GRAPH ) {
             final int DISPLAY_YEAR = year % 1000;
-            YearInfo yinfo = dataStore.getInfoFor( year );
-
-            if ( yinfo == null ) {
-                yinfo = new YearInfo( year, 0, 0 );
-            }
+            final YearInfo YEAR_INFO = dataStore.getInfoFor( year );
 
             // Graph
-            final int TOTAL_K = yinfo.getTotal();
-            final int TOTAL_OW = yinfo.getTotal() - yinfo.getTotalPool();
+            final int TOTAL_K = YEAR_INFO.getTotal();
+            final int TOTAL_OW = YEAR_INFO.getTotal() - YEAR_INFO.getTotalPool();
             final String STR_TOTAL_K = settings.toUnitsAsString( TOTAL_K ) + STR_UNITS;
             final String STR_TOTAL_OW = settings.toUnitsAsString( TOTAL_OW ) + STR_UNITS;
 
@@ -230,7 +225,7 @@ public class StatsActivity extends BaseActivity {
 
             // Report
             TXT_REPORT.append( capitalize( LBL_TOTAL ) + ": "
-                                + yinfo.getYearAsString() + '\n' );
+                                + YEAR_INFO.getYearAsString() + '\n' );
             TXT_REPORT.append( capitalize( LBL_DISTANCE ) + ": "
                                 + STR_TOTAL_K + '\n' );
             TXT_REPORT.append( capitalize( LBL_OPEN_WATERS ) + ": "
@@ -246,7 +241,7 @@ public class StatsActivity extends BaseActivity {
         SERIES.add( OPEN_SERIE );
     }
 
-    private void loadDataForMonthsGraphAndReport(int year, final ArrayList<BarChart.SeriesInfo> SERIES)
+    private void calculateDataForMonthsStats(int year, final ArrayList<BarChart.SeriesInfo> SERIES)
     {
         final BarChart.SeriesInfo SERIE_TOTAL =
                 new BarChart.SeriesInfo(
@@ -302,7 +297,7 @@ public class StatsActivity extends BaseActivity {
         SERIES.add( SERIE_OPEN );
     }
 
-    private void loadDataForWeeksGraphAndReport(int year, int month, final ArrayList<BarChart.SeriesInfo> SERIES)
+    private void calculateDataForWeeksStats(int year, int month, final ArrayList<BarChart.SeriesInfo> SERIES)
     {
         final BarChart.SeriesInfo SERIE_TOTAL = new BarChart.SeriesInfo(
                         this.getString( R.string.label_total ), Color.BLUE );
@@ -452,13 +447,13 @@ public class StatsActivity extends BaseActivity {
                 SELF.runOnUiThread( () -> {
                     switch( SELF.graphType ) {
                         case Yearly:
-                            SELF.loadDataForYearsGraphAndReport( SELF.selectedYear, SERIES );
+                            SELF.calculateDataForYearsStats( SELF.selectedYear, SERIES );
                             break;
                         case Monthly:
-                            SELF.loadDataForMonthsGraphAndReport( SELF.selectedYear, SERIES );
+                            SELF.calculateDataForMonthsStats( SELF.selectedYear, SERIES );
                             break;
                         case Weekly:
-                            SELF.loadDataForWeeksGraphAndReport(
+                            SELF.calculateDataForWeeksStats(
                                     SELF.selectedYear, SELF.selectedMonth, SERIES );
                             break;
                         default:
