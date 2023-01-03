@@ -50,7 +50,7 @@ public class YearInfo {
         return toret;
     }
 
-    /** @return the target for this year. */
+    /** @return the target for this year, as meters/yards. */
     public int getTarget()
     {
         return target;
@@ -77,7 +77,7 @@ public class YearInfo {
         return toret;
     }
 
-    /** @return the total meters. */
+    /** @return the total meters/yards. */
     public int getTotal()
     {
         return total;
@@ -89,25 +89,25 @@ public class YearInfo {
         return settings.toUnitsAsString( this.getTotal() );
     }
 
-    /** @return the total meters at the pool. */
+    /** @return the total meters/yards at the pool. */
     public int getTotalPool()
     {
         return totalPool;
     }
 
-    /** @return the total meters at the pool, as a string. */
+    /** @return the total meters/yards at the pool, as a string. */
     public String getTotalPoolAsString(Settings settings)
     {
         return settings.toUnitsAsString( this.getTotalPool() );
     }
 
-    /** @return the total meters in open water. */
+    /** @return the total meters/yards in open water. */
     public int getTotalOpenWater()
     {
         return this.getTotal() - this.getTotalPool();
     }
 
-    /** @return the total meters open waters, as a string. */
+    /** @return the total meters/yards in open waters, as a string. */
     public String getTotalOpenWaterAsString(Settings settings)
     {
         return settings.toUnitsAsString( this.getTotalOpenWater() );
@@ -118,7 +118,7 @@ public class YearInfo {
     {
         final int TOTAL = this.getTotal();
         final int TARGET = this.getTarget();
-        double toret = -1;
+        double toret = 0;
 
         if ( TOTAL >= 0
           && TARGET > 0 )
@@ -129,7 +129,7 @@ public class YearInfo {
         return toret;
     }
 
-    /** @return the progress made, as a string. */
+    /** @return the progress made, as a string (without an ending '%'). */
     public String getProgressAsString()
     {
         double progress = this.getProgress();
@@ -176,8 +176,8 @@ public class YearInfo {
                             this.getTotalOpenWater() );
     }
 
-    private int year;
     private int target;
-    private int total;
-    private int totalPool;
+    private final int year;
+    private final int total;
+    private final int totalPool;
 }

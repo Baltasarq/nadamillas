@@ -182,6 +182,7 @@ public class DataStore extends SQLiteOpenHelper {
     }
 
     /** Retrieves the accumulated distances from the database.
+      * Creates the object for the given year if it does not exist.
       * @param year the year for the accumulated distances, as an int.
       * @return a YearInfo object.
       */
@@ -195,7 +196,11 @@ public class DataStore extends SQLiteOpenHelper {
         if ( CURSOR.moveToFirst() ) {
             toret = YearInfoStorage.createFrom( CURSOR );
         } else {
-            Log.e( LOG_TAG, "records found for " + year + ": " + CURSOR.getCount() );
+            Log.d( LOG_TAG, "no records found for " + year + ": " + CURSOR.getCount() );
+            Log.i( LOG_TAG, "creating yearinfo for: " + year );
+            toret = new YearInfo( year, 0, 0 );
+            this.add( toret );
+            Log.i( LOG_TAG, "created yearinfo: " + toret );
         }
 
         return toret;
@@ -221,22 +226,6 @@ public class DataStore extends SQLiteOpenHelper {
                 query,
                 queryArgs,
                 null, null, orderBy );
-    }
-
-    /** Creates a YearInfo object for the given data.
-     * @param year the year of interest.
-     * @param distance the distance covered
-     * @param atPool is this distance at the pool?
-     */
-    public void createYearInfoFor(int year, int distance, boolean atPool)
-    {
-        int poolDistance = 0;
-
-        if ( atPool ) {
-            poolDistance = distance;
-        }
-
-        this.add( new YearInfo( year, distance, poolDistance ) );
     }
 
     /** Adds a new YearInfo object to the data store.
@@ -310,27 +299,22 @@ public class DataStore extends SQLiteOpenHelper {
         this.updateYearInfo( newYearInfo );
     }
 
-    private void updateYearInfo(YearInfo yinfo)
+    private void updateYearInfo(final YearInfo YEAR_INFO)
     {
-        final int YEAR = yinfo.getYear();
         final SQLiteDatabase DB = this.getWritableDatabase();
-        final YearInfo YEAR_INFO = this.getInfoFor( yinfo.getYear() );
 
-        Log.d( LOG_TAG,"updating year info: " + yinfo );
+        Log.d( LOG_TAG,"updating year info: " + YEAR_INFO );
 
-        if ( YEAR_INFO == null ) {
-            Log.d( LOG_TAG, "detected the need to create the year info" );
-            final YearInfo CREATED_INFO = new YearInfo( YEAR, 0, 0 );
-            Log.d( LOG_TAG, "storing year info: " + CREATED_INFO );
-            this.createYearInfoFor( YEAR, 0, true );
-        }
+        // Ensure the object exists in the store
+        this.getInfoFor( YEAR_INFO.getYear() );
 
+        // Update it
         try {
             DB.beginTransaction();
             DB.update( TABLE_YEARS,
-                    new YearInfoStorage( yinfo ).toValues(),
+                    new YearInfoStorage( YEAR_INFO ).toValues(),
                     YearInfoStorage.FIELD_YEAR + "=?",
-                    new String[]{ yinfo.getYearAsString() } );
+                    new String[]{ YEAR_INFO.getYearAsString() } );
             DB.setTransactionSuccessful();
         } catch(SQLException exc) {
             Log.e( LOG_TAG, "error updating year info: " + exc.getMessage() );

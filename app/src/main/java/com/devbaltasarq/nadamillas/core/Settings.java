@@ -95,7 +95,9 @@ public class Settings {
         return (double) yards / 1650f;
     }
 
-    /** @return the given distance in km or mi, depending on settings. */
+    /** @param d a given distance (as meters or yards)
+      * @return the same distance in km or mi, depending on settings.
+      */
     public double toUnits(int d)
     {
         double toret = this.toKm( d );
@@ -107,7 +109,9 @@ public class Settings {
         return toret;
     }
 
-    /** @return the given distance as string, as km or mi, depending on settings. */
+    /** @param d a given distance (as meters or yards)
+      * @return the same distance in km or mi, depending on settings, as a string.
+      */
     public String toUnitsAsString(int d)
     {
         double value = this.toUnits( d );
@@ -122,8 +126,8 @@ public class Settings {
     }
 
     /** Changes the first day of week.
-     * @param firstDayOfWeek the first day of week, as a Calendar constant.
-     */
+      * @param firstDayOfWeek the first day of week, as a Calendar constant.
+      */
     public void setFirstDayOfWeek(FirstDayOfWeek firstDayOfWeek)
     {
         this.firstDayOfWeek = firstDayOfWeek;
