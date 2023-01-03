@@ -71,4 +71,6 @@
     <string name="take_screenshot">Capturar pantalla</string>
     <string name="label_graph">Gráfico</string>
     <string name="label_report">Informe</string>
+    <string name="label_guess">esperado</string>
+    <string name="label_abbrev_open_waters">aa</string>
 </resources>

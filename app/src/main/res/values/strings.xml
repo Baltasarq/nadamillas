@@ -53,6 +53,7 @@
     <string name="label_week">Week</string>
     <string name="label_target">target</string>
     <string name="label_pool">pool</string>
+    <string name="label_guess">guess</string>
     <string name="label_open_waters">open waters</string>
     <string name="label_recalculate">recalculate</string>
     <string name="label_distance_units">Distance units</string>
@@ -91,4 +92,5 @@
         <item>@string/label_monday</item>
         <item>@string/label_sunday</item>
     </string-array>
+    <string name="label_abbrev_open_waters">ow</string>
 </resources>

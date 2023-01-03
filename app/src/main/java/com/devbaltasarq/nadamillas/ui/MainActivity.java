@@ -17,6 +17,8 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
+
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageButton;
@@ -30,6 +32,7 @@ import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.storage.SettingsStorage;
 
 import java.util.Calendar;
+import java.util.Locale;
 
 
 public class MainActivity extends BaseActivity
@@ -201,36 +204,66 @@ public class MainActivity extends BaseActivity
     @Override
     protected void update()
     {
+        final int DAY_OF_YEAR = Calendar.getInstance().get( Calendar.DAY_OF_YEAR );
+        final double PROPORTION_OF_YEAR = 365.0 / DAY_OF_YEAR;
         final TextView LBL_UNITS = this.findViewById( R.id.lblUnits );
         final TextView LBL_TOTAL = this.findViewById( R.id.lblTotal );
+        final TextView LBL_PROJECTION = this.findViewById( R.id.lblProjection );
         final TextView LBL_TARGET = this.findViewById( R.id.lblTarget );
         final TextView LBL_POOL = this.findViewById( R.id.lblPool );
         final TextView LBL_OPEN_WATERS = this.findViewById( R.id.lblOpenWaters );
         final TextView LBL_WEEKDAY_NAME = this.findViewById( R.id.lblWeekDayName );
         final TextView LBL_DATE = this.findViewById( R.id.lblDate );
-        final TextView LBL_PROGRESS = this.findViewById( R.id.lblProgress );
         final YearInfo INFO = dataStore.getCurrentYearInfo();
-        final ProgressView PROGRESS = this.findViewById( R.id.pvProgress );
+        final ProgressView PROGRESS_VIEW = this.findViewById( R.id.pvProgress );
+
         String total = "0";
         String target = YearInfo.NOT_APPLYABLE;
         String totalPool = "0";
         String totalOpenWaters = "0";
-        String progress = YearInfo.NOT_APPLYABLE;
+        String projection = YearInfo.NOT_APPLYABLE;
+        String projectionTotal = YearInfo.NOT_APPLYABLE;
 
         if ( INFO != null ) {
+            final int TARGET = INFO.getTarget();
+            final int PROGRESS = (int) INFO.getProgress();
+            final int PROJECTED = (int) ( INFO.getTotal() * PROPORTION_OF_YEAR );
+            final int PROJECTED_TOTAL = TARGET < 1 ? 1 : ( PROJECTED * 100 ) / TARGET;
+            final Thread SHOW_PROGRESS_THREAD = new Thread() {
+                @Override
+                public void run()
+                {
+                    try {
+                        for(int i = 0; i < ( PROGRESS - 1 ); ++i) {
+                            final int POS = i;
+
+                            MainActivity.this.runOnUiThread(
+                                    () -> PROGRESS_VIEW.setProgress( POS )
+                            );
+                            Thread.sleep( 10 );
+                        }
+                    } catch(InterruptedException exc) {
+                        Log.d( LOG_TAG, "interrupted: " + exc.getMessage() );
+                    }
+
+                    MainActivity.this.runOnUiThread( () -> PROGRESS_VIEW.setProgress( PROGRESS ) );
+                }
+            };
+
             total = INFO.getTotalAsString( settings );
+            projection = settings.toUnitsAsString( PROJECTED );
+            projectionTotal = PROJECTED_TOTAL + "%";
             target = INFO.getTargetAsString( settings );
-            progress = INFO.getProgressAsString() + "%";
             totalPool = INFO.getTotalPoolAsString( settings );
             totalOpenWaters = INFO.getTotalOpenWaterAsString( settings );
-            PROGRESS.setProgress( (int) INFO.getProgress() );
+            SHOW_PROGRESS_THREAD.start();
         }
 
         LBL_TOTAL.setText( total );
+        LBL_PROJECTION.setText( String.format( Locale.getDefault(), "%s (%s)", projection, projectionTotal ) );
         LBL_TARGET.setText( target );
         LBL_POOL.setText( totalPool  );
         LBL_OPEN_WATERS.setText( totalOpenWaters );
-        LBL_PROGRESS.setText( progress );
         LBL_WEEKDAY_NAME.setText( Util.getWeekDay( null, null ) );
         LBL_DATE.setText( Util.getSemiFullDate( null, null ) );
         LBL_UNITS.setText( settings.getDistanceUnits().toString() );
