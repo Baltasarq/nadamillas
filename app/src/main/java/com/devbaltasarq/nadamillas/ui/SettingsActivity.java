@@ -354,6 +354,8 @@ public class SettingsActivity extends BaseActivity {
                     ED_TARGET.setText( TARGET );
                     LBL_TOTAL_DISTANCE.setText( INFO.getTotalAsString( settings ) );
                     LBL_UNITS_TOTAL_DISTANCE.setText( displayUnits );
+                } else {
+                    Log.e( LOG_TAG, "no info for year: " + SELECTED_YEAR );
                 }
             } catch(SQLException exc) {
                 Log.e( LOG_TAG, exc.getMessage() );
