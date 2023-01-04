@@ -160,23 +160,25 @@ public class StatsActivity extends BaseActivity {
 
     private String[] retrieveAllYearInfos()
     {
+        final int CURRENT_YEAR = Calendar.getInstance().get( Calendar.YEAR );
         Cursor cursor = null;
         String[] toret = null;
 
         try {
             cursor = dataStore.getDescendingAllYearInfosCursor();
+            final ArrayList<String> YEARS = new ArrayList<>( cursor.getCount() );
 
-            toret = new String[ cursor.getCount() ];
-
-            int i = 0;
             while( cursor.moveToNext() ) {
                 final int YEAR = cursor.getInt(
                                     cursor.getColumnIndexOrThrow(
                                             YearInfoStorage.FIELD_YEAR ) );
 
-                toret[ i ] = String.valueOf( YEAR );
-                ++i;
+                if ( YEAR <= CURRENT_YEAR ) {
+                    YEARS.add( String.valueOf( YEAR ) );
+                }
             }
+
+            toret = YEARS.toArray( new String[0] );
         } catch(SQLException exc) {
             Log.e( LOG_TAG, exc.getMessage() );
         } finally {

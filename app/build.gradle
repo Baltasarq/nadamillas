@@ -6,11 +6,11 @@ android {
         applicationId "com.devbaltasarq.nadamillas"
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 20
+        versionCode 21
         versionName '1.2.3'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         vectorDrawables.useSupportLibrary = true
-        versionNameSuffix '20230104'
+        versionNameSuffix '20230106'
     }
     buildTypes {
         release {
