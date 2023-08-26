@@ -37,7 +37,6 @@ import java.util.Locale;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     @Override
