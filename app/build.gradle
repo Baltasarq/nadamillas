@@ -5,12 +5,12 @@ android {
     defaultConfig {
         applicationId "com.devbaltasarq.nadamillas"
         minSdkVersion 21
-        targetSdk 33
-        versionCode 22
-        versionName '1.2.4'
+        targetSdk 34
+        versionCode 25
+        versionName '1.2.6'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         vectorDrawables.useSupportLibrary = true
-        versionNameSuffix '20230823'
+        versionNameSuffix '20231126'
     }
     buildTypes {
         release {
