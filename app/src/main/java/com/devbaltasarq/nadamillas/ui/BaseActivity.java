@@ -3,28 +3,22 @@
 
 package com.devbaltasarq.nadamillas.ui;
 
-import android.Manifest;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 
 import com.google.android.material.snackbar.Snackbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
+
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.appcompat.app.AppCompatActivity;
@@ -43,30 +37,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 
 public abstract class BaseActivity extends AppCompatActivity {
-    public static final int CHANNEL_STR_ID = R.string.app_name;
-    private static final int RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_SAVE = 121;
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
-        super.onRequestPermissionsResult( requestCode, permissions, grantResults );
-
-        if ( requestCode == RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_SAVE
-          && grantResults.length > 0
-          && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED )
-        {
-            final String[] SAVE_OPTS_PARTS = saveOptions.split( "|" );
-
-            this.doSaveScreenShotToDownloads( SAVE_OPTS_PARTS[ 0 ],
-                         new File( SAVE_OPTS_PARTS[ 1 ] ) );
-        }
-
-        return;
-    }
+    private static final String LOG_TAG = BaseActivity.class.getSimpleName();
 
     /** Launches the session editor with the "add" profile. */
     protected void launchNewSessionEdit()
@@ -176,67 +151,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         return;
     }
 
-    protected void createNotificationChannel()
-    {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ) {
-            final String CHANNEL_ID = this.getString( CHANNEL_STR_ID );
-            final CharSequence NAME = getString( R.string.channel_name );
-            final String DESCRIPTION = getString( R.string.channel_description );
-
-            NotificationChannel channel =
-                    new NotificationChannel(
-                            CHANNEL_ID,
-                            NAME,
-                            NotificationManager.IMPORTANCE_DEFAULT );
-
-            channel.setDescription( DESCRIPTION );
-
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
-            NotificationManager notificationManager = getSystemService( NotificationManager.class );
-            notificationManager.createNotificationChannel( channel );
-        }
-
-        return;
-    }
-
-    protected void showNotification(int iconId, String msg, String desc)
-    {
-        final String CHANNEL_ID = this.getString( CHANNEL_STR_ID );
-        final NotificationManagerCompat NOTIFY_MANAGER =
-                NotificationManagerCompat.from( this );
-
-        NotificationCompat.Builder notification =
-                new NotificationCompat.Builder( this, CHANNEL_ID )
-                .setContentTitle( msg )
-                .setContentText( desc )
-                .setSmallIcon( iconId )
-                .setPriority( NotificationCompat.PRIORITY_DEFAULT );
-
-        NOTIFY_MANAGER.notify( notificationId++, notification.build() );
-    }
-
-    protected void saveScreenShotToDownloads(String logTag, File f)
-    {
-        final String PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE;
-        final int RESULT_REQUEST = ContextCompat.checkSelfPermission( this, PERMISSION );
-
-        if ( RESULT_REQUEST != PackageManager.PERMISSION_GRANTED ) {
-            ActivityCompat.requestPermissions( this,
-                    new String[]{ PERMISSION },
-                    RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_SAVE );
-
-            saveOptions = logTag + "|" + f.getAbsolutePath();
-        } else {
-            this.doSaveScreenShotToDownloads( logTag, f );
-        }
-
-        return;
-    }
-
-    protected void doSaveScreenShotToDownloads(final String LOG_TAG, final File IN_FILE)
+    protected void shareScreenShot(String logTag, File f)
     {
         final Thread SAVE_THREAD = new Thread() {
             @Override
@@ -244,42 +159,45 @@ public abstract class BaseActivity extends AppCompatActivity {
             {
                 final BaseActivity SELF = BaseActivity.this;
 
-                try {
-                    dataStore.saveToDownloads( IN_FILE.getAbsolutePath(),
-                                     "image/jpeg" );
+                SELF.share( logTag, "image/*", f );
 
-                    SELF.showStatus( LOG_TAG,
-                            SELF.getString( R.string.message_finished )
-                                    + ": " + IN_FILE.getName() );
-
-                    SELF.showNotification( android.R.drawable.stat_sys_download_done,
-                            SELF.getString( R.string.message_screenshot ),
-                            SELF.getString( R.string.message_screenshot_desc )
-                                    + IN_FILE.getName() );
-                } catch(IOException exc) {
-                    SELF.showStatus( LOG_TAG,
-                            SELF.getString( R.string.message_io_error )
-                                    + ": " + exc.getMessage() );
-                }
             }
         };
 
         SAVE_THREAD.start();
     }
 
-    protected void share(String logTag, File f)
+    protected void share(String logTag, String mimeType, File f)
     {
         try {
-            final Intent INTENT = new Intent( Intent.ACTION_SEND );
-            final Uri SCRSHOT_URI = FileProvider.getUriForFile( this.getApplicationContext(), getPackageName() + ".fileprovider", f );
+            final Intent SHARING_INTENT = new Intent( Intent.ACTION_SEND );
+            final Uri FILE_URI = FileProvider.getUriForFile(
+                    this,
+                    "com.devbaltasarq.nadamillas.fileprovider",
+                    f );
 
-            INTENT.setType( "image/*" );
-            INTENT.setAction( Intent.ACTION_SEND );
-            INTENT.putExtra( Intent.EXTRA_STREAM, SCRSHOT_URI );
+            SHARING_INTENT.setType( mimeType );
+            SHARING_INTENT.putExtra( Intent.EXTRA_STREAM, FILE_URI );
 
-            this.startActivity(
-                    Intent.createChooser(
-                            INTENT, this.getString( R.string.action_share ) ) );
+            // Grant permissions
+            SHARING_INTENT.addFlags( Intent.FLAG_GRANT_READ_URI_PERMISSION );
+
+            final List<ResolveInfo> RESOLVED_INFO_ACTIVITIES =
+                    this.getPackageManager().queryIntentActivities(
+                            SHARING_INTENT,
+                            PackageManager.MATCH_DEFAULT_ONLY );
+
+            for (final ResolveInfo RI : RESOLVED_INFO_ACTIVITIES) {
+                this.grantUriPermission(
+                        RI.activityInfo.packageName,
+                        FILE_URI,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION );
+            }
+
+            // Share the file
+            this.startActivity( Intent.createChooser(
+                    SHARING_INTENT,
+                    this.getString( R.string.action_share ) ) );
         } catch(Exception exc) {
             this.showStatus( logTag, this.getString( R.string.message_io_error ) );
             Log.e( logTag, exc.getMessage() );
@@ -364,8 +282,6 @@ public abstract class BaseActivity extends AppCompatActivity {
                         }
                     });
 
-    private static int notificationId = -1000;
     public static Settings settings;
     public static DataStore dataStore;
-    private static String saveOptions;
 }

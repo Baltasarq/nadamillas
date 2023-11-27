@@ -3,22 +3,18 @@
 
 package com.devbaltasarq.nadamillas.ui;
 
-import android.Manifest;
+
 import android.content.ContentResolver;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.SQLException;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,6 +30,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.AppInfo;
 import com.devbaltasarq.nadamillas.core.DataStore;
@@ -43,14 +43,9 @@ import com.devbaltasarq.nadamillas.core.YearInfo;
 import com.devbaltasarq.nadamillas.core.storage.SettingsStorage;
 import com.devbaltasarq.nadamillas.core.storage.YearInfoStorage;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
 
 public class SettingsActivity extends BaseActivity {
     public final static String LOG_TAG = SettingsActivity.class.getSimpleName();
-    public static final int RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_EXPORT = 111;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -126,7 +121,7 @@ public class SettingsActivity extends BaseActivity {
         BT_EDIT_YEAR.setOnClickListener( v -> this.onEditTarget() );
         BT_NEW_YEAR.setOnClickListener( v -> this.onNewYear() );
         BT_BACK.setOnClickListener( v -> this.onBackPressed() );
-        BT_IMPORT.setOnClickListener( v -> this.pickFile() );
+        BT_IMPORT.setOnClickListener( v -> this.onImport() );
         BT_EXPORT.setOnClickListener( v -> this.onExport() );
 
         CB_YEARS.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
@@ -178,22 +173,6 @@ public class SettingsActivity extends BaseActivity {
 
             super.onBackPressed();
             this.finish();
-        }
-
-        return;
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
-        super.onRequestPermissionsResult( requestCode, permissions, grantResults );
-
-        if ( requestCode == RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_EXPORT
-                && grantResults.length > 0
-                && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED )
-        {
-            this.doExport();
         }
 
         return;
@@ -380,13 +359,40 @@ public class SettingsActivity extends BaseActivity {
     }
 
     /** Lets the user choose a backup file for importing. */
-    private void pickFile()
+    private void pickBackupFileForImporting()
     {
         this.SELECT_MEDIA.launch( "*/*" );
     }
 
     /** The import event handler. */
-    private void onImport(Uri uri)
+    private void onImport()
+    {
+        final File BKUP_FILE = dataStore.findBackup();
+
+        if ( BKUP_FILE != null ) {
+            final android.app.AlertDialog.Builder DLG = new android.app.AlertDialog.Builder( this );
+            DLG.setTitle( R.string.action_import );
+            DLG.setItems( R.array.array_import_options, (dialog, which ) -> {
+                if ( which == 0 ) {
+                    this.importFile( Uri.fromFile( BKUP_FILE ) );
+                }
+                else
+                if ( which == 1 ) {
+                    this.pickBackupFileForImporting();
+                } else {
+                    dialog.dismiss();
+                }
+            });
+            DLG.create().show();
+        } else {
+            this.pickBackupFileForImporting();
+        }
+
+        return;
+    }
+
+    /** Import a given file. */
+    private void importFile(Uri uri)
     {
         if ( uri != null ) {
             final String FILE_EXTENSION = MimeTypeMap.getFileExtensionFromUrl( uri
@@ -400,7 +406,7 @@ public class SettingsActivity extends BaseActivity {
                 final android.app.AlertDialog.Builder DLG = new android.app.AlertDialog.Builder( this );
 
                 DLG.setTitle( R.string.action_import );
-                DLG.setItems( R.array.array_import_options, ( dialog, which ) -> {
+                DLG.setItems( R.array.array_how_to_import_options, (dialog, which ) -> {
                     if ( which < 2 ) {
                         SettingsActivity.this.importFile( uri, which == 0 );
                     } else {
@@ -474,30 +480,13 @@ public class SettingsActivity extends BaseActivity {
     /** The export handler. */
     private void onExport()
     {
-        final String PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE;
-        final int RESULT_REQUEST = ContextCompat.checkSelfPermission( this, PERMISSION );
-
-        if ( RESULT_REQUEST != PackageManager.PERMISSION_GRANTED ) {
-            ActivityCompat.requestPermissions( this,
-                    new String[]{ PERMISSION },
-                    RC_ASK_WRITE_EXTERNAL_STORAGE_PERMISSION_FOR_EXPORT );
-        } else {
-            this.doExport();
-        }
-
-        return;
-    }
-
-    /** It just exports, asking permission is assumed to have been asked elsewhere. */
-    private void doExport()
-    {
         final Thread EXPORT_THREAD = new Thread() {
             @Override
             public void run()
             {
                 final SettingsActivity SELF = SettingsActivity.this;
-                final ProgressBar PROGRESS_BAR = SELF.findViewById( R.id.pbImportProgress );
-                final ImageButton BT_EXPORT = SELF.findViewById( R.id.btImport );
+                final ProgressBar PROGRESS_BAR = SELF.findViewById( R.id.pbExportProgress );
+                final ImageButton BT_EXPORT = SELF.findViewById( R.id.btExport );
 
                 SELF.working = true;
 
@@ -507,9 +496,10 @@ public class SettingsActivity extends BaseActivity {
                 });
 
                 try {
-                    File bckup = dataStore.saveTo( DataStore.DIR_TEMP );
-                    dataStore.saveToDownloads( bckup.getAbsolutePath(), "application/json"  );
-                    SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_finished ) );
+                    // Create backup
+                    final File BKUP_FILE = dataStore.saveTo( dataStore.getBackupDir() );
+
+                    SELF.share( LOG_TAG, "application/json", BKUP_FILE );
                 } catch(IOException exc) {
                     SELF.showStatus( LOG_TAG,
                             SELF.getString( R.string.message_io_error )
@@ -522,7 +512,7 @@ public class SettingsActivity extends BaseActivity {
                 });
 
                 SELF.working = false;
-            }
+            };
         };
 
         EXPORT_THREAD.start();
@@ -532,7 +522,7 @@ public class SettingsActivity extends BaseActivity {
             new ActivityResultContracts.GetContent(),
             uri -> {
                 if ( uri != null ) {
-                    this.onImport( uri );
+                    this.importFile( uri );
                 } else {
                     this.showStatus( LOG_TAG, this.getString( R.string.message_io_error) );
                 }
