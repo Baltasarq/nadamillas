@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">NadaMillas</string>
-    <string name="channel_name">@string/app_name</string>
-    <string name="channel_description">App notifications</string>
     <string name="title_activity_new_session">New Session</string>
     <string name="title_activity_new_year">New Year</string>
     <string name="title_activity_edit_session">Edit Session</string>
@@ -34,7 +32,6 @@
     <string name="label_date">Date</string>
     <string name="label_distance">Distance</string>
     <string name="label_back">Back</string>
-    <string name="label_communicate">Communicate</string>
     <string name="label_speed">Speed</string>
     <string name="label_target_distance">Target distance</string>
     <string name="label_total_distance">Total distance</string>
@@ -58,18 +55,19 @@
     <string name="label_recalculate">recalculate</string>
     <string name="label_distance_units">Distance units</string>
     <string name="label_duration">Duration</string>
-    <string name="label_import">Import workouts database</string>
     <string name="label_import_from_scratch">Import erasing database</string>
     <string name="label_add_to_database">Import adding to the database</string>
+    <string name="label_import_from_internal_backup">Import from internal backup</string>
+    <string name="label_import_from_external_backup">Pick a backup file</string>
     <string name="label_first_day_of_week">First day of week</string>
     <string name="label_graph">Graph</string>
     <string name="label_report">Report</string>
+    <string name="label_abbrev_open_waters">ow</string>
+    <string name="label_laps">Pool laps</string>
 
     <!-- Messages -->
     <string name="message_finished">Finished.</string>
     <string name="message_screenshot">Saved screenshot.</string>
-    <string name="message_screenshot_desc">Saved to Downloads: </string>
-    <string name="message_deleted">Deleted.</string>
     <string name="message_no_day_selected">Please select a day.</string>
     <string name="message_year_info_created">Info for new year created.</string>
     <string name="message_target_updated">Target distance updated.</string>
@@ -80,6 +78,13 @@
 
     <!-- Import options -->
     <string-array name="array_import_options">
+        <item>@string/label_import_from_internal_backup</item>
+        <item>@string/label_import_from_external_backup</item>
+        <item>@string/label_cancel</item>
+    </string-array>
+
+    <!-- "How to import" options -->
+    <string-array name="array_how_to_import_options">
         <item>@string/label_import_from_scratch</item>
         <item>@string/label_add_to_database</item>
         <item>@string/label_cancel</item>
@@ -92,5 +97,4 @@
         <item>@string/label_monday</item>
         <item>@string/label_sunday</item>
     </string-array>
-    <string name="label_abbrev_open_waters">ow</string>
 </resources>
