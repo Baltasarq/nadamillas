@@ -32,7 +32,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
@@ -54,13 +53,10 @@ public class DataStore extends SQLiteOpenHelper {
         this.context = context;
         Log.d( LOG_TAG, "database opened");
 
-        DIR_DOWNLOADS = null;
-        if ( android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q )
-        {
-            DIR_DOWNLOADS = Environment.getExternalStoragePublicDirectory( Environment.DIRECTORY_DOWNLOADS );
-        }
-
+        // Preparing directories
         DIR_TEMP = context.getCacheDir();
+        DIR_BACKUP = new File( this.context.getFilesDir(), DIR_BACKUP_NAME );
+        DIR_BACKUP.mkdir();
     }
 
     @Override
@@ -157,9 +153,9 @@ public class DataStore extends SQLiteOpenHelper {
         return;
     }
 
-    private File getBackupDir()
+    public File getBackupDir()
     {
-        return this.context.getDir( DIR_BACKUP_NAME,  Context.MODE_PRIVATE );
+        return DIR_BACKUP;
     }
 
     /** Retrives the accumulated distances from the database.
@@ -773,12 +769,40 @@ public class DataStore extends SQLiteOpenHelper {
 
     public void backup()
     {
+        final File FILES_DIR = this.context.getFilesDir();
+        final File BKUP_DIR = this.getBackupDir();
+
         try {
-            this.saveTo( this.getBackupDir() );
+            final File BKUP_FILE = this.saveTo( FILES_DIR );
+            final File BKUP_FILE_IN_BKUP_DIR = new File( BKUP_DIR, BKUP_FILE.getName() );
+
+            removeAllFilesIn( BKUP_DIR );
+            copyFile( BKUP_FILE, BKUP_FILE_IN_BKUP_DIR );
+
+            if ( !( BKUP_FILE.delete() ) ) {
+                throw new IOException( "unable to save tmp backup file" );
+            }
         } catch(IOException exc)
         {
             Log.e( LOG_TAG, "unable to create backup." );
         }
+    }
+
+    public File findBackup()
+    {
+        final File BKUP_DIR = this.getBackupDir();
+        File toret = null;
+
+        if ( BKUP_DIR != null
+          && BKUP_DIR.isDirectory() )
+        {
+            for(File f: BKUP_DIR.listFiles()) {
+                toret = f;
+                break;
+            }
+        }
+
+        return toret;
     }
 
     public File saveTo(File dir) throws IOException
@@ -787,11 +811,7 @@ public class DataStore extends SQLiteOpenHelper {
         final String EXPT_FILE_NAME = this.createExportFileName();
 
         if ( dir == null ) {
-            if ( android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q ) {
-                throw new IOException( "unable to save directly to /Downloads" );
-            }
-
-            dir = DIR_DOWNLOADS;
+            throw new IOException( "target dir was not given" );
         }
 
         try {
@@ -818,55 +838,28 @@ public class DataStore extends SQLiteOpenHelper {
         return toret;
     }
 
-    public void saveToDownloads(String fn, String mimeType) throws IOException
-    {
-        if ( android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q )
-        {
-            final File INPUT_FILE = new File( fn );
-            final ContentValues VALUES = new ContentValues();
-            final ContentResolver FINDER = this.context.getContentResolver();
-
-            VALUES.put( MediaStore.MediaColumns.DISPLAY_NAME, INPUT_FILE.getName() );
-            VALUES.put( MediaStore.MediaColumns.MIME_TYPE, mimeType );
-            VALUES.put( MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS );
-
-            final Uri URI = FINDER.insert( MediaStore.Downloads.EXTERNAL_CONTENT_URI, VALUES );
-
-            if ( URI != null ) {
-                final InputStream IN = INPUT_FILE.toURI().toURL().openStream();
-                final OutputStream OUT = FINDER.openOutputStream( URI );
-
-                copyStream( IN, OUT );
-            } else {
-                throw new IOException( "unable to save to /Downloads" );
-            }
-        } else {
-            final File FN = new File( fn );
-
-            copyFile( FN, new File( DIR_DOWNLOADS, FN.getName() ) );
-        }
-
-        return;
-    }
-
     public void fromJSON(Reader reader) throws IOException
     {
         final JsonReader jsonReader = new JsonReader( reader );
 
-        jsonReader.beginObject();
+        try {
+            jsonReader.beginObject();
 
-        while( jsonReader.hasNext() ) {
-            final String NAME = jsonReader.nextName();
+            while( jsonReader.hasNext() ) {
+                final String NAME = jsonReader.nextName();
 
-            if ( NAME.equals( TABLE_YEARS ) ) {
-                this.importYearInfosFrom( jsonReader );
+                if ( NAME.equals( TABLE_YEARS ) ) {
+                    this.importYearInfosFrom( jsonReader );
+                }
+                else
+                if ( NAME.equals( TABLE_SESSIONS ) ) {
+                    this.importSessionsFrom( jsonReader );
+                } else {
+                    jsonReader.skipValue();
+                }
             }
-            else
-            if ( NAME.equals( TABLE_SESSIONS ) ) {
-                this.importSessionsFrom( jsonReader );
-            } else {
-                jsonReader.skipValue();
-            }
+        } catch(Exception exc) {
+            throw new IOException( "JSON: " + exc.getMessage() );
         }
 
         jsonReader.endObject();
@@ -1054,6 +1047,22 @@ public class DataStore extends SQLiteOpenHelper {
         return;
     }
 
+    /** Removes all files in a given directory.
+      * @param dir the directory to remove all files in.
+      */
+    private static void removeAllFilesIn(File dir)
+    {
+        if ( dir != null
+          && dir.isDirectory() )
+        {
+            for (File f: dir.listFiles()) {
+                f.delete();
+            }
+        }
+
+        return;
+    }
+
     /** Copies from a stream to another one.
      * @param is The input stream object to copy from.
      * @param os The output stream object of the destination.
@@ -1122,6 +1131,6 @@ public class DataStore extends SQLiteOpenHelper {
 
     private final Context context;
     private static DataStore dataStore;
-    private static File DIR_DOWNLOADS;
+    private static File DIR_BACKUP;
     public static File DIR_TEMP;
 }
