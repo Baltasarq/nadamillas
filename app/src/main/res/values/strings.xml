@@ -63,7 +63,7 @@
     <string name="label_graph">Graph</string>
     <string name="label_report">Report</string>
     <string name="label_abbrev_open_waters">ow</string>
-    <string name="label_laps">Pool laps</string>
+    <string name="label_laps">Laps</string>
 
     <!-- Messages -->
     <string name="message_finished">Finished.</string>

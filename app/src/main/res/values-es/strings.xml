@@ -69,5 +69,5 @@
     <string name="label_guess">esperado</string>
     <string name="label_abbrev_open_waters">aa</string>
     <string name="label_import_from_external_backup">Escoger un archivo de respaldo</string>
-    <string name="label_laps">Largos piscina</string>
+    <string name="label_laps">Largos</string>
 </resources>
