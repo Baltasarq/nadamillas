@@ -29,21 +29,14 @@ public class HistoryActivity extends BaseActivity {
 
         final FloatingActionButton FB_NEW = this.findViewById( R.id.fbNew );
         final ImageButton BT_BACK = this.findViewById( R.id.btCloseHistory );
-        final ImageButton BT_SHARE = this.findViewById( R.id.btShareHstory );
         final ImageButton BT_SCRSHOT = this.findViewById( R.id.btTakeScrshotForHistory );
 
         FB_NEW.setOnClickListener( v -> HistoryActivity.this.onNew() );
         BT_BACK.setOnClickListener( v -> HistoryActivity.this.finish() );
-        BT_SHARE.setOnClickListener( v -> {
-            final HistoryActivity SELF = HistoryActivity.this;
-
-            SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
-        });
-
         BT_SCRSHOT.setOnClickListener( v -> {
                 final HistoryActivity SELF = HistoryActivity.this;
 
-                SELF.saveScreenShotToDownloads( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
+                SELF.shareScreenShot( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
         });
 
         this.createAllSessionsList();

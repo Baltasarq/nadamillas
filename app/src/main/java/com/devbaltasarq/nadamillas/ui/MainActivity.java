@@ -47,7 +47,6 @@ public class MainActivity extends BaseActivity
         final Toolbar TOOL_BAR = this.findViewById( R.id.toolbar );
         this.setSupportActionBar( TOOL_BAR );
 
-        final ImageButton BT_SHARE = this.findViewById( R.id.btShareSummary );
         final ImageButton BT_SCRSHOT = this.findViewById( R.id.btTakeScrshotForSummary );
         final FloatingActionButton FB_NEW = this.findViewById( R.id.fbNew );
         final FloatingActionButton FB_BROWSE = this.findViewById( R.id.fbBrowse );
@@ -56,16 +55,10 @@ public class MainActivity extends BaseActivity
 
         this.setTitle( "" );
 
-        BT_SHARE.setOnClickListener( v -> {
-            final MainActivity SELF = MainActivity.this;
-
-            SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
-        });
-
         BT_SCRSHOT.setOnClickListener( v -> {
             final MainActivity SELF = MainActivity.this;
 
-            SELF.saveScreenShotToDownloads( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
+            SELF.shareScreenShot( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
         });
 
         LBL_TITLE.setOnClickListener( v -> MainActivity.this.showStatus( LOG_TAG, AppInfo.getCompleteAuthoringMessage() ));
@@ -85,7 +78,6 @@ public class MainActivity extends BaseActivity
 
         final NavigationView NAVIGATION_VIEW = this.findViewById( R.id.nav_view );
         NAVIGATION_VIEW.setNavigationItemSelectedListener( this );
-        this.createNotificationChannel();
     }
 
     @Override

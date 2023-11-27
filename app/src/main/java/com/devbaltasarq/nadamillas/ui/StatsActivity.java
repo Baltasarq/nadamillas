@@ -50,7 +50,7 @@ public class StatsActivity extends BaseActivity {
     @Override @SuppressWarnings("ClickableViewAccessibility")
     protected void onCreate(Bundle savedInstanceState)
     {
-        super.onCreate(savedInstanceState);
+        super.onCreate( savedInstanceState );
         this.setContentView( R.layout.activity_stats );
 
         final Toolbar TOOL_BAR = this.findViewById( R.id.toolbar );
@@ -59,7 +59,6 @@ public class StatsActivity extends BaseActivity {
         final Spinner CB_YEARS = this.findViewById( R.id.cbGraphYear );
         final Spinner CB_MONTHS = this.findViewById( R.id.cbGraphMonth );
         final Spinner CB_TIME_SEGMENT = this.findViewById( R.id.cbTimeSegment );
-        final ImageButton BT_SHARE = this.findViewById( R.id.btShareStats);
         final ImageButton BT_SCRSHOT = this.findViewById( R.id.btTakeScrshotForStats );
         final ImageButton BT_BACK = this.findViewById( R.id.btCloseStats );
         final ImageButton BT_SHOW_GRAPH = this.findViewById( R.id.btShowGraph );
@@ -142,17 +141,10 @@ public class StatsActivity extends BaseActivity {
         BT_SHOW_REPORT.setOnClickListener( v -> this.chooseViewReport() );
         this.chooseViewGraph();
 
-        // Main activity buttons
-        BT_SHARE.setOnClickListener( v -> {
-                final StatsActivity SELF = StatsActivity.this;
-
-                SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
-        });
-
         BT_SCRSHOT.setOnClickListener( v -> {
                 final StatsActivity SELF = StatsActivity.this;
 
-                SELF.saveScreenShotToDownloads( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
+                SELF.shareScreenShot( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
         });
 
         BT_BACK.setOnClickListener( v ->StatsActivity.this.finish() );

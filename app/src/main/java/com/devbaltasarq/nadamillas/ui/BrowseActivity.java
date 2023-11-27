@@ -31,7 +31,6 @@ public class BrowseActivity extends BaseActivity {
         final Toolbar TOOLBAR = this.findViewById( R.id.toolbar );
         this.setSupportActionBar( TOOLBAR );
 
-        final ImageButton BT_SHARE = this.findViewById( R.id.btShareDay );
         final ImageButton BT_SCRSHOT = this.findViewById( R.id.btTakeScrshotForBrowse );
         final ImageButton BT_BACK = this.findViewById( R.id.btCloseBrowse );
         final FloatingActionButton FB_NEW = this.findViewById( R.id.fbNew );
@@ -60,15 +59,10 @@ public class BrowseActivity extends BaseActivity {
         BT_BACK.setOnClickListener( v -> BrowseActivity.this.finish() );
         BT_PREVIOUS.setOnClickListener( v -> CV_CALENDAR.scrollLeft() );
         BT_NEXT.setOnClickListener( v -> CV_CALENDAR.scrollRight() );
-        BT_SHARE.setOnClickListener( v -> {
-            final BrowseActivity SELF = BrowseActivity.this;
-
-            SELF.share( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
-        });
         BT_SCRSHOT.setOnClickListener( v -> {
             final BrowseActivity SELF = BrowseActivity.this;
 
-            SELF.saveScreenShotToDownloads( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
+            SELF.shareScreenShot( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
         });
     }
 
