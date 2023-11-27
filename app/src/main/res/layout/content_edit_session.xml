@@ -60,6 +60,46 @@
                     app:srcCompat="@drawable/btn_calendar" />
             </LinearLayout>
 
+            <LinearLayout       android:id="@+id/lyPoolLaps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
+                    android:text="@string/label_laps"
+                    android:labelFor="@id/edLaps"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+
+                <EditText
+                    android:id="@+id/edLaps"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".8"
+                    android:gravity="end"
+                    android:textAlignment="textEnd"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    tools:ignore="TextFields" />
+
+                <Spinner
+                    android:id="@+id/cbPoolLength"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:contentDescription="@string/label_pool" />
+
+                <TextView       android:id="@+id/lblLength1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:text="@string/label_meter"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+            </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -76,7 +116,8 @@
 
                 <EditText
                     android:id="@+id/edDistance"
-                    android:layout_width="match_parent"
+                    android:layout_weight=".75"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="end"
                     android:inputType="number"
@@ -84,6 +125,13 @@
                     android:importantForAutofill="no"
                     android:textAlignment="textEnd"
                     tools:ignore="HardcodedText" />
+
+                <TextView       android:id="@+id/lblLength2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:text="@string/label_meter"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
             </LinearLayout>
 
             <LinearLayout
@@ -206,7 +254,6 @@
                 </RadioGroup>
 
                 <CheckBox
-                    android:id="@+id/chkPool"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="end"
