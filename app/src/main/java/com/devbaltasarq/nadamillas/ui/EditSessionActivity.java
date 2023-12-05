@@ -17,7 +17,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -32,9 +31,12 @@ import com.devbaltasarq.nadamillas.core.Session;
 import com.devbaltasarq.nadamillas.core.Util;
 import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 
 public class EditSessionActivity extends BaseActivity {
@@ -69,6 +71,7 @@ public class EditSessionActivity extends BaseActivity {
                     this.atPool = SESSION.isAtPool();
                     this.distance = SESSION.getDistance();
                     this.duration = SESSION.getDuration();
+                    this.place = SESSION.getPlace();
                 }
             } else {
                 long instant = DATA.getLong( SessionStorage.FIELD_DATE, this.date.getTime() );
@@ -92,7 +95,9 @@ public class EditSessionActivity extends BaseActivity {
         final EditText ED_MINUTES = this.findViewById( R.id.edMinutes );
         final EditText ED_SECONDS = this.findViewById( R.id.edSeconds );
         final EditText ED_DISTANCE = this.findViewById( R.id.edDistance );
+        final EditText ED_PLACE = this.findViewById( R.id.edPlace );
         final ImageButton BT_DATE = this.findViewById( R.id.btDate );
+        final ImageButton BT_SHARE = this.findViewById( R.id.btShareEditSession );
         final RadioGroup GRD_WATER_TYPES = this.findViewById( R.id.grdWaters );
         final RadioButton RBT_POOL = this.findViewById( R.id.rbtPool );
         final RadioButton RBT_OWS = this.findViewById( R.id.rbtOpen );
@@ -110,10 +115,11 @@ public class EditSessionActivity extends BaseActivity {
         }
 
         // Prepares pool length & laps spinner
-        final ArrayAdapter<String> POOL_LENGTH_ADAPTER = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                new String[]{ "25", "50", "100" });
+        final ArrayAdapter<String> POOL_LENGTH_ADAPTER =
+                new ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_spinner_item,
+                        Settings.PoolLength.toStringList() );
 
         CB_POOL_LENGTH.setAdapter( POOL_LENGTH_ADAPTER );
         CB_POOL_LENGTH.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -129,19 +135,20 @@ public class EditSessionActivity extends BaseActivity {
             }
         });
 
+        CB_POOL_LENGTH.setSelection( settings.getDefaultPoolLength().ordinal(), false );
+
         // Prepares the laps editor
         ED_LAPS.setText( "0" );
+
         ED_LAPS.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after)
             {
-
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count)
             {
-
             }
 
             @Override
@@ -195,6 +202,7 @@ public class EditSessionActivity extends BaseActivity {
         BT_SAVE.setOnClickListener( v -> EditSessionActivity.this.save() );
         FB_SAVE.setOnClickListener( v -> EditSessionActivity.this.save() );
         BT_DATE.setOnClickListener( v -> EditSessionActivity.this.chooseDate() );
+        BT_SHARE.setOnClickListener( v -> EditSessionActivity.this.shareSessionSummary() );
 
         GRD_WATER_TYPES.setOnCheckedChangeListener( (grp, id) -> {
             int pos = ( id == RBT_POOL.getId() ) ? 0 : 1;
@@ -204,17 +212,18 @@ public class EditSessionActivity extends BaseActivity {
 
         ED_DISTANCE.addTextChangedListener( new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
+            public void afterTextChanged(Editable s)
+            {
                 EditSessionActivity.this.storeDistance( s );
                 EditSessionActivity.this.recalculate();
             }
@@ -222,55 +231,77 @@ public class EditSessionActivity extends BaseActivity {
 
         ED_HOURS.addTextChangedListener( new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
+            public void afterTextChanged(Editable s)
+            {
                 EditSessionActivity.this.storeDuration();
                 EditSessionActivity.this.recalculate();
             }
         });
 
-        ED_MINUTES.addTextChangedListener(new TextWatcher() {
+        ED_MINUTES.addTextChangedListener( new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
+            public void afterTextChanged(Editable s)
+            {
                 EditSessionActivity.this.storeDuration();
                 EditSessionActivity.this.recalculate();
             }
         });
 
-        ED_SECONDS.addTextChangedListener(new TextWatcher() {
+        ED_SECONDS.addTextChangedListener( new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
+            public void afterTextChanged(Editable s)
+            {
                 EditSessionActivity.this.storeDuration();
                 EditSessionActivity.this.recalculate();
+            }
+        });
+
+        ED_PLACE.setText( this.place );
+        ED_PLACE.addTextChangedListener(  new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s)
+            {
+                EditSessionActivity.this.place = Util.capitalize( s.toString() );
             }
         });
 
@@ -424,7 +455,12 @@ public class EditSessionActivity extends BaseActivity {
     private void calculatePoolLaps()
     {
         if ( !this.blockListeners ) {
-            final Session FAKE_SESSION = new Session( this.date, this.distance, this.duration, this.atPool );
+            final Session FAKE_SESSION = new Session(
+                                                this.date,
+                                                this.distance,
+                                                this.duration,
+                                                this.atPool,
+                                                this.place );
             final EditText ED_POOL_LAPS = this.findViewById( R.id.edLaps );
             int poolLength = this.getPoolLength();
             int numLaps = 0;
@@ -450,12 +486,16 @@ public class EditSessionActivity extends BaseActivity {
     private void calculateMeanSpeed()
     {
         final TextView LBL_SPEED = this.findViewById( R.id.lblSpeed );
-        final Session FAKE_SESSION = new Session( this.date, this.distance, this.duration, this.atPool );
+        final Session FAKE_SESSION = new Session(
+                                            this.date,
+                                            this.distance,
+                                            this.duration,
+                                            this.atPool,
+                                            this.place );
 
         LBL_SPEED.setText( FAKE_SESSION.getSpeedAsString( settings )
                             + " - "
-                            + FAKE_SESSION.getMeanTimeAsString( settings
-        ) );
+                            + FAKE_SESSION.getMeanTimeAsString( settings.getDistanceUnits() ) );
     }
 
     /** Calculates the distance given the laps. */
@@ -474,6 +514,19 @@ public class EditSessionActivity extends BaseActivity {
         return;
     }
 
+    /** Share the text summary of this session. */
+    private void shareSessionSummary()
+    {
+        final Session FAKE_SESSION = new Session(
+                                        this.date,
+                                        this.distance,
+                                        this.duration,
+                                        this.atPool,
+                                        this.place );
+
+        this.share( FAKE_SESSION.toHumanReadableString( this, settings ) );
+    }
+
     @Override
     protected void update()
     {
@@ -487,7 +540,13 @@ public class EditSessionActivity extends BaseActivity {
         final Intent RET_DATA = new Intent();
         final Bundle DATA = new Bundle();
 
-        new SessionStorage( new Session( this.date, this.distance, this.duration, this.atPool ) ).toBundle( DATA );
+        new SessionStorage(
+                new Session(
+                            this.date,
+                            this.distance,
+                            this.duration,
+                            this.atPool,
+                            this.place ) ).toBundle( DATA );
         RET_DATA.putExtras( DATA );
 
         // Finish
@@ -498,6 +557,7 @@ public class EditSessionActivity extends BaseActivity {
     private Date date;
     private int distance;
     private Duration duration;
+    private String place;
     private boolean blockListeners;
     private boolean atPool;
 }

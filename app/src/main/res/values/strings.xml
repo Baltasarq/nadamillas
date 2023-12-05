@@ -43,6 +43,7 @@
     <string name="label_ok">OK</string>
     <string name="label_cancel">Cancel</string>
     <string name="label_force_recalculation">Force recalculation</string>
+    <string name="label_pool_length">Pool length</string>
     <string name="label_meter">m</string>
     <string name="label_yard">y</string>
     <string name="label_year">Year</string>
@@ -64,6 +65,8 @@
     <string name="label_report">Report</string>
     <string name="label_abbrev_open_waters">ow</string>
     <string name="label_laps">Laps</string>
+    <string name="label_place">Place</string>
+    <string name="label_share">Share</string>
 
     <!-- Messages -->
     <string name="message_finished">Finished.</string>
@@ -97,4 +100,11 @@
         <item>@string/label_monday</item>
         <item>@string/label_sunday</item>
     </string-array>
+
+    <!-- Formatted message strings -->
+    <string name="fmt_pool">the pool</string>
+    <string name="fmt_ows">open waters</string>
+    <string name="fmt_human_readable_info">
+        On $date, I swam $distance in $place
+    </string>
 </resources>

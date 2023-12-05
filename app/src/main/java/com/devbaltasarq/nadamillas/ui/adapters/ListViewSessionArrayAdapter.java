@@ -65,10 +65,16 @@ public class ListViewSessionArrayAdapter extends ArrayAdapter<Session> {
             drawableId = R.drawable.ic_pool;
         }
 
-        IV_LOGO.setImageDrawable( AppCompatResources.getDrawable( ACTIVITY, drawableId ) );
+        IV_LOGO.setImageDrawable(
+                AppCompatResources.getDrawable(
+                                        ACTIVITY,
+                                        drawableId ) );
 
         // Set data
-        LBL_DATA.setText( SESSION.getFormattedDistance( ACTIVITY, settings ) );
+        LBL_DATA.setText(
+                SESSION.getFormattedDistance(
+                                        ACTIVITY,
+                                        settings.getDistanceUnits() ) );
 
         if ( SESSION.getDistance() > 0
           && SESSION.getDuration().getTimeInSeconds() > 0 )

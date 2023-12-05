@@ -1,6 +1,8 @@
 // NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
 
+
 package com.devbaltasarq.nadamillas.core;
+
 
 import android.content.Context;
 
@@ -8,6 +10,7 @@ import com.devbaltasarq.nadamillas.R;
 
 import java.util.Date;
 import java.util.Locale;
+
 
 public class Session {
     public static final int FAKE_ID = -1;
@@ -17,9 +20,9 @@ public class Session {
       * @param distance the distance for this session.
       * @param atPool whether this session was done at the pool or not.
       */
-    public Session(Date date, int distance, Duration duration, boolean atPool)
+    public Session(Date date, int distance, Duration duration, boolean atPool, String place)
     {
-        this( FAKE_ID, date, distance, duration, atPool );
+        this( FAKE_ID, date, distance, duration, atPool, place );
     }
 
     /** Creates a new training session.
@@ -27,20 +30,9 @@ public class Session {
      * @param distance the distance for this session.
      * @param atPool whether this session was done at the pool or not.
      */
-    public Session(Date date, int distance, int secs, boolean atPool)
+    public Session(Date date, int distance, int secs, boolean atPool, String place)
     {
-        this( FAKE_ID, date, distance, new Duration( secs ), atPool );
-    }
-
-    /** Creates a new training session.
-     * @param id the unique id for this session.
-     * @param date the date this session happened on.
-     * @param distance the distance for this session.
-     * @param atPool whether this session was done at the pool or not.
-     */
-    public Session(int id, Date date, int distance, int secs, boolean atPool)
-    {
-        this( id, date, distance, new Duration( secs ), atPool );
+        this( FAKE_ID, date, distance, new Duration( secs ), atPool, place );
     }
 
     /** Creates a new training session.
@@ -49,13 +41,30 @@ public class Session {
      * @param distance the distance for this session.
      * @param atPool whether this session was done at the pool or not.
      */
-    public Session(int id, Date date, int distance, Duration duration, boolean atPool)
+    public Session(int id, Date date, int distance, int secs, boolean atPool, String place)
+    {
+        this( id, date, distance, new Duration( secs ), atPool, place );
+    }
+
+    /** Creates a new training session.
+     * @param id the unique id for this session.
+     * @param date the date this session happened on.
+     * @param distance the distance for this session.
+     * @param atPool whether this session was done at the pool or not.
+     */
+    public Session(int id, Date date, int distance, Duration duration, boolean atPool, String place)
     {
         this.id = id;
         this.date = date;
         this.distance = distance;
         this.duration = duration;
         this.atPool = atPool;
+
+        if ( place == null ) {
+            place = "";
+        }
+
+        this.place = Util.capitalize( place );
     }
 
     /** @return the id for this session. -1 if fake. */
@@ -85,16 +94,22 @@ public class Session {
     /** @return whether this session was done at the pool or not. */
     public boolean isAtPool()
     {
-        return atPool;
+        return this.atPool;
+    }
+
+    /** @return the place this session happened on. */
+    public String getPlace()
+    {
+        return this.place;
     }
 
     /** @return the formatted distance. */
-    public String getFormattedDistance(Context cntx, Settings settings)
+    public String getFormattedDistance(Context cntx, Settings.DistanceUnits du)
     {
         final Locale LOCALE = Locale.getDefault();
         int units = R.string.label_meter;
 
-        if ( settings.getDistanceUnits() == Settings.DistanceUnits.mi ) {
+        if ( du == Settings.DistanceUnits.mi ) {
             units = R.string.label_yard;
         }
 
@@ -117,12 +132,12 @@ public class Session {
     }
 
     /** @return the mean time, as a string. */
-    public String getMeanTimeAsString(Settings settings)
+    public String getMeanTimeAsString(Settings.DistanceUnits du)
     {
         String distanceUnits = "m";
 
         // Set distance units
-        if ( settings.getDistanceUnits() == Settings.DistanceUnits.mi ) {
+        if ( du == Settings.DistanceUnits.mi ) {
             distanceUnits = "y";
         }
 
@@ -156,13 +171,34 @@ public class Session {
     public String getWholeSpeedFormattedString(Settings settings)
     {
         return this.getSpeedAsString( settings )
-                + " - " + this.getMeanTimeAsString( settings );
+                + " - " + this.getMeanTimeAsString( settings.getDistanceUnits() );
     }
 
     public String getTimeAndWholeSpeedFormattedString(Settings settings)
     {
         return this.getDuration().toString()
                 + "\n" + this.getWholeSpeedFormattedString( settings );
+    }
+
+    public String toHumanReadableString(Context ctx, Settings settings)
+    {
+        String fmt = ctx.getString( R.string.fmt_human_readable_info );
+        String place = ctx.getString( R.string.label_pool ).toLowerCase();
+
+        if ( !this.isAtPool() ) {
+            place = ctx.getString( R.string.label_open_waters ).toLowerCase();
+        }
+
+        if ( !this.getPlace().isEmpty() ) {
+            place += " (" + this.getPlace() + ")";
+        }
+
+        return fmt.replace( "$date", Util.getShortDate( this.getDate(), null ) )
+                            .replace( "$distance",
+                                            this.getFormattedDistance(
+                                                    ctx,
+                                                    settings.getDistanceUnits() ) )
+                            .replace( "$place", place );
     }
 
     /** Creates a new session with a given id and session number.
@@ -175,7 +211,8 @@ public class Session {
                             this.getDate(),
                             this.getDistance(),
                             this.getDuration(),
-                            this.isAtPool() );
+                            this.isAtPool(),
+                            this.place );
     }
 
     @Override
@@ -186,6 +223,7 @@ public class Session {
                 + this.getDate().hashCode()
                 + this.getDistance()
                 + this.getDuration().hashCode()
+                + this.getPlace().hashCode()
                 + ( this.isAtPool() ? 31 : 37 )
         );
     }
@@ -211,17 +249,19 @@ public class Session {
     public String toString()
     {
         return String.format( Locale.getDefault(),
-                         "%03d: %s: %7dm (%s) %s",
+                         "%03d: %s: %7dm (%s) %s - %s",
                                 this.getId(),
                                 Util.getShortDate( this.getDate(), null ),
                                 this.getDistance(),
                                 this.getDuration().toString(),
-                                this.isAtPool() ? "at pool" : "open water" );
+                                this.isAtPool() ? "at pool" : "open water",
+                                this.getPlace() );
     }
 
-    private int id;
-    private Date date;
-    private int distance;
-    private Duration duration;
-    private boolean atPool;
+    private final int id;
+    private final Date date;
+    private final int distance;
+    private final Duration duration;
+    private final boolean atPool;
+    private final String place;
 }

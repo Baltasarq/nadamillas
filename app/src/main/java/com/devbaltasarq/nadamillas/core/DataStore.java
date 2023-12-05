@@ -41,7 +41,7 @@ public class DataStore extends SQLiteOpenHelper {
     private static final String LOG_TAG = DataStore.class.getSimpleName();
     public static final String DIR_BACKUP_NAME = "backup";
     public static final String EXT_BACKUP_FILE = "json";
-    private static final int VERSION = 4;
+    private static final int VERSION = 5;
     private static final String NAME = "swimming_workouts";
     private static final String TABLE_YEARS = "years";
     private static final String TABLE_SESSIONS = "workouts";
@@ -90,7 +90,6 @@ public class DataStore extends SQLiteOpenHelper {
             db.beginTransaction();
 
             createYearsInfoTable( db );
-            createSessionsTable( db );
             updateSessionsTable( db, oldVersion, newVersion );
 
             db.setTransactionSuccessful();
@@ -119,7 +118,8 @@ public class DataStore extends SQLiteOpenHelper {
                         + SessionStorage.FIELD_DAY + " integer NOT NULL,"
                         + SessionStorage.FIELD_DISTANCE + " integer NOT NULL,"
                         + SessionStorage.FIELD_AT_POOL + " boolean NOT NULL,"
-                        + SessionStorage.FIELD_SECONDS + " integer NOT NULL)"
+                        + SessionStorage.FIELD_SECONDS + " integer NOT NULL,"
+                        + SessionStorage.FIELD_PLACE + " text NOT NULL DEFAULT \"\")"
         );
     }
 
@@ -136,18 +136,22 @@ public class DataStore extends SQLiteOpenHelper {
 
     private static void updateSessionsTable(SQLiteDatabase db, int oldVersion, int newVersion)
     {
-        if ( newVersion > oldVersion ) {
-            createSessionsTable( db );
+        createSessionsTable( db );
 
+        if ( newVersion > oldVersion ) {
             if ( oldVersion <= 3 ) {
-                // Add the time to the sessions table.
+                // Add the time column to the sessions table.
                 db.execSQL( "ALTER TABLE " + TABLE_SESSIONS
                         + " ADD COLUMN " +  SessionStorage.FIELD_SECONDS
                         + " integer NOT NULL DEFAULT 0;" );
             }
-        } else {
-            // We know nothing about how to update, remove everything
-            removeSessionsTable( db );
+
+            if ( oldVersion <= 5 ) {
+                // Add the place column to the sessions table.
+                db.execSQL( "ALTER TABLE " + TABLE_SESSIONS
+                        + " ADD COLUMN " +  SessionStorage.FIELD_PLACE
+                        + " text NOT NULL DEFAULT \"\";" );
+            }
         }
 
         return;

@@ -70,4 +70,10 @@
     <string name="label_abbrev_open_waters">aa</string>
     <string name="label_import_from_external_backup">Escoger un archivo de respaldo</string>
     <string name="label_laps">Largos</string>
+    <string name="label_place">Lugar</string>
+    <string name="label_share">Comparte</string>
+    <string name="fmt_pool">la piscina</string>
+    <string name="fmt_human_readable_info">El $date, nadé $distance en $place</string>
+    <string name="fmt_ows">aguas abiertas</string>
+    <string name="label_pool_length">Largo de piscina</string>
 </resources>

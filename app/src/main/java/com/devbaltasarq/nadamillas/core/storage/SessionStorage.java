@@ -29,6 +29,7 @@ public class SessionStorage {
     public static final String FIELD_DISTANCE = "distance";
     public static final String FIELD_SECONDS = "seconds_used";
     public static final String FIELD_AT_POOL = "pool";
+    public static final String FIELD_PLACE = "place";
 
     /** Create a new wrapper for the Session. */
     public SessionStorage(Session session)
@@ -50,6 +51,7 @@ public class SessionStorage {
         toret.put( FIELD_DAY, DATE_DATA[ 2 ] );
         toret.put( FIELD_DISTANCE, this.session.getDistance() );
         toret.put( FIELD_AT_POOL, this.session.isAtPool() );
+        toret.put( FIELD_PLACE, Util.capitalize( this.session.getPlace() ) );
         toret.put( FIELD_SECONDS, this.session.getDuration().getTimeInSeconds() );
 
         return toret;
@@ -71,6 +73,7 @@ public class SessionStorage {
         jsonWriter.name( FIELD_DISTANCE ).value( this.session.getDistance() );
         jsonWriter.name( FIELD_SECONDS ).value( this.session.getDuration().getTimeInSeconds() );
         jsonWriter.name( FIELD_AT_POOL ).value( this.session.isAtPool() );
+        jsonWriter.name( FIELD_PLACE ).value( this.session.getPlace() );
         jsonWriter.endObject();
     }
 
@@ -88,6 +91,7 @@ public class SessionStorage {
         int distance = -1;
         int secs = 0;
         boolean atPool = false;
+        String place = "";
 
         jsonReader.beginObject();
 
@@ -118,6 +122,10 @@ public class SessionStorage {
                 atPool = jsonReader.nextBoolean();
             }
             else
+            if ( NAME.equals( FIELD_PLACE ) ) {
+                place = jsonReader.nextString();
+            }
+            else
             if ( NAME.equals( FIELD_SECONDS ) ) {
                 secs = jsonReader.nextInt();
             } else {
@@ -136,7 +144,13 @@ public class SessionStorage {
             throw new IOException( "reading YearInfo from JSON: missing data" );
         }
 
-        return new Session( id, Util.dateFromData( year, month, day ), distance, secs, atPool );
+        return new Session(
+                        id,
+                        Util.dateFromData( year, month, day ),
+                        distance,
+                        secs,
+                        atPool,
+                        place );
     }
 
     /** Stores the Session's data in the given Bundle.
@@ -148,6 +162,7 @@ public class SessionStorage {
 
         bundle.putLong( FIELD_DATE, SESSION.getDate().getTime() );
         bundle.putBoolean( FIELD_AT_POOL, SESSION.isAtPool() );
+        bundle.putString( FIELD_PLACE, Util.capitalize( SESSION.getPlace() ) );
         bundle.putInt( FIELD_DISTANCE, SESSION.getDistance() );
         bundle.putInt( FIELD_SECONDS, SESSION.getDuration().getTimeInSeconds() );
     }
@@ -171,6 +186,7 @@ public class SessionStorage {
         final int DAY = c.getInt( c.getColumnIndexOrThrow( FIELD_DAY ) );
         final int MONTH = c.getInt( c.getColumnIndexOrThrow( FIELD_MONTH ) );
         final int YEAR = c.getInt( c.getColumnIndexOrThrow( FIELD_YEAR ) );
+        final String PLACE = c.getString( c.getColumnIndexOrThrow( FIELD_PLACE ) );
         int secsColumn = c.getColumnIndex( FIELD_SECONDS );
         int secs = 0;
 
@@ -179,7 +195,13 @@ public class SessionStorage {
             secs = c.getInt( secsColumn );
         }
 
-        return new Session( ID, Util.dateFromData( YEAR, MONTH, DAY ), DISTANCE, secs, AT_POOL );
+        return new Session(
+                        ID,
+                        Util.dateFromData( YEAR, MONTH, DAY ),
+                        DISTANCE,
+                        secs,
+                        AT_POOL,
+                        PLACE );
     }
 
     /** Creates a Session object from a Bundle.
@@ -212,10 +234,11 @@ public class SessionStorage {
             final long TODAY = Util.getDate().getTimeInMillis();
 
             toret = new Session(
-                    new Date( extras.getLong( FIELD_DATE, TODAY ) ),
-                    extras.getInt( FIELD_DISTANCE, 0 ),
-                    extras.getInt( FIELD_SECONDS, 0 ),
-                    extras.getBoolean( FIELD_AT_POOL, true ) );
+                        new Date( extras.getLong( FIELD_DATE, TODAY ) ),
+                        extras.getInt( FIELD_DISTANCE, 0 ),
+                        extras.getInt( FIELD_SECONDS, 0 ),
+                        extras.getBoolean( FIELD_AT_POOL, true ),
+                        extras.getString( FIELD_PLACE, "" ) );
         }
 
         return toret;

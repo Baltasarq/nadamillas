@@ -229,6 +229,29 @@
                 android:orientation="horizontal"
                 android:padding="5dp">
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                    android:text="@string/label_place" />
+
+                <EditText       android:id="@+id/edPlace"
+                    android:layout_marginStart="5dp"
+                    android:layout_weight=".8"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="5dp">
+
                 <RadioGroup
                     android:id="@+id/grdWaters"
                     android:layout_width="match_parent"
