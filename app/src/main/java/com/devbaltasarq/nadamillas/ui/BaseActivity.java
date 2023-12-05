@@ -56,7 +56,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         if ( date != null ) {
             final Bundle BUNDLE = new Bundle();
-            new SessionStorage( new Session( date, 0, 0, true ) ).toBundle( BUNDLE );
+            new SessionStorage( new Session( date, 0, 0, true, "" ) ).toBundle( BUNDLE );
             NEW_SESSION_DATA.putExtras( BUNDLE );
         }
 
@@ -149,6 +149,18 @@ public abstract class BaseActivity extends AppCompatActivity {
                     .show());
 
         return;
+    }
+
+    protected void share(final String DATA)
+    {
+        final Intent SHARING_INTENT = new Intent( Intent.ACTION_SEND );
+
+        SHARING_INTENT.setType( "text/plain" );
+        SHARING_INTENT.putExtra( Intent.EXTRA_TEXT, DATA );
+
+        this.startActivity( Intent.createChooser(
+                SHARING_INTENT,
+                this.getString( R.string.action_share ) ) );
     }
 
     protected void shareScreenShot(String logTag, File f)
