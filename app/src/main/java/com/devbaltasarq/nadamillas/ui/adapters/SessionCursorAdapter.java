@@ -80,7 +80,9 @@ public class SessionCursorAdapter extends CursorAdapter {
 
         // Basic data
         LBL_DATA.setText( String.format( LOCALE, "%10s", DATE )
-                            + " " + session.getFormattedDistance( historyActivity, settings ) );
+                            + " " + session.getFormattedDistance(
+                                                historyActivity,
+                                                settings.getDistanceUnits() ) );
 
         // Logo
         int drawableId = R.drawable.ic_sea;

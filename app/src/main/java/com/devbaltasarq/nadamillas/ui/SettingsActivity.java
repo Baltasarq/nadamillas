@@ -63,9 +63,20 @@ public class SettingsActivity extends BaseActivity {
         final ImageButton BT_EXPORT = this.findViewById( R.id.btExport );
         final Spinner CB_YEARS = this.findViewById( R.id.cbYears );
         final Spinner CB_FDoW = this.findViewById( R.id.cbFirstDayOfWeek );
+        final Spinner CB_DEFAULT_POOL_LENGTH = this.findViewById( R.id.cbDefaultPoolLength );
         final ImageButton BT_EDIT_YEAR = this.findViewById( R.id.btEditYear );
         final ImageButton BT_NEW_YEAR = this.findViewById( R.id.btNewYear );
         final TextView LBL_ABOUT = this.findViewById( R.id.lblAbout );
+
+        // Prepare the default pool length
+        final ArrayAdapter<Settings.PoolLength> POOL_LENGTH_ADAPTER = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                Settings.PoolLength.values()
+        );
+
+        CB_DEFAULT_POOL_LENGTH.setAdapter( POOL_LENGTH_ADAPTER );
+        CB_DEFAULT_POOL_LENGTH.setSelection( settings.getDefaultPoolLength().ordinal() );
 
         // Prepare the "about" label
         LBL_ABOUT.setText( AppInfo.getAuthoringMessage() );
@@ -145,6 +156,19 @@ public class SettingsActivity extends BaseActivity {
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
 
+            }
+        });
+
+        CB_DEFAULT_POOL_LENGTH.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                settings.setDefaultPoolLength( Settings.PoolLength.values()[ position ] );
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {
             }
         });
     }

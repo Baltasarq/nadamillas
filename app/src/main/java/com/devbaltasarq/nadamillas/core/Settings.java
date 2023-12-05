@@ -5,13 +5,86 @@ package com.devbaltasarq.nadamillas.core;
 
 import android.util.Log;
 
+import androidx.core.util.Pools;
+
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 
 
 /** Represents the possible settings of the app. */
 public class Settings {
     public static final String LOG_TAG = Settings.class.getSimpleName();
+
+    public enum PoolLength {
+        P25(25), P50(50), P100(100);
+
+        PoolLength(int d)
+        {
+            this.distance = d;
+        }
+
+        /** @return the length corresponding to this enum constant. */
+        public int getLength()
+        {
+            return this.distance;
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.valueOf( this.distance );
+        }
+
+        /** Converts an int to its corresponding PoolLength.
+          * @param length the length, as an int.
+          * @return the corresponding PoolLength object.
+          */
+        public static PoolLength fromLength(int length)
+        {
+            PoolLength toret = PoolLength.P25;
+
+            switch( length ) {
+                case 25:
+                    toret = PoolLength.P25;
+                    break;
+                case 50:
+                    toret = PoolLength.P50;
+                    break;
+                case 100:
+                    toret = PoolLength.P100;
+                    break;
+                default:
+                    Log.e( LOG_TAG, "no PoolLength for: " + length );
+            }
+
+            return toret;
+        }
+
+        /** @return a collection with the values of PoolLength, as string. */
+        public static List<String> toStringList()
+        {
+            if ( stringList == null ) {
+                final ArrayList<String> toret =
+                        new ArrayList<>( PoolLength.values().length );
+
+                for(PoolLength pl: values()) {
+                    toret.add( pl.toString() );
+                }
+
+                stringList = toret;
+            }
+
+
+            return stringList;
+        }
+
+        private final int distance;
+        private static List<String> stringList = null;
+    }
+
     public enum DistanceUnits { km, mi;
 
         /** @return the corresponding enum value, given its position. */
@@ -62,21 +135,37 @@ public class Settings {
     /** Creates a new settings object with the given values.
       * @param units the DistanceUnits to be used.
       * @param firstDayOfWeek the first day of week, as a Calendar constant.
+      * @param defaultPoolLength the preferred length of the pool.
       */
-    private Settings(DistanceUnits units, FirstDayOfWeek firstDayOfWeek)
+    private Settings(DistanceUnits units, FirstDayOfWeek firstDayOfWeek, PoolLength defaultPoolLength)
     {
         this.units = units;
         this.firstDayOfWeek = firstDayOfWeek;
+        this.defaultPoolLength = defaultPoolLength;
     }
 
-    /** @return get the distance units to be used. */
+    /** @return the distance units to be used. */
     public DistanceUnits getDistanceUnits()
     {
         return this.units;
     }
 
+    /** @return the default or favourite pool length */
+    public PoolLength getDefaultPoolLength()
+    {
+        return this.defaultPoolLength;
+    }
+
+    /** Sets the default or favourite pool length.
+      * @param poolLength the new pool length;
+      */
+    public void setDefaultPoolLength(PoolLength poolLength)
+    {
+        this.defaultPoolLength = poolLength;
+    }
+
     /** Changes the units for distance.
-      * @param distanceUnits
+      * @param distanceUnits the new units to use.
       */
     public void setDistanceUnits(DistanceUnits distanceUnits)
     {
@@ -137,8 +226,10 @@ public class Settings {
     public String toString()
     {
         return String.format( Locale.getDefault(),
-                                "units: %s",
-                                this.getDistanceUnits() );
+                                "units: %s, first day of week: %s, default pool length: %s",
+                                this.getDistanceUnits(),
+                                this.getFirstDayOfWeek().toString(),
+                                this.getDefaultPoolLength().toString() );
     }
 
     public static Settings get()
@@ -151,13 +242,17 @@ public class Settings {
         return settings;
     }
 
-    public static Settings createFrom(DistanceUnits distanceUnits, FirstDayOfWeek firstDayOfWeek)
+    public static Settings createFrom(
+                                        DistanceUnits distanceUnits,
+                                        FirstDayOfWeek firstDayOfWeek,
+                                        PoolLength defaultPoolLength)
     {
-        settings = new Settings( distanceUnits, firstDayOfWeek );
+        settings = new Settings( distanceUnits, firstDayOfWeek, defaultPoolLength );
         return settings;
     }
 
     private DistanceUnits units;
-    private static Settings settings;
     private FirstDayOfWeek firstDayOfWeek;
+    private PoolLength defaultPoolLength;
+    private static Settings settings;
 }
