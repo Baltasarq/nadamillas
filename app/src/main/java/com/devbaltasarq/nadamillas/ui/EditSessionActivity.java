@@ -59,6 +59,7 @@ public class EditSessionActivity extends BaseActivity {
         this.blockListeners = true;
         this.date = Util.getDate().getTime();
         this.duration = new Duration( 0 );
+        this.place = this.notes = "";
 
         if ( DATA != null ) {
             final Session SESSION = SessionStorage.createFrom( DATA );
@@ -72,6 +73,7 @@ public class EditSessionActivity extends BaseActivity {
                     this.distance = SESSION.getDistance();
                     this.duration = SESSION.getDuration();
                     this.place = SESSION.getPlace();
+                    this.notes = SESSION.getNotes();
                 }
             } else {
                 long instant = DATA.getLong( SessionStorage.FIELD_DATE, this.date.getTime() );
@@ -96,6 +98,7 @@ public class EditSessionActivity extends BaseActivity {
         final EditText ED_SECONDS = this.findViewById( R.id.edSeconds );
         final EditText ED_DISTANCE = this.findViewById( R.id.edDistance );
         final EditText ED_PLACE = this.findViewById( R.id.edPlace );
+        final EditText ED_NOTES = this.findViewById( R.id.edNotes );
         final ImageButton BT_DATE = this.findViewById( R.id.btDate );
         final ImageButton BT_SHARE = this.findViewById( R.id.btShareEditSession );
         final RadioGroup GRD_WATER_TYPES = this.findViewById( R.id.grdWaters );
@@ -305,6 +308,25 @@ public class EditSessionActivity extends BaseActivity {
             }
         });
 
+        ED_NOTES.setText( this.notes );
+        ED_NOTES.addTextChangedListener(  new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s)
+            {
+                EditSessionActivity.this.notes = Util.capitalize( s.toString() );
+            }
+        });
+
         this.blockListeners = false;
 
         // Set focus
@@ -460,7 +482,8 @@ public class EditSessionActivity extends BaseActivity {
                                                 this.distance,
                                                 this.duration,
                                                 this.atPool,
-                                                this.place );
+                                                this.place,
+                                                this.notes );
             final EditText ED_POOL_LAPS = this.findViewById( R.id.edLaps );
             int poolLength = this.getPoolLength();
             int numLaps = 0;
@@ -491,7 +514,8 @@ public class EditSessionActivity extends BaseActivity {
                                             this.distance,
                                             this.duration,
                                             this.atPool,
-                                            this.place );
+                                            this.place,
+                                            this.notes );
 
         LBL_SPEED.setText( FAKE_SESSION.getSpeedAsString( settings )
                             + " - "
@@ -522,7 +546,8 @@ public class EditSessionActivity extends BaseActivity {
                                         this.distance,
                                         this.duration,
                                         this.atPool,
-                                        this.place );
+                                        this.place,
+                                        this.notes );
 
         this.share( FAKE_SESSION.toHumanReadableString( this, settings ) );
     }
@@ -546,7 +571,8 @@ public class EditSessionActivity extends BaseActivity {
                             this.distance,
                             this.duration,
                             this.atPool,
-                            this.place ) ).toBundle( DATA );
+                            this.place,
+                            this.notes ) ).toBundle( DATA );
         RET_DATA.putExtras( DATA );
 
         // Finish
@@ -558,6 +584,7 @@ public class EditSessionActivity extends BaseActivity {
     private int distance;
     private Duration duration;
     private String place;
+    private String notes;
     private boolean blockListeners;
     private boolean atPool;
 }

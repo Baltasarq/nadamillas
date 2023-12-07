@@ -30,6 +30,7 @@ public class SessionStorage {
     public static final String FIELD_SECONDS = "seconds_used";
     public static final String FIELD_AT_POOL = "pool";
     public static final String FIELD_PLACE = "place";
+    public static final String FIELD_NOTES = "notes";
 
     /** Create a new wrapper for the Session. */
     public SessionStorage(Session session)
@@ -52,6 +53,7 @@ public class SessionStorage {
         toret.put( FIELD_DISTANCE, this.session.getDistance() );
         toret.put( FIELD_AT_POOL, this.session.isAtPool() );
         toret.put( FIELD_PLACE, Util.capitalize( this.session.getPlace() ) );
+        toret.put( FIELD_NOTES, Util.capitalize( this.session.getNotes() ) );
         toret.put( FIELD_SECONDS, this.session.getDuration().getTimeInSeconds() );
 
         return toret;
@@ -74,6 +76,7 @@ public class SessionStorage {
         jsonWriter.name( FIELD_SECONDS ).value( this.session.getDuration().getTimeInSeconds() );
         jsonWriter.name( FIELD_AT_POOL ).value( this.session.isAtPool() );
         jsonWriter.name( FIELD_PLACE ).value( this.session.getPlace() );
+        jsonWriter.name( FIELD_NOTES ).value( this.session.getNotes() );
         jsonWriter.endObject();
     }
 
@@ -92,6 +95,7 @@ public class SessionStorage {
         int secs = 0;
         boolean atPool = false;
         String place = "";
+        String notes = "";
 
         jsonReader.beginObject();
 
@@ -126,6 +130,10 @@ public class SessionStorage {
                 place = jsonReader.nextString();
             }
             else
+            if ( NAME.equals( FIELD_NOTES ) ) {
+                notes = jsonReader.nextString();
+            }
+            else
             if ( NAME.equals( FIELD_SECONDS ) ) {
                 secs = jsonReader.nextInt();
             } else {
@@ -150,7 +158,8 @@ public class SessionStorage {
                         distance,
                         secs,
                         atPool,
-                        place );
+                        place,
+                        notes );
     }
 
     /** Stores the Session's data in the given Bundle.
@@ -161,10 +170,11 @@ public class SessionStorage {
         final Session SESSION = this.getSession();
 
         bundle.putLong( FIELD_DATE, SESSION.getDate().getTime() );
-        bundle.putBoolean( FIELD_AT_POOL, SESSION.isAtPool() );
-        bundle.putString( FIELD_PLACE, Util.capitalize( SESSION.getPlace() ) );
         bundle.putInt( FIELD_DISTANCE, SESSION.getDistance() );
         bundle.putInt( FIELD_SECONDS, SESSION.getDuration().getTimeInSeconds() );
+        bundle.putBoolean( FIELD_AT_POOL, SESSION.isAtPool() );
+        bundle.putString( FIELD_PLACE, Util.capitalize( SESSION.getPlace() ) );
+        bundle.putString( FIELD_NOTES, Util.capitalize( SESSION.getNotes() ) );
     }
 
     /** @return the session wrapped. */
@@ -187,6 +197,7 @@ public class SessionStorage {
         final int MONTH = c.getInt( c.getColumnIndexOrThrow( FIELD_MONTH ) );
         final int YEAR = c.getInt( c.getColumnIndexOrThrow( FIELD_YEAR ) );
         final String PLACE = c.getString( c.getColumnIndexOrThrow( FIELD_PLACE ) );
+        final String NOTES = c.getString( c.getColumnIndexOrThrow( FIELD_NOTES ) );
         int secsColumn = c.getColumnIndex( FIELD_SECONDS );
         int secs = 0;
 
@@ -201,7 +212,8 @@ public class SessionStorage {
                         DISTANCE,
                         secs,
                         AT_POOL,
-                        PLACE );
+                        PLACE,
+                        NOTES );
     }
 
     /** Creates a Session object from a Bundle.
@@ -238,7 +250,8 @@ public class SessionStorage {
                         extras.getInt( FIELD_DISTANCE, 0 ),
                         extras.getInt( FIELD_SECONDS, 0 ),
                         extras.getBoolean( FIELD_AT_POOL, true ),
-                        extras.getString( FIELD_PLACE, "" ) );
+                        extras.getString( FIELD_PLACE, "" ),
+                        extras.getString( FIELD_NOTES, "" ));
         }
 
         return toret;

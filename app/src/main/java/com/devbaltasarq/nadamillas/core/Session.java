@@ -20,9 +20,14 @@ public class Session {
       * @param distance the distance for this session.
       * @param atPool whether this session was done at the pool or not.
       */
-    public Session(Date date, int distance, Duration duration, boolean atPool, String place)
+    public Session(Date date,
+                   int distance,
+                   Duration duration,
+                   boolean atPool,
+                   String place,
+                   String notes)
     {
-        this( FAKE_ID, date, distance, duration, atPool, place );
+        this( FAKE_ID, date, distance, duration, atPool, place, notes );
     }
 
     /** Creates a new training session.
@@ -30,9 +35,14 @@ public class Session {
      * @param distance the distance for this session.
      * @param atPool whether this session was done at the pool or not.
      */
-    public Session(Date date, int distance, int secs, boolean atPool, String place)
+    public Session(Date date,
+                   int distance,
+                   int secs,
+                   boolean atPool,
+                   String place,
+                   String notes)
     {
-        this( FAKE_ID, date, distance, new Duration( secs ), atPool, place );
+        this( FAKE_ID, date, distance, new Duration( secs ), atPool, place, notes );
     }
 
     /** Creates a new training session.
@@ -41,9 +51,15 @@ public class Session {
      * @param distance the distance for this session.
      * @param atPool whether this session was done at the pool or not.
      */
-    public Session(int id, Date date, int distance, int secs, boolean atPool, String place)
+    public Session(int id,
+                   Date date,
+                   int distance,
+                   int secs,
+                   boolean atPool,
+                   String place,
+                   String notes)
     {
-        this( id, date, distance, new Duration( secs ), atPool, place );
+        this( id, date, distance, new Duration( secs ), atPool, place, notes );
     }
 
     /** Creates a new training session.
@@ -52,7 +68,13 @@ public class Session {
      * @param distance the distance for this session.
      * @param atPool whether this session was done at the pool or not.
      */
-    public Session(int id, Date date, int distance, Duration duration, boolean atPool, String place)
+    public Session(int id,
+                   Date date,
+                   int distance,
+                   Duration duration,
+                   boolean atPool,
+                   String place,
+                   String notes)
     {
         this.id = id;
         this.date = date;
@@ -64,10 +86,15 @@ public class Session {
             place = "";
         }
 
+        if ( notes == null ) {
+            notes = "";
+        }
+
         this.place = Util.capitalize( place );
+        this.notes = Util.capitalize( notes );
     }
 
-    /** @return the id for this session. -1 if fake. */
+    /** @return the id for this session. Is FAKE_ID if fake. */
     public int getId()
     {
         return this.id;
@@ -101,6 +128,12 @@ public class Session {
     public String getPlace()
     {
         return this.place;
+    }
+
+    /** @return the notes related to this session. */
+    public String getNotes()
+    {
+        return this.notes;
     }
 
     /** @return the formatted distance. */
@@ -212,7 +245,8 @@ public class Session {
                             this.getDistance(),
                             this.getDuration(),
                             this.isAtPool(),
-                            this.place );
+                            this.place,
+                            this.notes );
     }
 
     @Override
@@ -224,6 +258,7 @@ public class Session {
                 + this.getDistance()
                 + this.getDuration().hashCode()
                 + this.getPlace().hashCode()
+                + this.getNotes().hashCode()
                 + ( this.isAtPool() ? 31 : 37 )
         );
     }
@@ -233,12 +268,11 @@ public class Session {
     {
         boolean toret = false;
 
-        if ( other instanceof Session ) {
-            final Session OTHER_SESSION = (Session) other;
-
+        if ( other instanceof final Session OTHER_SESSION ) {
             toret = this.getDate().equals( OTHER_SESSION.getDate() )
                     && this.getDistance() == OTHER_SESSION.getDistance()
                     && this.getDuration().equals( OTHER_SESSION.getDuration() )
+                    && this.getPlace().equals( OTHER_SESSION.getPlace() )
                     && this.isAtPool() == OTHER_SESSION.isAtPool();
         }
 
@@ -249,13 +283,14 @@ public class Session {
     public String toString()
     {
         return String.format( Locale.getDefault(),
-                         "%03d: %s: %7dm (%s) %s - %s",
+                                "%03d: %s: %7dm (%s) %s - %s (%s)",
                                 this.getId(),
                                 Util.getShortDate( this.getDate(), null ),
                                 this.getDistance(),
                                 this.getDuration().toString(),
                                 this.isAtPool() ? "at pool" : "open water",
-                                this.getPlace() );
+                                this.getPlace(),
+                                this.getNotes() );
     }
 
     private final int id;
@@ -264,4 +299,5 @@ public class Session {
     private final Duration duration;
     private final boolean atPool;
     private final String place;
+    private final String notes;
 }

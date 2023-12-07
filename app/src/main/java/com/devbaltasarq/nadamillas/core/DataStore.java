@@ -3,16 +3,12 @@
 
 package com.devbaltasarq.nadamillas.core;
 
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.net.Uri;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
@@ -41,7 +37,7 @@ public class DataStore extends SQLiteOpenHelper {
     private static final String LOG_TAG = DataStore.class.getSimpleName();
     public static final String DIR_BACKUP_NAME = "backup";
     public static final String EXT_BACKUP_FILE = "json";
-    private static final int VERSION = 5;
+    private static final int VERSION = 7;
     private static final String NAME = "swimming_workouts";
     private static final String TABLE_YEARS = "years";
     private static final String TABLE_SESSIONS = "workouts";
@@ -86,7 +82,7 @@ public class DataStore extends SQLiteOpenHelper {
     {
         Log.d( LOG_TAG, "upgrading database.");
 
-        try{
+        try {
             db.beginTransaction();
 
             createYearsInfoTable( db );
@@ -119,7 +115,8 @@ public class DataStore extends SQLiteOpenHelper {
                         + SessionStorage.FIELD_DISTANCE + " integer NOT NULL,"
                         + SessionStorage.FIELD_AT_POOL + " boolean NOT NULL,"
                         + SessionStorage.FIELD_SECONDS + " integer NOT NULL,"
-                        + SessionStorage.FIELD_PLACE + " text NOT NULL DEFAULT \"\")"
+                        + SessionStorage.FIELD_PLACE + " text NOT NULL DEFAULT \"\","
+                        + SessionStorage.FIELD_NOTES + " text NOT NULL DEFAULT \"\")"
         );
     }
 
@@ -140,17 +137,36 @@ public class DataStore extends SQLiteOpenHelper {
 
         if ( newVersion > oldVersion ) {
             if ( oldVersion <= 3 ) {
-                // Add the time column to the sessions table.
-                db.execSQL( "ALTER TABLE " + TABLE_SESSIONS
-                        + " ADD COLUMN " +  SessionStorage.FIELD_SECONDS
-                        + " integer NOT NULL DEFAULT 0;" );
+                try {
+                    // Add the time column to the sessions table.
+                    db.execSQL( "ALTER TABLE " + TABLE_SESSIONS
+                            + " ADD COLUMN " +  SessionStorage.FIELD_SECONDS
+                            + " integer NOT NULL DEFAULT 0;" );
+                } catch(SQLException exc) {
+                    Log.e( LOG_TAG, exc.getMessage() );
+                }
             }
 
             if ( oldVersion <= 5 ) {
-                // Add the place column to the sessions table.
-                db.execSQL( "ALTER TABLE " + TABLE_SESSIONS
-                        + " ADD COLUMN " +  SessionStorage.FIELD_PLACE
-                        + " text NOT NULL DEFAULT \"\";" );
+                try {
+                    // Add the place column to the sessions table.
+                    db.execSQL( "ALTER TABLE " + TABLE_SESSIONS
+                            + " ADD COLUMN " +  SessionStorage.FIELD_PLACE
+                            + " text NOT NULL DEFAULT \"\";" );
+                } catch(SQLException exc) {
+                    Log.e( LOG_TAG, exc.getMessage() );
+                }
+            }
+
+            if ( oldVersion <= 7 ) {
+                try {
+                    // Add the notes column to the sessions table.
+                    db.execSQL( "ALTER TABLE " + TABLE_SESSIONS
+                            + " ADD COLUMN " +  SessionStorage.FIELD_NOTES
+                            + " text NOT NULL DEFAULT \"\";" );
+                } catch(SQLException exc) {
+                    Log.e( LOG_TAG, exc.getMessage() );
+                }
             }
         }
 
@@ -162,7 +178,7 @@ public class DataStore extends SQLiteOpenHelper {
         return DIR_BACKUP;
     }
 
-    /** Retrives the accumulated distances from the database.
+    /** Retrieves the accumulated distances from the database.
       * @return a YearInfo object.
       */
     public YearInfo getCurrentYearInfo()

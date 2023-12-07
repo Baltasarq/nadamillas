@@ -56,7 +56,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         if ( date != null ) {
             final Bundle BUNDLE = new Bundle();
-            new SessionStorage( new Session( date, 0, 0, true, "" ) ).toBundle( BUNDLE );
+            new SessionStorage( new Session( date, 0, 0, true, "", "" ) ).toBundle( BUNDLE );
             NEW_SESSION_DATA.putExtras( BUNDLE );
         }
 

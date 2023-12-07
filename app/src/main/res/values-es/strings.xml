@@ -76,4 +76,5 @@
     <string name="fmt_human_readable_info">El $date, nadé $distance en $place</string>
     <string name="fmt_ows">aguas abiertas</string>
     <string name="label_pool_length">Largo de piscina</string>
+    <string name="label_notes">Notas</string>
 </resources>
