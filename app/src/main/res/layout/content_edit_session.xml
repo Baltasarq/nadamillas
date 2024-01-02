@@ -60,6 +60,40 @@
                     app:srcCompat="@drawable/btn_calendar" />
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="5dp">
+
+                <RadioGroup
+                    android:id="@+id/grdWaters"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="5dp">
+
+                    <RadioButton
+                        android:id="@+id/rbtPool"
+                        android:layout_weight=".5"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal|center_vertical"
+                        android:text="@string/label_pool"
+                        android:textAlignment="center" />
+
+                    <RadioButton
+                        android:id="@+id/rbtOWS"
+                        android:layout_weight=".5"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal|center_vertical"
+                        android:text="@string/label_open_waters"
+                        android:textAlignment="center" />
+
+                </RadioGroup>
+            </LinearLayout>
+
             <LinearLayout       android:id="@+id/lyPoolLaps"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -273,44 +307,6 @@
                     android:layout_marginEnd="10dp"
                     android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
 
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="5dp">
-
-                <RadioGroup
-                    android:id="@+id/grdWaters"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="10dp">
-
-                    <RadioButton
-                        android:id="@+id/rbtPool"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal|center_vertical"
-                        android:text="@string/label_pool"
-                        android:textAlignment="center" />
-
-                    <RadioButton
-                        android:id="@+id/rbtOpen"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal|center_vertical"
-                        android:text="@string/label_open_waters"
-                        android:textAlignment="center" />
-
-                </RadioGroup>
-
-                <CheckBox
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:text="@string/label_pool"
-                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
             </LinearLayout>
 
         </LinearLayout>

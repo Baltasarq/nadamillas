@@ -1,4 +1,4 @@
-// NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019-2024 Baltasar MIT License <baltasarq@gmail.com>
 
 
 package com.devbaltasarq.nadamillas.ui;
@@ -31,12 +31,9 @@ import com.devbaltasarq.nadamillas.core.Session;
 import com.devbaltasarq.nadamillas.core.Util;
 import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 
 public class EditSessionActivity extends BaseActivity {
@@ -103,7 +100,7 @@ public class EditSessionActivity extends BaseActivity {
         final ImageButton BT_SHARE = this.findViewById( R.id.btShareEditSession );
         final RadioGroup GRD_WATER_TYPES = this.findViewById( R.id.grdWaters );
         final RadioButton RBT_POOL = this.findViewById( R.id.rbtPool );
-        final RadioButton RBT_OWS = this.findViewById( R.id.rbtOpen );
+        final RadioButton RBT_OWS = this.findViewById( R.id.rbtOWS);
         final ImageButton BT_SAVE = this.findViewById( R.id.btSaveSession );
         final ImageButton BT_SCRSHOT = this.findViewById( R.id.btTakeScrshotForEditSession );
         final EditText ED_LAPS = this.findViewById( R.id.edLaps );
@@ -193,6 +190,12 @@ public class EditSessionActivity extends BaseActivity {
             }
         });
 
+        GRD_WATER_TYPES.setOnCheckedChangeListener( (grp, id) -> {
+            int pos = ( id == RBT_POOL.getId() ) ? 0 : 1;
+
+            EditSessionActivity.this.setAtPool( pos );
+        });
+
         // Set listeners
         BT_BACK.setOnClickListener( v -> EditSessionActivity.this.finish() );
 
@@ -206,12 +209,6 @@ public class EditSessionActivity extends BaseActivity {
         FB_SAVE.setOnClickListener( v -> EditSessionActivity.this.save() );
         BT_DATE.setOnClickListener( v -> EditSessionActivity.this.chooseDate() );
         BT_SHARE.setOnClickListener( v -> EditSessionActivity.this.shareSessionSummary() );
-
-        GRD_WATER_TYPES.setOnCheckedChangeListener( (grp, id) -> {
-            int pos = ( id == RBT_POOL.getId() ) ? 0 : 1;
-
-            EditSessionActivity.this.setAtPool( pos );
-        });
 
         ED_DISTANCE.addTextChangedListener( new TextWatcher() {
             @Override
