@@ -1,4 +1,4 @@
-// NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019-2024 Baltasar MIT License <baltasarq@gmail.com>
 
 package com.devbaltasarq.nadamillas.core;
 
@@ -8,27 +8,35 @@ import java.util.Locale;
 public class YearInfo {
     private static final int DEFAULT_TARGET = 200000;
     public static final String NOT_APPLYABLE = "N/A";
+    public enum SwimKind { POOL, OWS, TOTAL }
 
-    /** Creates a default year info.
-      * @param year the year to create the YearInfo for.
+    /** Creates a default instance for a given year.
+      * @param year the year for this info.
       */
-    public YearInfo(int year, int distance, int poolDistance)
+    public YearInfo(int year)
     {
-        this( year, DEFAULT_TARGET, distance, poolDistance );
+        this( year, DEFAULT_TARGET, 0, 0, 0 );
     }
 
     /** Creates a new instance (meters/yards).
       * @param year The year this distances pertain to.
-      * @param target The target distance.
-      * @param t Total distance.
-      * @param tp Total distance in the pool.
+      * @param targetTotal The target distance.
+      * @param distanceTotal Total distance.
+      * @param distancePool Total distance at the pool.
+      * @param targetPool Target distance at the pool.
       */
-    public YearInfo(int year, int target, int t, int tp)
+    public YearInfo(
+            int year,
+            int targetTotal,
+            int distanceTotal,
+            int distancePool,
+            int targetPool)
     {
         this.year = year;
-        this.target = target;
-        this.total = t;
-        this.totalPool = tp;
+        this.targetTotal = targetTotal;
+        this.distanceTotal = distanceTotal;
+        this.distancePool = distancePool;
+        this.targetPool = targetPool;
     }
 
     /** @return the year this distances pertain to. */
@@ -50,96 +58,80 @@ public class YearInfo {
         return toret;
     }
 
-    /** @return the target for this year, as meters/yards. */
-    public int getTarget()
+    /** Gets the distance swum.
+     * @param swimKind the swimming kind data to get.
+     * @return the distance for a given target.
+     */
+    public int getDistance(SwimKind swimKind)
     {
-        return target;
+        int toret = -1;
+
+        switch( swimKind ) {
+            case POOL -> toret = this.getDistancePool();
+            case OWS -> toret = this.getDistanceOWS();
+            case TOTAL-> toret = this.getDistanceTotal();
+            default -> throw new Error(
+                    "getTarget(): no target found for: " + swimKind );
+        }
+
+        return toret;
     }
 
-    /** Change the target.
-      * @param target the new target
+    /** Calculate the progress made.
+      * @param swimKind the swimming kind to calculate the progress for.
+      * @return the progress made up until now, between 0 - 100.
       */
-    public void setTarget(int target)
+    public double getProgress(SwimKind swimKind)
     {
-        this.target = target;
-    }
+        double toret = -1.0;
 
-    /** @return the target for this year, as a string. */
-    public String getTargetAsString(Settings settings)
-    {
-        final int TARGET = this.getTarget();
-        String toret = NOT_APPLYABLE;
-
-        if ( TARGET >= 0 ) {
-            toret = settings.toUnitsAsString( TARGET );
+        switch( swimKind ) {
+            case POOL -> toret = this.getProgressPool();
+            case OWS -> toret = this.getProgressOWS();
+            case TOTAL-> toret = this.getProgressTotal();
+            default -> throw new Error(
+                    "getTarget(): no target found for: " + swimKind );
         }
 
         return toret;
     }
 
-    /** @return the total meters/yards. */
-    public int getTotal()
+    /** Gets the distance for a given target.
+     * @param target the target to get.
+     * @return the distance for a given target.
+     */
+    public int getTarget(SwimKind target)
     {
-        return total;
-    }
+        int toret = -1;
 
-    /** @return the total meters, as a string. */
-    public String getTotalAsString(Settings settings)
-    {
-        return settings.toUnitsAsString( this.getTotal() );
-    }
-
-    /** @return the total meters/yards at the pool. */
-    public int getTotalPool()
-    {
-        return totalPool;
-    }
-
-    /** @return the total meters/yards at the pool, as a string. */
-    public String getTotalPoolAsString(Settings settings)
-    {
-        return settings.toUnitsAsString( this.getTotalPool() );
-    }
-
-    /** @return the total meters/yards in open water. */
-    public int getTotalOpenWater()
-    {
-        return this.getTotal() - this.getTotalPool();
-    }
-
-    /** @return the total meters/yards in open waters, as a string. */
-    public String getTotalOpenWaterAsString(Settings settings)
-    {
-        return settings.toUnitsAsString( this.getTotalOpenWater() );
-    }
-
-    /** @return the progress made up until now, between 0 - 100. */
-    public double getProgress()
-    {
-        final int TOTAL = this.getTotal();
-        final int TARGET = this.getTarget();
-        double toret = 0;
-
-        if ( TOTAL >= 0
-          && TARGET > 0 )
-        {
-            toret = ( (double) this.getTotal() / this.getTarget() ) * 100;
+        switch( target ) {
+            case POOL -> toret = this.getTargetPool();
+            case OWS -> toret = this.getTargetOWS();
+            case TOTAL-> toret = this.getTargetTotal();
+            default -> throw new Error(
+                    "getTarget(): no target found for: " + target );
         }
 
         return toret;
     }
 
-    /** @return the progress made, as a string (without an ending '%'). */
-    public String getProgressAsString()
+    /** Changes a given target distance.
+      * @param target the target to change.
+      * @param newTarget the new distance to change.
+      */
+    public void setTarget(SwimKind target, int newTarget)
     {
-        double progress = this.getProgress();
-        String toret = NOT_APPLYABLE;
+        newTarget = Math.max( 0, newTarget );
 
-        if ( progress > -1 ) {
-            toret = String.format( Locale.getDefault(), "%6.2f", progress );
+        switch( target ) {
+            case POOL -> this.setTargetPool( newTarget );
+            case OWS ->  {}
+            case TOTAL-> this.setTargetTotal( newTarget );
+            default -> throw new Error(
+                            "setTarget(): no target found for: " + target );
         }
 
-        return toret;
+        return;
     }
 
     /** Updates this year info.
@@ -149,7 +141,7 @@ public class YearInfo {
       */
     public YearInfo addMeters(int distance, boolean atPool)
     {
-        int totalPoolDistance = this.getTotalPool();
+        int totalPoolDistance = this.getDistance( SwimKind.POOL );
 
         if ( atPool ) {
             totalPoolDistance += distance;
@@ -157,9 +149,10 @@ public class YearInfo {
 
         return new YearInfo(
                 this.getYear(),
-                this.getTarget(),
-                this.getTotal() + distance,
-                totalPoolDistance
+                this.getTarget( SwimKind.TOTAL ),
+                this.getDistance( SwimKind.TOTAL ) + distance,
+                totalPoolDistance,
+                this.getTarget( SwimKind.POOL )
         );
     }
 
@@ -168,16 +161,118 @@ public class YearInfo {
     public String toString()
     {
         return String.format( Locale.getDefault(),
-                            "%4d: %6d/%6d - Pool: %6d Open water: %6d",
+                            "%4d: %6d/%6d - Pool: %6d/%6d Open water: %6d/%6d",
                             this.getYear(),
-                            this.getTotal(),
-                            this.getTarget(),
-                            this.getTotalPool(),
-                            this.getTotalOpenWater() );
+                            this.getDistance( SwimKind.TOTAL ),
+                            this.getTarget( SwimKind.TOTAL ),
+                            this.getDistance( SwimKind.POOL ),
+                            this.getTarget( SwimKind.POOL ),
+                            this.getDistance( SwimKind.OWS ),
+                            this.getTarget( SwimKind.OWS ));
     }
 
-    private int target;
+    /** @return the total meters/yards swum. */
+    private int getDistanceTotal()
+    {
+        return distanceTotal;
+    }
+
+    /** @return the total meters/yards at the pool. */
+    private int getDistancePool()
+    {
+        return distancePool;
+    }
+
+    /** @return the total meters/yards in open water. */
+    private int getDistanceOWS()
+    {
+        return this.getDistanceTotal() - this.getDistancePool();
+    }
+
+    /** @return the progress made swimming, in total. */
+    private double getProgressTotal()
+    {
+        return this.calcProgress(
+                this.getDistance( SwimKind.TOTAL ),
+                this.getTarget( SwimKind.TOTAL ) );
+    }
+
+    /** @return the OWS progress made up until now, between 0 - 100. */
+    private double getProgressOWS()
+    {
+        return this.calcProgress(
+                this.getDistance( SwimKind.OWS ),
+                this.getTarget( SwimKind.OWS ) );
+    }
+
+    /** @return the progress at the pool made up until now, between 0 - 100. */
+    private double getProgressPool()
+    {
+        return this.calcProgress(
+                this.getDistance( SwimKind.POOL ),
+                this.getTarget( SwimKind.POOL ) );
+    }
+
+    private double calcProgress(int total, int target)
+    {
+        double toret = 0;
+
+        if ( total >= 0
+                && target > 0 )
+        {
+            toret = ( (double) total / target ) * 100;
+        }
+
+        return toret;
+    }
+
+    /** @return the target for this year, as meters/yards. */
+    private int getTargetTotal()
+    {
+        return targetTotal;
+    }
+
+    /** @return the target distance to swim at the pool. */
+    private int getTargetPool()
+    {
+        return this.targetPool;
+    }
+
+    /** @return the target distance to swim in OWS. */
+    private int getTargetOWS()
+    {
+        return this.getTargetTotal() - this.getTargetPool();
+    }
+
+    /** Set the target distance at the pool.
+      * @param newTargetPool the new target distance swimming at the pool.
+      */
+    private void setTargetPool(int newTargetPool)
+    {
+        if ( newTargetPool > this.targetTotal ) {
+            this.targetTotal = newTargetPool;
+        }
+
+        this.targetPool = newTargetPool;
+    }
+
+    /** Change the target for total distance.
+      * @param newTargetTotal the new target for the total distance.
+      */
+    private void setTargetTotal(int newTargetTotal)
+    {
+        final int OWS = this.getTargetOWS();
+
+        if ( newTargetTotal < OWS ) {
+            this.targetPool = 0;
+        }
+
+        this.targetTotal = newTargetTotal;
+    }
+
+    private int targetTotal;
+    private int targetPool;
     private final int year;
-    private final int total;
-    private final int totalPool;
+    private final int distanceTotal;
+    private final int distancePool;
 }
