@@ -1,22 +1,26 @@
-// NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019-2024 Baltasar MIT License <baltasarq@gmail.com>
 
 
 package com.devbaltasarq.nadamillas.ui;
+
 
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
+
+import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 
 import android.util.Log;
 import android.view.Menu;
@@ -32,6 +36,7 @@ import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.storage.SettingsStorage;
 
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 
@@ -78,6 +83,16 @@ public class MainActivity extends BaseActivity
 
         final NavigationView NAVIGATION_VIEW = this.findViewById( R.id.nav_view );
         NAVIGATION_VIEW.setNavigationItemSelectedListener( this );
+
+        // Back
+        this.getOnBackPressedDispatcher().addCallback(this,
+                new OnBackPressedCallback( true ) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        MainActivity.this.onBack();
+                    }
+                }
+        );
     }
 
     @Override
@@ -105,16 +120,15 @@ public class MainActivity extends BaseActivity
         this.update();
     }
 
-    @Override
-    public void onBackPressed()
+    private void onBack()
     {
         final DrawerLayout drawer = this.findViewById( R.id.drawer_layout );
 
         if ( drawer.isDrawerOpen( GravityCompat.START ) ) {
             drawer.closeDrawer( GravityCompat.START );
-        } else {
-            super.onBackPressed();
         }
+
+        return;
     }
 
     @Override
@@ -141,7 +155,7 @@ public class MainActivity extends BaseActivity
 
         this.go( item.getItemId() );
 
-        drawer.closeDrawer(GravityCompat.START);
+        drawer.closeDrawer( GravityCompat.START );
         return true;
     }
 
@@ -197,29 +211,45 @@ public class MainActivity extends BaseActivity
     {
         final int DAY_OF_YEAR = Calendar.getInstance().get( Calendar.DAY_OF_YEAR );
         final double PROPORTION_OF_YEAR = 365.0 / DAY_OF_YEAR;
-        final TextView LBL_UNITS = this.findViewById( R.id.lblUnits );
-        final TextView LBL_TOTAL = this.findViewById( R.id.lblTotal );
-        final TextView LBL_PROJECTION = this.findViewById( R.id.lblProjection );
-        final TextView LBL_TARGET = this.findViewById( R.id.lblTarget );
-        final TextView LBL_POOL = this.findViewById( R.id.lblPool );
-        final TextView LBL_OPEN_WATERS = this.findViewById( R.id.lblOpenWaters );
         final TextView LBL_WEEKDAY_NAME = this.findViewById( R.id.lblWeekDayName );
         final TextView LBL_DATE = this.findViewById( R.id.lblDate );
         final YearInfo INFO = dataStore.getCurrentYearInfo();
+
+        LBL_WEEKDAY_NAME.setText( Util.getWeekDay( null, null ) );
+        LBL_DATE.setText( Util.getSemiFullDate( null, null ) );
+
+        this.showProgressForTotals( INFO, PROPORTION_OF_YEAR );
+        this.showProgressForOWS( INFO, PROPORTION_OF_YEAR );
+        this.showProgressForPool( INFO, PROPORTION_OF_YEAR );
+
+        this.showUnits();
+    }
+
+    private void showProgressForTotals(
+            final YearInfo INFO,
+            final double PROPORTION_OF_YEAR)
+    {
+        final TextView LBL_TOTAL = this.findViewById( R.id.lblTotal );
+        final TextView LBL_PROJECTION = this.findViewById( R.id.lblProjection );
+        final TextView LBL_TARGET = this.findViewById( R.id.lblTarget );
         final ProgressView PROGRESS_VIEW = this.findViewById( R.id.pvProgress );
 
         String total = "0";
+        String progress = "0";
         String target = YearInfo.NOT_APPLYABLE;
-        String totalPool = "0";
-        String totalOpenWaters = "0";
         String projection = YearInfo.NOT_APPLYABLE;
-        String projectionTotal = YearInfo.NOT_APPLYABLE;
+        String projectionPercentage = YearInfo.NOT_APPLYABLE;
 
         if ( INFO != null ) {
-            final int TARGET = INFO.getTarget();
-            final int PROGRESS = (int) INFO.getProgress();
-            final int PROJECTED = (int) ( INFO.getTotal() * PROPORTION_OF_YEAR );
-            final int PROJECTED_TOTAL = TARGET < 1 ? 1 : ( PROJECTED * 100 ) / TARGET;
+            final int TARGET = INFO.getTarget( YearInfo.SwimKind.TOTAL );
+            final int PROGRESS = (int) INFO.getProgress( YearInfo.SwimKind.TOTAL );
+            final int PROJECTED = (int)
+                                    ( INFO.getDistance( YearInfo.SwimKind.TOTAL )
+                                      * PROPORTION_OF_YEAR );
+            final int PROJECTED_PERCENTAGE = TARGET < 1 ?
+                                                1
+                                                : ( PROJECTED / TARGET ) * 100;
+            final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
             final Thread SHOW_PROGRESS_THREAD = new Thread() {
                 @Override
                 public void run()
@@ -237,27 +267,137 @@ public class MainActivity extends BaseActivity
                         Log.d( LOG_TAG, "interrupted: " + exc.getMessage() );
                     }
 
-                    MainActivity.this.runOnUiThread( () -> PROGRESS_VIEW.setProgress( PROGRESS ) );
+                    MainActivity.this.runOnUiThread(
+                                () -> PROGRESS_VIEW.setProgress( PROGRESS ) );
                 }
             };
 
-            total = INFO.getTotalAsString( settings );
-            projection = settings.toUnitsAsString( PROJECTED );
-            projectionTotal = PROJECTED_TOTAL + "%";
-            target = INFO.getTargetAsString( settings );
-            totalPool = INFO.getTotalPoolAsString( settings );
-            totalOpenWaters = INFO.getTotalOpenWaterAsString( settings );
+            total = DISTANCE_UTILS.toString(
+                                INFO.getDistance( YearInfo.SwimKind.TOTAL ) );
+            projection = DISTANCE_UTILS.toString( PROJECTED );
+            projectionPercentage = PROJECTED_PERCENTAGE + "%";
+            target = DISTANCE_UTILS.toString(
+                                INFO.getTarget( YearInfo.SwimKind.TOTAL ) );
+            progress = PROGRESS + "%";
             SHOW_PROGRESS_THREAD.start();
         }
 
-        LBL_TOTAL.setText( total );
-        LBL_PROJECTION.setText( String.format( Locale.getDefault(), "%s (%s)", projection, projectionTotal ) );
+        LBL_TOTAL.setText(
+                String.format( Locale.getDefault(),
+                        "%s (%s)",
+                        total,
+                        progress ) );
+        LBL_PROJECTION.setText(
+                String.format( Locale.getDefault(),
+                        "%s (%s)",
+                        projection,
+                        projectionPercentage ) );
         LBL_TARGET.setText( target );
-        LBL_POOL.setText( totalPool  );
-        LBL_OPEN_WATERS.setText( totalOpenWaters );
-        LBL_WEEKDAY_NAME.setText( Util.getWeekDay( null, null ) );
-        LBL_DATE.setText( Util.getSemiFullDate( null, null ) );
-        LBL_UNITS.setText( settings.getDistanceUnits().toString() );
+    }
+
+    private void showProgressForOWS(
+            final YearInfo INFO,
+            final double PROPORTION_OF_YEAR)
+    {
+        final TextView LBL_OPEN_WATERS = this.findViewById( R.id.lblOpenWaters );
+        final TextView LBL_PROJECTION = this.findViewById( R.id.lblProjectionOWS );
+        final TextView LBL_TARGET = this.findViewById( R.id.lblTargetOWS );
+        String totalOpenWaters = "0";
+        String target = YearInfo.NOT_APPLYABLE;
+        String projection = YearInfo.NOT_APPLYABLE;
+        String projectionPercentage = YearInfo.NOT_APPLYABLE;
+        String progress = "0";
+
+        if ( INFO != null ) {
+            final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
+            final int TARGET = INFO.getTarget( YearInfo.SwimKind.OWS );
+            final int PROGRESS = (int) INFO.getProgress( YearInfo.SwimKind.OWS );
+            final int PROJECTED = (int)
+                                    ( INFO.getDistance( YearInfo.SwimKind.OWS )
+                                      * PROPORTION_OF_YEAR );
+            final int PROJECTED_PERCENTAGE = TARGET < 1 ?
+                                                1
+                                                : ( PROJECTED / TARGET ) * 100;
+
+            totalOpenWaters = DISTANCE_UTILS.toString(
+                                INFO.getDistance( YearInfo.SwimKind.OWS ) );
+            projection = DISTANCE_UTILS.toString( PROJECTED );
+            projectionPercentage = PROJECTED_PERCENTAGE + "%";
+            target = DISTANCE_UTILS.toString( TARGET );
+            progress = PROGRESS + "%";
+        }
+
+        LBL_PROJECTION.setText(
+                String.format( Locale.getDefault(),
+                                "%s (%s)",
+                                projection,
+                                projectionPercentage ) );
+        LBL_OPEN_WATERS.setText(
+                String.format( Locale.getDefault(),
+                        "%s (%s)",
+                        totalOpenWaters,
+                        progress ) );;
+        LBL_TARGET.setText( target );
+    }
+
+    private void showProgressForPool(
+            final YearInfo INFO,
+            final double PROPORTION_OF_YEAR)
+    {
+        final TextView LBL_POOL = this.findViewById( R.id.lblPool );
+        final TextView LBL_PROJECTION = this.findViewById( R.id.lblProjectionPool );
+        final TextView LBL_TARGET = this.findViewById( R.id.lblTargetPool );
+        String totalPool = "0";
+        String target = YearInfo.NOT_APPLYABLE;
+        String projection = YearInfo.NOT_APPLYABLE;
+        String projectionPercentage = YearInfo.NOT_APPLYABLE;
+        String progress = "0";
+
+        if ( INFO != null ) {
+            final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
+            final int TARGET = INFO.getTarget( YearInfo.SwimKind.POOL );
+            final int PROGRESS = (int) INFO.getProgress( YearInfo.SwimKind.POOL );
+            final int PROJECTED = (int)
+                                    ( INFO.getDistance( YearInfo.SwimKind.POOL )
+                                    * PROPORTION_OF_YEAR );
+            final int PROJECTED_PERCENTAGE = TARGET < 1 ?
+                                                1
+                                                : ( PROJECTED / TARGET ) * 100;
+
+            totalPool = DISTANCE_UTILS.toString(
+                                INFO.getDistance( YearInfo.SwimKind.POOL ) );
+            projection = DISTANCE_UTILS.toString( PROJECTED );
+            projectionPercentage = PROJECTED_PERCENTAGE + "%";
+            target = DISTANCE_UTILS.toString( TARGET );
+            progress = PROGRESS + "%";
+        }
+
+        LBL_PROJECTION.setText(
+                String.format( Locale.getDefault(),
+                        "%s (%s)",
+                        projection,
+                        projectionPercentage ) );
+        LBL_POOL.setText(
+                String.format( Locale.getDefault(),
+                        "%s (%s)",
+                        totalPool,
+                        progress ) );;
+        LBL_TARGET.setText( target );
+    }
+
+    private void showUnits()
+    {
+        final List<TextView> LABELS = this.lookForViews(
+                                        new int[] {
+                                            R.id.lblUnits1,
+                                            R.id.lblUnits2,
+                                            R.id.lblUnits3 });
+
+        for(TextView lbl: LABELS) {
+            lbl.setText( settings.getDistanceUnits().toString() );
+        }
+
+        return;
     }
 
     /** The new session handler. */

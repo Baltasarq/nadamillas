@@ -45,7 +45,7 @@
     <string name="label_force_recalculation">Force recalculation</string>
     <string name="label_pool_length">Pool length</string>
     <string name="label_meter">m</string>
-    <string name="label_yard">y</string>
+    <string name="label_yard">yd</string>
     <string name="label_year">Year</string>
     <string name="label_month">Month</string>
     <string name="label_week">Week</string>
@@ -77,8 +77,13 @@
     <string name="message_target_updated">Target distance updated.</string>
     <string name="message_internal_error">Internal error.</string>
     <string name="message_io_error">Input/Output error.</string>
+    <string name="message_no_number_error">not a number</string>
     <string name="message_file_not_found">File not found.</string>
     <string name="message_unsupported_file_type_error">Unsupported file type.</string>
+    <string name="message_objectives_not_editable_now">
+        Modifications to the objectives are not allowed after October.
+        Keep swimming!!
+    </string>
 
     <!-- Import options -->
     <string-array name="array_import_options">

@@ -4,7 +4,7 @@
     <string name="title_activity_new_session">Crear sesión</string>
     <string name="title_activity_new_year">Crear año</string>
     <string name="title_activity_edit_session">Modifica sesión</string>
-    <string name="title_activity_settings">Preferencias</string>
+    <string name="title_activity_settings">Ajustes</string>
     <string name="title_activity_browse">Hojear sesiones</string>
     <string name="title_activity_history">Histórico</string>
     <string name="title_activity_stats">Estadísticas</string>
@@ -20,7 +20,7 @@
     <string name="action_stats">Estadísticas</string>
     <string name="action_export">Exportar</string>
     <string name="action_import">Importar</string>
-    <string name="action_settings">Preferencias</string>
+    <string name="action_settings">Ajustes</string>
     <string name="action_modify">Modificar</string>
     <string name="action_delete">Eliminar</string>
     <string name="label_date">Fecha</string>
@@ -38,7 +38,7 @@
     <string name="label_cancel">Cancelar</string>
     <string name="label_force_recalculation">Forzar recálculo</string>
     <string name="label_meter">m</string>
-    <string name="label_yard">y</string>
+    <string name="label_yard">yd</string>
     <string name="label_year">Año</string>
     <string name="label_month">Mes</string>
     <string name="label_week">Semana</string>
@@ -77,4 +77,9 @@
     <string name="fmt_ows">aguas abiertas</string>
     <string name="label_pool_length">Largo de piscina</string>
     <string name="label_notes">Notas</string>
+    <string name="message_no_number_error">no es un número</string>
+    <string name="message_objectives_not_editable_now">
+        Las modificaciones de los objetivos no están permitidas tras octubre.
+        ¡Sigue nadando!
+    </string>
 </resources>

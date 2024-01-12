@@ -52,13 +52,13 @@
     <ScrollView
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:fillViewport="true"
-        android:layout_margin="10dp"
+        android:layout_margin="5dp"
         android:gravity="center_horizontal|center_vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <LinearLayout
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -70,105 +70,135 @@
                 android:background="@android:color/darker_gray"/>
 
             <LinearLayout
-                android:layout_margin="10dp"
-                android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
                 <LinearLayout
-                    android:orientation="horizontal"
+                    android:layout_margin="5dp"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <TextView
-                        android:text="@string/label_year"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                        android:layout_marginEnd="10dp"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:text="@string/label_year"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                            android:layout_marginEnd="5dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight=".6" />
+
+                        <Spinner    android:id="@+id/cbYears"
+                            android:gravity="end"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <ImageButton    android:id="@+id/btNewYear"
+                            android:padding="5dp"
+                            android:layout_gravity="end"
+                            app:srcCompat="@drawable/btn_add"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="@string/action_new"
+                            app:backgroundTint="#00000000" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight=".6" />
+                        android:orientation="horizontal">
 
-                    <Spinner    android:id="@+id/cbYears"
-                        android:gravity="end"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="5dp"
+                            android:orientation="vertical">
 
-                    <ImageButton    android:id="@+id/btNewYear"
-                        android:padding="5dp"
-                        android:layout_gravity="end"
-                        app:srcCompat="@drawable/btn_add"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:contentDescription="@string/action_new"
-                        app:backgroundTint="#00000000" />
-                </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:layout_marginBottom="10dp">
 
-                <LinearLayout
-                    android:layout_margin="10dp"
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="10dp"
+                                    android:text="@string/label_distance" />
 
-                    <TextView
-                        android:text="@string/label_total_distance"
-                        android:layout_marginEnd="10dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                                <TextView
+                                    android:id="@+id/lblDistanceInfo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="10dp"
+                                    android:gravity="end"
+                                    android:text="100" />
 
-                    <TextView    android:id="@+id/lblTotalDistance"
-                        android:layout_weight=".7"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:gravity="end" />
-                    <TextView   android:id="@+id/lblUnitsTotalDistance"
-                        android:text="@string/label_km"
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginRight="10dp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </LinearLayout>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="10dp"
+                                    android:text="@string/label_target" />
 
-                <LinearLayout
-                    android:layout_margin="10dp"
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                                <TextView
+                                    android:id="@+id/lblTargetTotal"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="end"
+                                    android:text="100" />
 
-                    <TextView
-                        android:text="@string/label_target_distance"
-                        android:layout_marginEnd="10dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:labelFor="@id/edTarget"/>
+                            </LinearLayout>
 
-                    <EditText    android:id="@+id/edTarget"
-                        android:inputType="number"
-                        android:layout_weight=".7"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="end"
-                        android:importantForAutofill="no" />
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:layout_marginBottom="10dp">
 
-                    <TextView
-                        android:text="@string/label_km"
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginRight="10dp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                                <TextView
+                                    android:id="@+id/lblTargetInfo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="end"
+                                    android:text="10 pool, 190 OWS" />
 
-                    <ImageButton    android:id="@+id/btEditYear"
-                        android:padding="5dp"
-                        android:layout_gravity="end"
-                        app:srcCompat="@drawable/btn_pencil"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:contentDescription="@string/action_modify"
-                        app:backgroundTint="#00000000" />
+                                <TextView
+                                    android:id="@+id/lblUnits"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginLeft="10dp"
+                                    android:layout_marginEnd="10dp"
+                                    android:layout_marginRight="10dp"
+                                    android:text="@string/label_km" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical|end"
+                            android:gravity="center_vertical|end">
+
+                            <ImageButton
+                                android:id="@+id/btEditYear"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical|end"
+                                android:contentDescription="@string/action_modify"
+                                android:padding="5dp"
+                                app:backgroundTint="#00000000"
+                                app:srcCompat="@drawable/btn_pencil" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
@@ -178,7 +208,7 @@
                 android:background="@android:color/darker_gray"/>
 
             <LinearLayout
-                android:layout_margin="10dp"
+                android:layout_margin="5dp"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -203,7 +233,7 @@
                 android:background="@android:color/darker_gray"/>
 
             <LinearLayout
-                android:layout_margin="10dp"
+                android:layout_margin="5dp"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -228,7 +258,7 @@
                 android:background="@android:color/darker_gray" />
 
             <LinearLayout
-                android:layout_margin="10dp"
+                android:layout_margin="5dp"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -253,7 +283,7 @@
                 android:background="@android:color/darker_gray" />
 
             <LinearLayout
-                android:layout_margin="10dp"
+                android:layout_margin="5dp"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -287,7 +317,7 @@
                 android:background="@android:color/darker_gray" />
 
             <LinearLayout
-                android:layout_margin="10dp"
+                android:layout_margin="5dp"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -321,7 +351,7 @@
                 android:background="@android:color/darker_gray" />
 
             <LinearLayout
-                android:layout_margin="10dp"
+                android:layout_margin="5dp"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -356,10 +386,11 @@
 
             <TextView
                 android:id="@+id/lblAbout"
-                android:layout_margin="10dp"
+                android:layout_margin="5dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+                android:gravity="center|center_horizontal|center_vertical"
                 android:text=""/>
 
             <View

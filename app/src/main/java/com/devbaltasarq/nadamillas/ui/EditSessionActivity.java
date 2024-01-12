@@ -8,7 +8,8 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.devbaltasarq.nadamillas.core.Settings;
+import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
+import com.devbaltasarq.nadamillas.core.settings.PoolLength;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.appcompat.widget.Toolbar;
 import android.text.Editable;
@@ -86,7 +87,6 @@ public class EditSessionActivity extends BaseActivity {
         }
 
         // Update view
-        final LinearLayout LY_POOL_LAPS = this.findViewById( R.id.lyPoolLaps );
         final ImageButton BT_BACK = this.findViewById( R.id.btCloseEditSession );
         final FloatingActionButton FB_SAVE = this.findViewById( R.id.fbSaveSession );
         final EditText ED_DATE = this.findViewById( R.id.edDate );
@@ -109,7 +109,7 @@ public class EditSessionActivity extends BaseActivity {
         final TextView LBL_LENGTH2 = this.findViewById( R.id.lblLength2 );
 
         // Prepares the label for distance
-        if ( settings.getDistanceUnits() == Settings.DistanceUnits.mi ) {
+        if ( settings.getDistanceUnits() == DistanceUtils.Units.mi ) {
             LBL_LENGTH1.setText( R.string.label_yard );
             LBL_LENGTH2.setText( R.string.label_yard );
         }
@@ -119,7 +119,7 @@ public class EditSessionActivity extends BaseActivity {
                 new ArrayAdapter<>(
                         this,
                         android.R.layout.simple_spinner_item,
-                        Settings.PoolLength.toStringList() );
+                        PoolLength.toStringList() );
 
         CB_POOL_LENGTH.setAdapter( POOL_LENGTH_ADAPTER );
         CB_POOL_LENGTH.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -178,23 +178,10 @@ public class EditSessionActivity extends BaseActivity {
         }
 
         RBT_POOL.setCompoundDrawablesWithIntrinsicBounds( 0, 0, R.drawable.ic_pool, 0 );
-        RBT_POOL.setOnCheckedChangeListener( (bt, isChecked) -> {
-            if ( isChecked ) {
-                LY_POOL_LAPS.setVisibility( View.VISIBLE );
-            }
-        });
+        RBT_POOL.setOnCheckedChangeListener( (bt, isChecked) -> this.chkAtPool() );
+
         RBT_OWS.setCompoundDrawablesWithIntrinsicBounds( 0, 0, R.drawable.ic_sea, 0 );
-        RBT_OWS.setOnCheckedChangeListener( (bt, isChecked) -> {
-            if ( isChecked ) {
-                LY_POOL_LAPS.setVisibility( View.GONE );
-            }
-        });
-
-        GRD_WATER_TYPES.setOnCheckedChangeListener( (grp, id) -> {
-            int pos = ( id == RBT_POOL.getId() ) ? 0 : 1;
-
-            EditSessionActivity.this.setAtPool( pos );
-        });
+        RBT_OWS.setOnCheckedChangeListener( (bt, isChecked) -> this.chkAtPool() );
 
         // Set listeners
         BT_BACK.setOnClickListener( v -> EditSessionActivity.this.finish() );
@@ -326,7 +313,8 @@ public class EditSessionActivity extends BaseActivity {
 
         this.blockListeners = false;
 
-        // Set focus
+        // Prepare
+        this.chkAtPool();
         ED_DISTANCE.requestFocus();
     }
 
@@ -360,12 +348,14 @@ public class EditSessionActivity extends BaseActivity {
         dlg.show();
     }
 
-    /** Update whether the session was done at the pool.
-      * pool == 0, open waters == 1
-      */
-    private void setAtPool(int pos)
+    /** Checks whether we are in a session at the pool or not. */
+    private void chkAtPool()
     {
-        this.atPool = ( pos == 0 );
+        final View LY_POOL_LAPS = this.findViewById( R.id.lyPoolLaps );
+        final RadioButton RBT_POOL = this.findViewById( R.id.rbtPool );
+
+        this.atPool = RBT_POOL.isChecked();
+        LY_POOL_LAPS.setVisibility( this.atPool ? View.VISIBLE : View.GONE );
     }
 
     /** Updates the date info, and reflects the change in the view. */

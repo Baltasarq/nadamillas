@@ -1,4 +1,4 @@
-// NadaMillas (c) 2019/22 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019-2024-2024 Baltasar MIT License <baltasarq@gmail.com>
 
 
 package com.devbaltasarq.nadamillas.ui;
@@ -10,6 +10,8 @@ import android.database.SQLException;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -27,6 +29,7 @@ import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.Session;
 import com.devbaltasarq.nadamillas.core.YearInfo;
+import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
 import com.devbaltasarq.nadamillas.core.storage.YearInfoStorage;
 import com.devbaltasarq.nadamillas.ui.graph.BarChart;
 
@@ -172,7 +175,7 @@ public class StatsActivity extends BaseActivity {
 
             toret = YEARS.toArray( new String[0] );
         } catch(SQLException exc) {
-            Log.e( LOG_TAG, exc.getMessage() );
+            Log.e( LOG_TAG, "retrieveAllYearsInfo(): " + exc.getMessage() );
         } finally {
             DataStore.close( cursor );
         }
@@ -188,6 +191,7 @@ public class StatsActivity extends BaseActivity {
         final BarChart.SeriesInfo OPEN_SERIE =
                 new BarChart.SeriesInfo(
                         this.getString( R.string.label_open_waters ), Color.CYAN );
+        final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
         final int CURRENT_YEAR = Calendar.getInstance().get( Calendar.YEAR );
         final TextView TXT_REPORT = this.findViewById( R.id.txtReport );
         final String STR_UNITS = settings.getDistanceUnits().toString();
@@ -206,13 +210,15 @@ public class StatsActivity extends BaseActivity {
         TXT_REPORT.setText( "" );
         while( yearsRetrieved < NUM_YEARS_IN_GRAPH ) {
             final int DISPLAY_YEAR = year % 1000;
-            final YearInfo YEAR_INFO = dataStore.getInfoFor( year );
+            final YearInfo YEAR_INFO = dataStore.getOrCreateInfoFor( year );
 
             // Graph
-            final int TOTAL_K = YEAR_INFO.getTotal();
-            final int TOTAL_OW = YEAR_INFO.getTotal() - YEAR_INFO.getTotalPool();
-            final String STR_TOTAL_K = settings.toUnitsAsString( TOTAL_K ) + STR_UNITS;
-            final String STR_TOTAL_OW = settings.toUnitsAsString( TOTAL_OW ) + STR_UNITS;
+            final int TOTAL_K = YEAR_INFO.getDistance( YearInfo.SwimKind.TOTAL );
+            final int TOTAL_OW =
+                            TOTAL_K
+                            - YEAR_INFO.getDistance( YearInfo.SwimKind.POOL );
+            final String STR_TOTAL_K = DISTANCE_UTILS.toString( TOTAL_K ) + STR_UNITS;
+            final String STR_TOTAL_OW = DISTANCE_UTILS.toString( TOTAL_OW ) + STR_UNITS;
 
             TOTAL_SERIE.add( new BarChart.Point( DISPLAY_YEAR, TOTAL_K ) );
             OPEN_SERIE.add( new BarChart.Point( DISPLAY_YEAR, TOTAL_OW ) );
@@ -243,6 +249,7 @@ public class StatsActivity extends BaseActivity {
         final BarChart.SeriesInfo SERIE_OPEN =
                 new BarChart.SeriesInfo(
                         this.getString( R.string.label_open_waters), Color.CYAN );
+        final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
         final int NUM_COLUMNS_IN_MONTHLY_GRAPH = 12;
         final String STR_UNITS = settings.getDistanceUnits().toString();
         final String LBL_TOTAL = this.getString( R.string.label_total );
@@ -265,10 +272,10 @@ public class StatsActivity extends BaseActivity {
                 totalMeters += session.getDistance();
             }
 
-            final double TOTAL_K = settings.toUnits( totalMeters );
-            final double TOTAL_OW = settings.toUnits( totalOpenWaterMeters );
-            final String STR_TOTAL_K = settings.toUnitsAsString( totalMeters ) + STR_UNITS;
-            final String STR_TOTAL_OW = settings.toUnitsAsString( totalOpenWaterMeters ) + STR_UNITS;
+            final double TOTAL_K = DISTANCE_UTILS.thousandUnitsFromUnits( totalMeters );
+            final double TOTAL_OW = DISTANCE_UTILS.thousandUnitsFromUnits( totalOpenWaterMeters );
+            final String STR_TOTAL_K = DISTANCE_UTILS.toString( totalMeters ) + STR_UNITS;
+            final String STR_TOTAL_OW = DISTANCE_UTILS.toString( totalOpenWaterMeters ) + STR_UNITS;
 
             // Graph
             SERIE_TOTAL.add( new BarChart.Point( month + 1, TOTAL_K ) );
@@ -297,6 +304,7 @@ public class StatsActivity extends BaseActivity {
                         this.getString( R.string.label_total ), Color.BLUE );
         final BarChart.SeriesInfo SERIE_OPEN = new BarChart.SeriesInfo(
                         this.getString( R.string.label_open_waters ), Color.CYAN );
+        final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
         final Calendar DATE = Calendar.getInstance();
         final TextView TXT_REPORT = this.findViewById( R.id.txtReport );
         final ArrayList<Integer> metersTotalPerWeek = new ArrayList<>( 6 );
@@ -356,14 +364,14 @@ public class StatsActivity extends BaseActivity {
 
         // Pass sesssions to points
         for(int i = 0; i < metersTotalPerWeek.size(); ++i) {
-            final double TOTAL_PER_WEEK_K = settings.toUnits( metersTotalPerWeek.get( i ) );
+            final double TOTAL_PER_WEEK_K = DISTANCE_UTILS.thousandUnitsFromUnits( metersTotalPerWeek.get( i ) );
 
             SERIE_TOTAL.add(
                     new BarChart.Point( i + 1, TOTAL_PER_WEEK_K ) );
         }
 
         for(int i = 0; i < metersOpenPerWeek.size(); ++i) {
-            final double TOTAL_OW_PER_WEEK_K = settings.toUnits( metersOpenPerWeek.get( i ) );
+            final double TOTAL_OW_PER_WEEK_K = DISTANCE_UTILS.thousandUnitsFromUnits( metersOpenPerWeek.get( i ) );
 
             SERIE_OPEN.add(
                     new BarChart.Point( i + 1, TOTAL_OW_PER_WEEK_K ) );
@@ -371,8 +379,8 @@ public class StatsActivity extends BaseActivity {
 
         // Report
         for(int i = 0; i < metersTotalPerWeek.size(); ++i) {
-            final String STR_TOTAL_PER_WEEK_K = settings.toUnitsAsString( metersTotalPerWeek.get( i ) );
-            final String STR_TOTAL_OW_PER_WEEK_K = settings.toUnitsAsString( metersOpenPerWeek.get( i ) );
+            final String STR_TOTAL_PER_WEEK_K = DISTANCE_UTILS.toString( metersTotalPerWeek.get( i ) );
+            final String STR_TOTAL_OW_PER_WEEK_K = DISTANCE_UTILS.toString( metersOpenPerWeek.get( i ) );
 
             TXT_REPORT.append( capitalize( LBL_WEEK ) + " " + ( i + 1 ) + '\n' );
             TXT_REPORT.append( capitalize( LBL_DISTANCE ) + ": " + STR_TOTAL_PER_WEEK_K + STR_UNITS + '\n' );
@@ -381,12 +389,12 @@ public class StatsActivity extends BaseActivity {
         }
 
         TXT_REPORT.append( capitalize( LBL_TOTAL ) + ": "
-                           + settings.toUnitsAsString( totalMeters )
+                           + DISTANCE_UTILS.toString( totalMeters )
                            + STR_UNITS + "\n" );
 
         TXT_REPORT.append( capitalize( LBL_TOTAL )
                 + " (" + LBL_OPEN_WATERS + "): "
-                + settings.toUnitsAsString( owMeters )
+                + DISTANCE_UTILS.toString( owMeters )
                 + STR_UNITS + "\n" );
 
         SERIES.add( SERIE_TOTAL );
@@ -440,17 +448,14 @@ public class StatsActivity extends BaseActivity {
 
                 SELF.runOnUiThread( () -> {
                     switch( SELF.graphType ) {
-                        case Yearly:
+                        case Yearly ->
                             SELF.calculateDataForYearsStats( SELF.selectedYear, SERIES );
-                            break;
-                        case Monthly:
+                        case Monthly ->
                             SELF.calculateDataForMonthsStats( SELF.selectedYear, SERIES );
-                            break;
-                        case Weekly:
+                        case Weekly ->
                             SELF.calculateDataForWeeksStats(
                                     SELF.selectedYear, SELF.selectedMonth, SERIES );
-                            break;
-                        default:
+                        default ->
                             Log.e( LOG_TAG, "unsupported graph type" );
                     }
 
@@ -522,23 +527,23 @@ public class StatsActivity extends BaseActivity {
             this.gestureScale.onTouchEvent( event );
 
             if ( !this.gestureScale.isInProgress() ) {
-                switch ( event.getAction() ) {
-                    case MotionEvent.ACTION_DOWN:
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN -> {
                         this.position.x = event.getX();
                         this.position.y = event.getY();
-                        break;
-                    case MotionEvent.ACTION_MOVE:
+                    }
+                    case MotionEvent.ACTION_MOVE -> {
                         curX = event.getX();
                         curY = event.getY();
-                        this.view.scrollBy( (int) ( this.position.x - curX ), (int) ( this.position.y - curY ) );
+                        this.view.scrollBy((int) (this.position.x - curX), (int) (this.position.y - curY));
                         this.position.x = curX;
                         this.position.y = curY;
-                        break;
-                    case MotionEvent.ACTION_UP:
+                    }
+                    case MotionEvent.ACTION_UP -> {
                         curX = event.getX();
                         curY = event.getY();
-                        this.view.scrollBy( (int) ( this.position.x - curX ), (int) ( this.position.y - curY ) );
-                        break;
+                        this.view.scrollBy((int) (this.position.x - curX), (int) (this.position.y - curY));
+                    }
                 }
             }
 
@@ -562,13 +567,13 @@ public class StatsActivity extends BaseActivity {
         }
 
         @Override
-        public boolean onScaleBegin(ScaleGestureDetector detector)
+        public boolean onScaleBegin(@NonNull ScaleGestureDetector detector)
         {
             return true;
         }
 
         @Override
-        public void onScaleEnd(ScaleGestureDetector detector)
+        public void onScaleEnd(@NonNull ScaleGestureDetector detector)
         {
         }
 

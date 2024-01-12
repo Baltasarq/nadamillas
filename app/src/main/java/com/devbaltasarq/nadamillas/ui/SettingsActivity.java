@@ -1,10 +1,11 @@
-// NadaMillas (c) 2019/22 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019-2024-2024 Baltasar MIT License <baltasarq@gmail.com>
 
 
 package com.devbaltasarq.nadamillas.ui;
 
 
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
 
@@ -15,6 +16,7 @@ import androidx.appcompat.app.AlertDialog;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
+import androidx.activity.OnBackPressedCallback;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -33,13 +35,17 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Locale;
 
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.AppInfo;
 import com.devbaltasarq.nadamillas.core.DataStore;
-import com.devbaltasarq.nadamillas.core.Settings;
 import com.devbaltasarq.nadamillas.core.Util;
 import com.devbaltasarq.nadamillas.core.YearInfo;
+import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
+import com.devbaltasarq.nadamillas.core.settings.FirstDayOfWeek;
+import com.devbaltasarq.nadamillas.core.settings.PoolLength;
 import com.devbaltasarq.nadamillas.core.storage.SettingsStorage;
 import com.devbaltasarq.nadamillas.core.storage.YearInfoStorage;
 
@@ -56,36 +62,30 @@ public class SettingsActivity extends BaseActivity {
         final Toolbar TOOL_BAR = findViewById( R.id.toolbar );
         this.setSupportActionBar( TOOL_BAR );
 
-        final ImageButton BT_BACK = this.findViewById( R.id.btCloseSettings );
         final Spinner CB_UNITS = this.findViewById( R.id.cbUnits );
-        final ImageButton BT_RECALCULATE = this.findViewById( R.id.btRecalculate );
-        final ImageButton BT_IMPORT = this.findViewById( R.id.btImport );
-        final ImageButton BT_EXPORT = this.findViewById( R.id.btExport );
         final Spinner CB_YEARS = this.findViewById( R.id.cbYears );
         final Spinner CB_FDoW = this.findViewById( R.id.cbFirstDayOfWeek );
         final Spinner CB_DEFAULT_POOL_LENGTH = this.findViewById( R.id.cbDefaultPoolLength );
-        final ImageButton BT_EDIT_YEAR = this.findViewById( R.id.btEditYear );
-        final ImageButton BT_NEW_YEAR = this.findViewById( R.id.btNewYear );
         final TextView LBL_ABOUT = this.findViewById( R.id.lblAbout );
 
+        // Prepare the "about" label
+        LBL_ABOUT.setText( AppInfo.getAuthoringMessage() );
+
         // Prepare the default pool length
-        final ArrayAdapter<Settings.PoolLength> POOL_LENGTH_ADAPTER = new ArrayAdapter<>(
+        final ArrayAdapter<PoolLength> POOL_LENGTH_ADAPTER = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
-                Settings.PoolLength.values()
+                PoolLength.values()
         );
 
         CB_DEFAULT_POOL_LENGTH.setAdapter( POOL_LENGTH_ADAPTER );
         CB_DEFAULT_POOL_LENGTH.setSelection( settings.getDefaultPoolLength().ordinal() );
 
-        // Prepare the "about" label
-        LBL_ABOUT.setText( AppInfo.getAuthoringMessage() );
-
         // Prepare units spinner
-        final ArrayAdapter<Settings.DistanceUnits> UNITS_ADAPTER = new ArrayAdapter<>(
+        final ArrayAdapter<DistanceUtils.Units> UNITS_ADAPTER = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
-                Settings.DistanceUnits.values() );
+                DistanceUtils.Units.values() );
 
         CB_UNITS.setAdapter( UNITS_ADAPTER );
         CB_UNITS.setSelection( settings.getDistanceUnits().ordinal() );
@@ -128,13 +128,6 @@ public class SettingsActivity extends BaseActivity {
             }
         });
 
-        BT_RECALCULATE.setOnClickListener( v -> this.onRecalculate() );
-        BT_EDIT_YEAR.setOnClickListener( v -> this.onEditTarget() );
-        BT_NEW_YEAR.setOnClickListener( v -> this.onNewYear() );
-        BT_BACK.setOnClickListener( v -> this.onBackPressed() );
-        BT_IMPORT.setOnClickListener( v -> this.onImport() );
-        BT_EXPORT.setOnClickListener( v -> this.onExport() );
-
         CB_YEARS.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -163,7 +156,7 @@ public class SettingsActivity extends BaseActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
             {
-                settings.setDefaultPoolLength( Settings.PoolLength.values()[ position ] );
+                settings.setDefaultPoolLength( PoolLength.values()[ position ] );
             }
 
             @Override
@@ -171,6 +164,8 @@ public class SettingsActivity extends BaseActivity {
             {
             }
         });
+
+        this.setButtonsListeners();
     }
 
     @Override
@@ -189,17 +184,42 @@ public class SettingsActivity extends BaseActivity {
         DataStore.close( this.yearsAdapter.getCursor() );
     }
 
-    @Override
-    public void onBackPressed()
+    private void onBack()
     {
         if ( !this.working) {
             new SettingsStorage( this.getApplicationContext(), settings ).store();
 
-            super.onBackPressed();
             this.finish();
         }
 
         return;
+    }
+
+    private void setButtonsListeners()
+    {
+        final ImageButton BT_BACK = this.findViewById( R.id.btCloseSettings );
+        final ImageButton BT_RECALCULATE = this.findViewById( R.id.btRecalculate );
+        final ImageButton BT_IMPORT = this.findViewById( R.id.btImport );
+        final ImageButton BT_EXPORT = this.findViewById( R.id.btExport );
+        final ImageButton BT_EDIT_YEAR = this.findViewById( R.id.btEditYear );
+        final ImageButton BT_NEW_YEAR = this.findViewById( R.id.btNewYear );
+
+        // Back
+        this.getOnBackPressedDispatcher().addCallback(this,
+                new OnBackPressedCallback( true ) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        SettingsActivity.this.onBack();
+                    }
+                }
+        );
+
+        BT_RECALCULATE.setOnClickListener( v -> this.onRecalculate() );
+        BT_NEW_YEAR.setOnClickListener( v -> this.onNewYear() );
+        BT_BACK.setOnClickListener( v -> this.onBack() );
+        BT_IMPORT.setOnClickListener( v -> this.onImport() );
+        BT_EXPORT.setOnClickListener( v -> this.onExport() );
+        BT_EDIT_YEAR.setOnClickListener( v -> this.onEditYearInfo() );
     }
 
     /** Listener for the recalculate button. */
@@ -233,36 +253,10 @@ public class SettingsActivity extends BaseActivity {
         recalculationThread.start();
     }
 
-    /** Handler for the edit target event. */
-    private void onEditTarget()
+    private void onEditYearInfo()
     {
-        final Spinner CB_YEARS = this.findViewById( R.id.cbYears );
-        final TextView ED_TARGET = this.findViewById( R.id.edTarget );
-        final Cursor SELECTED_YEAR_CURSOR = (Cursor) CB_YEARS.getSelectedItem();
-
-        if ( SELECTED_YEAR_CURSOR != null ) {
-            final int SELECTED_YEAR = SELECTED_YEAR_CURSOR.getInt(
-                    SELECTED_YEAR_CURSOR.getColumnIndexOrThrow(
-                            YearInfoStorage.FIELD_YEAR ) );
-            final YearInfo INFO = dataStore.getInfoFor( SELECTED_YEAR );
-            final String STR_TARGET = ED_TARGET.getText().toString();
-
-            // Convert to integer
-            int target = 0;
-
-            try {
-                target = Integer.parseInt( STR_TARGET ) * 1000;
-            } catch(NumberFormatException exc) {
-                Log.d( LOG_TAG, "error converting target: " + STR_TARGET );
-            }
-
-            INFO.setTarget( target );
-            dataStore.add( INFO );
-            Toast.makeText( this, R.string.message_target_updated, Toast.LENGTH_LONG ).show();
-        } else {
-            Toast.makeText( this, this.getString( R.string.label_year ) + "?",
-                            Toast.LENGTH_LONG ).show();
-        }
+        EditYearInfoActivity.yearInfo = this.getSelectedYearInfo();
+        this.startActivity( new Intent( this, EditYearInfoActivity.class ) );
     }
 
     /** Handler for the create new year event. */
@@ -295,10 +289,10 @@ public class SettingsActivity extends BaseActivity {
         CB_YEAR.setAdapter( YEARS_ADAPTER );
 
         DLG.setPositiveButton( R.string.label_ok, (dialog, which) -> {
-            final String SELECTED_YEAR = (String) CB_YEAR.getSelectedItem();
-            final int THE_YEAR = Integer.parseInt( SELECTED_YEAR );
+            final String STR_SELECTED_YEAR = (String) CB_YEAR.getSelectedItem();
+            final int SELECTED_YEAR = Integer.parseInt( STR_SELECTED_YEAR );
 
-            dataStore.add( new YearInfo( THE_YEAR, 0, 0 ) );
+            dataStore.add( new YearInfo( SELECTED_YEAR ) );
             Toast.makeText( SettingsActivity.this, R.string.message_year_info_created, Toast.LENGTH_LONG ).show();
             SettingsActivity.this.update();
         });
@@ -310,7 +304,7 @@ public class SettingsActivity extends BaseActivity {
     /** Handler for the units changed event. */
     private void onUnitsChangedTo(int pos)
     {
-        settings.setDistanceUnits( Settings.DistanceUnits.fromOrdinal( pos ) );
+        settings.setDistanceUnits( DistanceUtils.Units.fromOrdinal( pos ) );
         this.updateTarget();
     }
 
@@ -328,45 +322,74 @@ public class SettingsActivity extends BaseActivity {
         this.updateTarget();
     }
 
-    private void updateTarget()
+    /** @return the current year info selected by the user, or null if impossible. */
+    private YearInfo getSelectedYearInfo()
     {
-        final TextView LBL_TOTAL_DISTANCE = this.findViewById( R.id.lblTotalDistance );
-        final TextView LBL_UNITS_TOTAL_DISTANCE = this.findViewById( R.id.lblUnitsTotalDistance );
         final Spinner CB_YEARS = this.findViewById( R.id.cbYears );
-        final TextView ED_TARGET = this.findViewById( R.id.edTarget );
         final Cursor SELECTED_YEAR_CURSOR = (Cursor) CB_YEARS.getSelectedItem();
         Cursor cursor = null;
+        YearInfo toret = null;
 
         if ( SELECTED_YEAR_CURSOR != null ) {
             try {
                 cursor = dataStore.getDescendingAllYearInfosCursor();
 
                 final int SELECTED_YEAR = SELECTED_YEAR_CURSOR.getInt(
-                        cursor.getColumnIndexOrThrow(
-                                YearInfoStorage.FIELD_YEAR ) );
-                final YearInfo INFO = dataStore.getInfoFor( SELECTED_YEAR );
+                                            cursor.getColumnIndexOrThrow(
+                                                YearInfoStorage.FIELD_YEAR ) );
+                final YearInfo INFO = dataStore.getOrCreateInfoFor( SELECTED_YEAR );
 
                 if ( INFO != null ) {
-                    final String TARGET = Integer.toString( INFO.getTarget() / 1000 );
-                    int displayUnits = R.string.label_km;
-
-                    if ( settings.getDistanceUnits() == Settings.DistanceUnits.mi ) {
-                        displayUnits = R.string.label_mi;
-                    }
-
-                    ED_TARGET.setText( TARGET );
-                    LBL_TOTAL_DISTANCE.setText( INFO.getTotalAsString( settings ) );
-                    LBL_UNITS_TOTAL_DISTANCE.setText( displayUnits );
+                    toret = INFO;
                 } else {
                     Log.e( LOG_TAG, "no info for year: " + SELECTED_YEAR );
                 }
             } catch(SQLException exc) {
-                Log.e( LOG_TAG, exc.getMessage() );
+                Log.e( LOG_TAG, "" + exc.getMessage() );
             } finally {
                 DataStore.close( cursor );
             }
         } else {
             Log.d( LOG_TAG, "unable to update the target");
+        }
+
+        return toret;
+    }
+
+    private void updateTarget()
+    {
+        final TextView LBL_DISTANCE = this.findViewById( R.id.lblDistanceInfo );
+        final TextView LBL_TARGET_TOTAL = this.findViewById( R.id.lblTargetTotal );
+        final TextView LBL_INFO = this.findViewById( R.id.lblTargetInfo );
+        final TextView LBL_UNITS = this.findViewById( R.id.lblUnits );
+        final YearInfo INFO = this.getSelectedYearInfo();
+        final DistanceUtils DISTANCE_UTIL = settings.getDistanceUtils();
+        int displayUnits = R.string.label_km;
+
+        // Update units
+        if ( settings.getDistanceUnits() == DistanceUtils.Units.mi ) {
+            displayUnits = R.string.label_mi;
+        }
+
+        LBL_UNITS.setText( displayUnits );
+
+        if ( INFO != null ) {
+            // Target & distance info
+            LBL_DISTANCE.setText(
+                            DISTANCE_UTIL.toString(
+                                INFO.getDistance( YearInfo.SwimKind.TOTAL ) ) );
+            LBL_TARGET_TOTAL.setText(
+                            DISTANCE_UTIL.toString(
+                                INFO.getTarget( YearInfo.SwimKind.TOTAL ) ) );
+            LBL_INFO.setText( String.format(
+                                Locale.getDefault(),
+                                "%s %s, %s %s",
+                                DISTANCE_UTIL.toString(
+                                        INFO.getTarget( YearInfo.SwimKind.OWS ) ),
+                                this.getString( R.string.label_abbrev_open_waters ),
+                                DISTANCE_UTIL.toString(
+                                        INFO.getTarget( YearInfo.SwimKind.POOL ) ),
+                                this.getString( R.string.label_pool ) ));
         }
 
         return;
@@ -376,10 +399,13 @@ public class SettingsActivity extends BaseActivity {
     private void updateFirstDayOfWeek()
     {
         final Spinner CB_FDoW = this.findViewById( R.id.cbFirstDayOfWeek );
-        final Settings.FirstDayOfWeek FIRST_DAY_OF_WEEK =
-                Settings.FirstDayOfWeek.fromOrdinal( CB_FDoW.getSelectedItemPosition() );
+        final int POS = CB_FDoW.getSelectedItemPosition();
 
-        settings.setFirstDayOfWeek( FIRST_DAY_OF_WEEK );
+        if ( POS != AdapterView.INVALID_POSITION ) {
+            settings.setFirstDayOfWeek( FirstDayOfWeek.fromOrdinal( POS  ) );
+        }
+
+        return;
     }
 
     /** Lets the user choose a backup file for importing. */
@@ -419,13 +445,11 @@ public class SettingsActivity extends BaseActivity {
     private void importFile(Uri uri)
     {
         if ( uri != null ) {
-            final String FILE_EXTENSION = MimeTypeMap.getFileExtensionFromUrl( uri
-                    .toString().toLowerCase() );
-            final String BCKUP_FILE_EXT = DataStore.EXT_BACKUP_FILE.toLowerCase();
+            final String SCHEME = uri.getScheme();
 
-            if ( ( uri.getScheme().equals( ContentResolver.SCHEME_FILE )
-                    && FILE_EXTENSION.equals( BCKUP_FILE_EXT ) )
-                || uri.getScheme().equals( ContentResolver.SCHEME_CONTENT ) )
+            if ( SCHEME != null
+                && ( SCHEME.equals( ContentResolver.SCHEME_FILE )
+                  || SCHEME.equals( ContentResolver.SCHEME_CONTENT ) ) )
             {
                 final android.app.AlertDialog.Builder DLG = new android.app.AlertDialog.Builder( this );
 
@@ -450,7 +474,7 @@ public class SettingsActivity extends BaseActivity {
     }
 
     /** Import a given json file. */
-    private void importFile(final Uri uri, final boolean fromScratch)
+    private void importFile(final Uri URI, final boolean FROM_SCRATCH)
     {
         final Thread IMPORT_THREAD = new Thread() {
             @Override
@@ -468,25 +492,30 @@ public class SettingsActivity extends BaseActivity {
                     PROGRESS_BAR.setIndeterminate( true );
                 });
 
-                if ( uri != null
-                        && uri.getScheme() != null
-                        && ( uri.getScheme().equals( ContentResolver.SCHEME_CONTENT )
-                        ||  uri.getScheme().equals( ContentResolver.SCHEME_FILE ) ) )
-                {
-                    try {
-                        final InputStream IN = SELF.getContentResolver().openInputStream( uri );
+                if ( URI != null ) {
+                    final String SCHEME = URI.getScheme();
 
-                        dataStore.importFrom( IN, fromScratch );
-                        dataStore.recalculateAll();
-                        SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_finished ) );
-                    } catch(IOException exc) {
-                        SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_io_error ) );
-                        Log.e( LOG_TAG, exc.getMessage() );
+                    if ( SCHEME != null
+                      && ( URI.getScheme().equals( ContentResolver.SCHEME_CONTENT )
+                       ||  URI.getScheme().equals( ContentResolver.SCHEME_FILE ) ) )
+                    {
+                        try {
+                            final InputStream IN = SELF.getContentResolver().openInputStream( URI );
+
+                            dataStore.importFrom( IN, FROM_SCRATCH );
+                            dataStore.recalculateAll();
+                            SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_finished ) );
+                        } catch(IOException exc) {
+                            SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_io_error ) );
+                            Log.e( LOG_TAG, "" + exc.getMessage() );
+                        }
+
+                        SELF.runOnUiThread( SELF::update );
+                    } else {
+                        SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_unsupported_file_type_error ) );
                     }
-
-                    SELF.runOnUiThread( SELF::update );
                 } else {
-                    SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_unsupported_file_type_error ) );
+                    SELF.showStatus( LOG_TAG, SELF.getString( R.string.message_file_not_found ) );
                 }
 
                 runOnUiThread( () -> {

@@ -1,4 +1,4 @@
-// NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019-2024 Baltasar MIT License <baltasarq@gmail.com>
 
 
 package com.devbaltasarq.nadamillas.core;
@@ -31,13 +31,14 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 
 
 public class DataStore extends SQLiteOpenHelper {
     private static final String LOG_TAG = DataStore.class.getSimpleName();
     public static final String DIR_BACKUP_NAME = "backup";
     public static final String EXT_BACKUP_FILE = "json";
-    private static final int VERSION = 7;
+    private static final int VERSION = 8;
     private static final String NAME = "swimming_workouts";
     private static final String TABLE_YEARS = "years";
     private static final String TABLE_SESSIONS = "workouts";
@@ -87,6 +88,7 @@ public class DataStore extends SQLiteOpenHelper {
 
             createYearsInfoTable( db );
             updateSessionsTable( db, oldVersion, newVersion );
+            updateYearInfoTable( db, oldVersion, newVersion );
 
             db.setTransactionSuccessful();
             Log.d( LOG_TAG, "tables updated");
@@ -97,11 +99,6 @@ public class DataStore extends SQLiteOpenHelper {
         }
 
         this.onCreate( db );
-    }
-
-    private static void removeSessionsTable(SQLiteDatabase db)
-    {
-        db.execSQL( "DROP TABLE IF EXISTS " + TABLE_SESSIONS );
     }
 
     private static void createSessionsTable(SQLiteDatabase db)
@@ -126,6 +123,7 @@ public class DataStore extends SQLiteOpenHelper {
                 "CREATE TABLE IF NOT EXISTS " + TABLE_YEARS + "("
                         + YearInfoStorage.FIELD_YEAR + " integer PRIMARY KEY,"
                         + YearInfoStorage.FIELD_TARGET + " integer NOT NULL,"
+                        + YearInfoStorage.FIELD_POOL_TARGET + " integer NOT NULL DEFAULT 0,"
                         + YearInfoStorage.FIELD_TOTAL + " integer NOT NULL,"
                         + YearInfoStorage.FIELD_TOTAL_POOL + " integer NOT NULL)"
         );
@@ -143,7 +141,8 @@ public class DataStore extends SQLiteOpenHelper {
                             + " ADD COLUMN " +  SessionStorage.FIELD_SECONDS
                             + " integer NOT NULL DEFAULT 0;" );
                 } catch(SQLException exc) {
-                    Log.e( LOG_TAG, exc.getMessage() );
+                    Log.e( LOG_TAG, "db.upgradeSessionsTable(): "
+                            + " adding 'seconds' field: " + exc.getMessage() );
                 }
             }
 
@@ -154,7 +153,8 @@ public class DataStore extends SQLiteOpenHelper {
                             + " ADD COLUMN " +  SessionStorage.FIELD_PLACE
                             + " text NOT NULL DEFAULT \"\";" );
                 } catch(SQLException exc) {
-                    Log.e( LOG_TAG, exc.getMessage() );
+                    Log.e( LOG_TAG, "db.upgradeSessionsTable(): "
+                            + "adding 'place' field: " + exc.getMessage() );
                 }
             }
 
@@ -165,7 +165,30 @@ public class DataStore extends SQLiteOpenHelper {
                             + " ADD COLUMN " +  SessionStorage.FIELD_NOTES
                             + " text NOT NULL DEFAULT \"\";" );
                 } catch(SQLException exc) {
-                    Log.e( LOG_TAG, exc.getMessage() );
+                    Log.e( LOG_TAG, "db.upgradeSessionsTable(): "
+                            + "adding 'notes' field: " + exc.getMessage() );
+                }
+            }
+        }
+
+        return;
+    }
+
+    private static void updateYearInfoTable(SQLiteDatabase db, int oldVersion, int newVersion)
+    {
+        createYearsInfoTable( db );
+
+        if ( newVersion > oldVersion ) {
+            if ( oldVersion <= 8 ) {
+                try {
+                    // Add the target pool column to the sessions table.
+                    db.execSQL( "ALTER TABLE " + TABLE_YEARS
+                            + " ADD COLUMN " +  YearInfoStorage.FIELD_POOL_TARGET
+                            + " integer NOT NULL DEFAULT 0;" );
+                } catch(SQLException exc) {
+                    Log.e( LOG_TAG, "db.upgradeYearInfoTable(): "
+                            + " adding 'pool_target' field: "
+                            + exc.getMessage() );
                 }
             }
         }
@@ -185,16 +208,30 @@ public class DataStore extends SQLiteOpenHelper {
     {
         final Calendar TODAY = Calendar.getInstance();
 
-        return this.getInfoFor( TODAY.get( Calendar.YEAR ) );
+        return this.getOrCreateInfoFor( TODAY.get( Calendar.YEAR ) );
     }
 
     /** Retrieves the accumulated distances from the database.
-      * @param d the Date object from which the year number will be extracted.
+      * @param DATE the Date object from which the year number will be extracted.
       * @return a YearInfo object.
       */
-    public YearInfo getInfoFor(Date d)
+    public YearInfo getOrCreateInfoFor(final Date DATE)
     {
-        return getInfoFor( Util.getYearFrom( d ) );
+        final int YEAR = Util.getYearFrom( DATE );
+        final Cursor CURSOR = this.getAllYearInfosCursorWith(
+                YearInfoStorage.FIELD_YEAR + "=?",
+                new String[]{ Integer.toString( YEAR ) } );
+        YearInfo toret = null;
+
+        if ( CURSOR.moveToFirst() ) {
+            toret = YearInfoStorage.createFrom( CURSOR );
+        } else {
+            Log.d( LOG_TAG, "no records found for " + YEAR + ": " + CURSOR.getCount() );
+            toret = this.createYearInfoFor( DATE, 0 );
+            Log.i( LOG_TAG, "created yearinfo: " + toret );
+        }
+
+        return toret;
     }
 
     /** Retrieves the accumulated distances from the database.
@@ -202,24 +239,9 @@ public class DataStore extends SQLiteOpenHelper {
       * @param year the year for the accumulated distances, as an int.
       * @return a YearInfo object.
       */
-    public YearInfo getInfoFor(int year)
+    public YearInfo getOrCreateInfoFor(int year)
     {
-        YearInfo toret = null;
-        final Cursor CURSOR = this.getAllYearInfosCursorWith(
-                                        YearInfoStorage.FIELD_YEAR + "=?",
-                                        new String[]{ Integer.toString( year ) } );
-
-        if ( CURSOR.moveToFirst() ) {
-            toret = YearInfoStorage.createFrom( CURSOR );
-        } else {
-            Log.d( LOG_TAG, "no records found for " + year + ": " + CURSOR.getCount() );
-            Log.i( LOG_TAG, "creating yearinfo for: " + year );
-            toret = new YearInfo( year, 0, 0 );
-            this.add( toret );
-            Log.i( LOG_TAG, "created yearinfo: " + toret );
-        }
-
-        return toret;
+        return getOrCreateInfoFor( Util.dateFromData( year, 1, 1 ) );
     }
 
     public Cursor getDescendingAllYearInfosCursor()
@@ -244,7 +266,7 @@ public class DataStore extends SQLiteOpenHelper {
                 null, null, orderBy );
     }
 
-    /** Adds a new YearInfo object to the data store.
+    /** Adds or updates a new YearInfo object to the data store.
       * @param yinfo the info to store.
       */
     public void add(YearInfo yinfo)
@@ -280,6 +302,28 @@ public class DataStore extends SQLiteOpenHelper {
         return;
     }
 
+    private YearInfo createYearInfoFor(final Date DATE, int distance)
+    {
+        final Calendar CAL = Calendar.getInstance();
+        final String MSG = ", adding distance: " + distance;
+        YearInfo toret;
+
+        CAL.setTime( DATE );
+        int year = CAL.get( Calendar.YEAR );
+
+        Log.d( LOG_TAG,"Creating missing year info: " + year + MSG );
+
+        toret = new YearInfo(
+                year,
+                distance,
+                distance,
+                0,
+                0 );
+
+        this.add( toret );
+        return toret;
+    }
+
     /** Updates the year info.
       * @param date the date for this update.
       * @param distance the integer for updating the totals (can be negative).
@@ -287,29 +331,24 @@ public class DataStore extends SQLiteOpenHelper {
       */
     private void updateYearInfo(Date date, int distance, boolean atPool)
     {
-        final YearInfo YEAR_INFO = this.getInfoFor( date );
-        YearInfo NEW_YEAR_INFO;
+        final YearInfo YEAR_INFO = this.getOrCreateInfoFor( date );
+        YearInfo new_year_info = YEAR_INFO.addMeters( distance, atPool );
 
-        if ( YEAR_INFO != null ) {
-            NEW_YEAR_INFO = YEAR_INFO.addMeters( distance, atPool );
-            Log.d( LOG_TAG,"Updating year info, adding:" + distance + ", at pool: " + atPool );
-        } else {
-            NEW_YEAR_INFO = new YearInfo( 2019, distance, atPool? distance : 0 );
-        }
-
-        this.updateYearInfo( NEW_YEAR_INFO );
+        Log.d( LOG_TAG,"Updating year info, adding:" + distance + ", at pool: " + atPool );
+        this.updateYearInfo( new_year_info );
     }
 
     private void updateYearInfo(Date date, int distToSubstract, boolean atPool, int distToSum)
     {
-        final YearInfo YEAR_INFO = this.getInfoFor( date );
+        final YearInfo YEAR_INFO = this.getOrCreateInfoFor( date );
+        YearInfo newYearInfo;
 
         Log.d( LOG_TAG,"Updating year info, adding:"
                             + distToSum + ", at pool: " + atPool
                             + ", removing: " + distToSubstract + ", at pool: " + !atPool );
 
         // Prepare new year info
-        YearInfo newYearInfo = YEAR_INFO.addMeters( distToSubstract * -1, atPool );
+        newYearInfo = YEAR_INFO.addMeters( distToSubstract * -1, atPool );
         newYearInfo = newYearInfo.addMeters( distToSum, !atPool );
 
         this.updateYearInfo( newYearInfo );
@@ -322,7 +361,7 @@ public class DataStore extends SQLiteOpenHelper {
         Log.d( LOG_TAG,"updating year info: " + YEAR_INFO );
 
         // Ensure the object exists in the store
-        this.getInfoFor( YEAR_INFO.getYear() );
+        this.getOrCreateInfoFor( YEAR_INFO.getYear() );
 
         // Update it
         try {
@@ -480,18 +519,13 @@ public class DataStore extends SQLiteOpenHelper {
 
             numSessions = toret.length;
         } catch(SQLException exc) {
-            Log.e( LOG_TAG, exc.getMessage() );
+            Log.e( LOG_TAG, "db.retrieveSessionsWith(): " + exc.getMessage() );
         } finally {
             close( cursor );
         }
 
         Log.d( LOG_TAG, "retrieved " + numSessions + " sessions" );
         return toret;
-    }
-
-    public Cursor getAllSessionsCursorForCurrentYear()
-    {
-        return this.getAllSessionsCursorFor( Util.getYearFrom( Util.getDate().getTime() ) );
     }
 
     public Cursor getAllSessionsCursorFor(int year)
@@ -551,25 +585,19 @@ public class DataStore extends SQLiteOpenHelper {
         return;
     }
 
-    public void recalculateCurrentYear()
-    {
-        final Calendar CALENDAR = Calendar.getInstance();
-
-        this.recalculate( CALENDAR.get( Calendar.YEAR ) );
-    }
-
     public void recalculate(int year)
     {
         Cursor cursor = null;
         YearInfo info = null;
 
         int target = 0;
+        int targetPool = 0;
         int totalMeters = 0;
         int totalMetersPool = 0;
 
         try {
             cursor = this.getAllSessionsCursorFor( year );
-            info = this.getInfoFor( year );
+            info = this.getOrCreateInfoFor( year );
 
             if ( cursor.moveToFirst() ) {
                 do {
@@ -586,18 +614,18 @@ public class DataStore extends SQLiteOpenHelper {
                 } while( cursor.moveToNext() );
             }
         } catch(SQLException exc) {
-            Log.e( LOG_TAG, exc.getMessage() );
+            Log.e( LOG_TAG, "db.recalculate(): " + exc.getMessage() );
         } finally {
             close( cursor );
         }
 
         // Build & store the target
         if ( info != null ) {
-            target = info.getTarget();
+            target = info.getTarget( YearInfo.SwimKind.TOTAL );
+            targetPool = info.getTarget( YearInfo.SwimKind.POOL );
         }
 
-        final YearInfo TORET = new YearInfo( year, totalMeters, totalMetersPool );
-        TORET.setTarget( target );
+        final YearInfo TORET = new YearInfo( year, target, totalMeters, totalMetersPool, targetPool );
         this.add( TORET );
     }
 
@@ -752,7 +780,7 @@ public class DataStore extends SQLiteOpenHelper {
                         YearInfoStorage.createFrom( cursorYearInfo ) ).toJSON( jsonWriter );
             }
         } catch(SQLException exc) {
-            Log.e( LOG_TAG, exc.getMessage() );
+            Log.e( LOG_TAG, "retrieving all year infos: " + exc.getMessage() );
         } finally {
             close( cursorYearInfo );
         }
@@ -774,7 +802,8 @@ public class DataStore extends SQLiteOpenHelper {
                         SessionStorage.createFrom( cursorSessions ) ).toJSON( jsonWriter );
             }
         } catch(SQLException exc) {
-            Log.e( LOG_TAG, exc.getMessage() );
+            Log.e( LOG_TAG, "db.allSessionsTo(): writing all sesions to json: "
+                            + exc.getMessage() );
         } finally {
             close( cursorSessions );
         }
@@ -816,7 +845,7 @@ public class DataStore extends SQLiteOpenHelper {
         if ( BKUP_DIR != null
           && BKUP_DIR.isDirectory() )
         {
-            for(File f: BKUP_DIR.listFiles()) {
+            for(File f: Objects.requireNonNull( BKUP_DIR.listFiles() )) {
                 toret = f;
                 break;
             }
@@ -975,20 +1004,6 @@ public class DataStore extends SQLiteOpenHelper {
         return toret;
     }
 
-    public static BufferedReader openReaderFor(File f) throws IOException
-    {
-        BufferedReader toret;
-
-        try {
-            toret = openReaderFor( new FileInputStream( f ) );
-        } catch (IOException exc) {
-            Log.e( LOG_TAG,"Error creating reader for file: " + f.getName() );
-            throw exc;
-        }
-
-        return toret;
-    }
-
     private static BufferedReader openReaderFor(InputStream inStream)
     {
         final InputStreamReader inputStreamReader = new InputStreamReader(
@@ -996,45 +1011,6 @@ public class DataStore extends SQLiteOpenHelper {
                 StandardCharsets.UTF_8.newDecoder() );
 
         return new BufferedReader( inputStreamReader );
-    }
-
-    /** Closes a writer stream. */
-    public static void close(Writer writer)
-    {
-        try {
-            if ( writer != null ) {
-                writer.close();
-            }
-        } catch(IOException exc)
-        {
-            Log.e( LOG_TAG, "closing writer: " + exc.getMessage() );
-        }
-    }
-
-    /** Closes a reader stream. */
-    public static void close(Reader reader)
-    {
-        try {
-            if ( reader != null ) {
-                reader.close();
-            }
-        } catch(IOException exc)
-        {
-            Log.e( LOG_TAG, "closing reader: " + exc.getMessage() );
-        }
-    }
-
-    /** Closes a JSONReader stream. */
-    private static void close(JsonReader jsonReader)
-    {
-        try {
-            if ( jsonReader != null ) {
-                jsonReader.close();
-            }
-        } catch(IOException exc)
-        {
-            Log.e( LOG_TAG, "closing json reader: " + exc.getMessage() );
-        }
     }
 
     /** @return a newly created temp file. */
@@ -1075,7 +1051,7 @@ public class DataStore extends SQLiteOpenHelper {
         if ( dir != null
           && dir.isDirectory() )
         {
-            for (File f: dir.listFiles()) {
+            for (File f: Objects.requireNonNull( dir.listFiles() )) {
                 f.delete();
             }
         }
@@ -1133,17 +1109,6 @@ public class DataStore extends SQLiteOpenHelper {
     {
         if ( dataStore == null ) {
             dataStore = new DataStore( context );
-        }
-
-        return dataStore;
-    }
-
-    /** @return the DataStore singleton. */
-    public static DataStore get()
-    {
-        if ( dataStore == null ) {
-            Log.e( LOG_TAG, "ERROR: trying to get an unbuilt data store!!!" );
-            System.exit( -1 );
         }
 
         return dataStore;

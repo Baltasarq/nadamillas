@@ -1,8 +1,10 @@
-// NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019-2024 Baltasar MIT License <baltasarq@gmail.com>
 
 
 package com.devbaltasarq.nadamillas.ui;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -19,11 +21,14 @@ import androidx.activity.result.contract.ActivityResultContracts;
 
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.devbaltasarq.nadamillas.R;
@@ -36,6 +41,7 @@ import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -151,6 +157,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         return;
     }
 
+    /** Shares a piece of text to mail, WhatsApp... */
     protected void share(final String DATA)
     {
         final Intent SHARING_INTENT = new Intent( Intent.ACTION_SEND );
@@ -163,6 +170,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 this.getString( R.string.action_share ) ) );
     }
 
+    /** Shares an image of the screen to mail, WhatsApp... */
     protected void shareScreenShot(String logTag, File f)
     {
         final Thread SAVE_THREAD = new Thread() {
@@ -179,6 +187,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         SAVE_THREAD.start();
     }
 
+    /** Shares any file to mail, WhatsApp... */
     protected void share(String logTag, String mimeType, File f)
     {
         try {
@@ -267,6 +276,23 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
 
         return toret;
+    }
+
+    /** Looks for a set of views, given their ids.
+      * @param ids an array of ids.
+      * @return a list of T objects with the given ids.
+      * @param <T> T must derive from View (for instance, T = TextView).
+     */
+    protected<T> List<T> lookForViews(int[] ids)
+    {
+        final List<T> TORET = new ArrayList<>( ids.length );
+
+        // Find them all
+        for(int id: ids) {
+            TORET.add( (T) this.findViewById( id ) );
+        }
+
+        return TORET;
     }
 
     protected abstract void update();

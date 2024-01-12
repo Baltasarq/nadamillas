@@ -1,18 +1,27 @@
+// NadaMillas (c) 2019-2024-2024 Baltasar MIT License <baltasarq@gmail.com>
+
+
 package com.devbaltasarq.nadamillas.core.storage;
+
 
 import android.content.Context;
 import android.content.SharedPreferences;
 
+
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.Settings;
+import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
+import com.devbaltasarq.nadamillas.core.settings.FirstDayOfWeek;
+import com.devbaltasarq.nadamillas.core.settings.PoolLength;
 
 import java.util.Calendar;
 
+
 /** Represents the Settings object in storage. */
 public class SettingsStorage {
-    private static final String TAG_DISTANCE_UNITS = Settings.DistanceUnits.class.getSimpleName();
-    private static final String TAG_POOL_LENGTH = Settings.PoolLength.class.getSimpleName();
-    private static final String TAG_FIRST_DAY_OF_WEEK = Settings.FirstDayOfWeek.class.getSimpleName();
+    private static final String TAG_DISTANCE_UNITS = DistanceUtils.Units.class.getSimpleName();
+    private static final String TAG_POOL_LENGTH = PoolLength.class.getSimpleName();
+    private static final String TAG_FIRST_DAY_OF_WEEK = FirstDayOfWeek.class.getSimpleName();
 
     /** Creates a new storage wrapper for a given settings object. */
     public SettingsStorage(Context applicationContext, Settings settings)
@@ -59,25 +68,25 @@ public class SettingsStorage {
     public static Settings restore(Context appContext)
     {
         final SharedPreferences PREFS = openPreferences( appContext );
-        final Settings.DistanceUnits DIST_UNITS =
-                Settings.DistanceUnits.fromOrdinal(
+        final DistanceUtils.Units DIST_UNITS =
+                DistanceUtils.Units.fromOrdinal(
                         PREFS.getInt( TAG_DISTANCE_UNITS, 0 ) );
 
         int posFdow = PREFS.getInt( TAG_FIRST_DAY_OF_WEEK, -1 );
-        Settings.FirstDayOfWeek fDoW;
+        FirstDayOfWeek fDoW;
 
         if ( posFdow < 0
-          || posFdow >= Settings.FirstDayOfWeek.values().length )
+          || posFdow >= FirstDayOfWeek.values().length )
         {
             final int FIRST_DAY_OF_WEEK = Calendar.getInstance().getFirstDayOfWeek();
 
-            fDoW = Settings.FirstDayOfWeek.fromCalendarValue( FIRST_DAY_OF_WEEK );
+            fDoW = FirstDayOfWeek.fromCalendarValue( FIRST_DAY_OF_WEEK );
         } else {
-            fDoW = Settings.FirstDayOfWeek.fromOrdinal( posFdow );
+            fDoW = FirstDayOfWeek.fromOrdinal( posFdow );
         }
 
-        final Settings.PoolLength POOL_LENGTH =
-                Settings.PoolLength.fromLength(
+        final PoolLength POOL_LENGTH =
+                PoolLength.fromLength(
                         PREFS.getInt( TAG_POOL_LENGTH, 25 ) );
 
         return Settings.createFrom( DIST_UNITS, fDoW, POOL_LENGTH );

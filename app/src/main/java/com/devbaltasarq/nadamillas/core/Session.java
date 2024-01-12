@@ -1,4 +1,4 @@
-// NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019-2024 Baltasar MIT License <baltasarq@gmail.com>
 
 
 package com.devbaltasarq.nadamillas.core;
@@ -7,6 +7,7 @@ package com.devbaltasarq.nadamillas.core;
 import android.content.Context;
 
 import com.devbaltasarq.nadamillas.R;
+import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
 
 import java.util.Date;
 import java.util.Locale;
@@ -137,12 +138,12 @@ public class Session {
     }
 
     /** @return the formatted distance. */
-    public String getFormattedDistance(Context cntx, Settings.DistanceUnits du)
+    public String getFormattedDistance(Context cntx, DistanceUtils.Units du)
     {
         final Locale LOCALE = Locale.getDefault();
         int units = R.string.label_meter;
 
-        if ( du == Settings.DistanceUnits.mi ) {
+        if ( du == DistanceUtils.Units.mi ) {
             units = R.string.label_yard;
         }
 
@@ -165,12 +166,12 @@ public class Session {
     }
 
     /** @return the mean time, as a string. */
-    public String getMeanTimeAsString(Settings.DistanceUnits du)
+    public String getMeanTimeAsString(DistanceUtils.Units du)
     {
         String distanceUnits = "m";
 
         // Set distance units
-        if ( du == Settings.DistanceUnits.mi ) {
+        if ( du == DistanceUtils.Units.mi ) {
             distanceUnits = "y";
         }
 
@@ -180,7 +181,8 @@ public class Session {
     /** @return the mean velocity for this session. */
     public double getSpeed(Settings settings)
     {
-        final double DISTANCE = settings.toUnits( this.getDistance() );
+        final DistanceUtils DISTANCE_UTIL = settings.getDistanceUtils();
+        final double DISTANCE = DISTANCE_UTIL.thousandUnitsFromUnits( this.getDistance() );
         final double TIME = (double) this.getDuration().getTimeInSeconds() / 3600;
         double toret = 0;
 

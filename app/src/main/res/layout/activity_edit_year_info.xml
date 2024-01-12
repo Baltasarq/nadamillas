@@ -1,9 +1,243 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.EditYearInfo">
+    android:orientation="vertical"
+    tools:context=".ui.SettingsActivity">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay">
+
+            <ImageButton
+                android:id="@+id/btCloseEditYearInfo"
+                android:padding="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:contentDescription="@string/label_back"
+                android:background="#00000000"
+                app:srcCompat="?attr/actionModeCloseDrawable"
+                app:tint="#ffffffff" />
+
+            <ImageView
+                app:srcCompat="@drawable/btn_pencil"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:contentDescription="@string/action_modify"
+                app:tint="#ffffffff" />
+
+            <TextView           android:id="@+id/lblTitle"
+                android:text="@string/action_modify"
+                android:textColor="#ffffffff"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView         android:id="@+id/sclMain"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:fillViewport="true"
+        android:layout_margin="10dp"
+        android:gravity="center_horizontal|center_vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout       android:id="@+id/lyMain"
+            android:layout_margin="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="5dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="10dp"
+                    app:srcCompat="@drawable/ic_pool"
+                    android:contentDescription="@string/label_pool" />
+
+                <TextView       android:id="@+id/lblPool"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:text="@string/label_pool" />
+
+                <TextView       android:id="@+id/lblTargetPool"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:layout_weight=".75"
+                    android:textAlignment="textEnd"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:text="0" />
+
+                <TextView       android:id="@+id/lblUnits1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:text="@string/label_km" />
+
+                <ImageButton      android:id="@+id/btEditTargetPool"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    app:backgroundTint="#ffffff"
+                    app:srcCompat="@drawable/btn_pencil" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="10dp"
+                    app:srcCompat="@drawable/ic_sea"
+                    android:contentDescription="@string/label_abbrev_open_waters" />
+
+                <TextView       android:id="@+id/lblOWS"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:text="@string/label_abbrev_open_waters" />
+
+                <TextView       android:id="@+id/lblTargetOWS"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:layout_weight=".75"
+                    android:textAlignment="textEnd"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:text="0" />
+
+                <TextView       android:id="@+id/lblUnits2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:text="@string/label_km" />
+
+                <LinearLayout
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:orientation="horizontal" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="5dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="10dp"
+                    app:srcCompat="@drawable/ic_swimming_figure"
+                    android:contentDescription="@string/label_target" />
+
+                <TextView       android:id="@+id/lblTotal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:text="@string/label_target" />
+
+                <TextView       android:id="@+id/lblTargetTotal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:layout_weight=".75"
+                    android:textAlignment="textEnd"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:text="0" />
+
+                <TextView       android:id="@+id/lblUnits3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:text="@string/label_km" />
+
+                <ImageButton      android:id="@+id/btEditTargetTotal"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    app:backgroundTint="#ffffff"
+                    app:srcCompat="@drawable/btn_pencil" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fbSaveYearInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="@dimen/fab_mini_margin"
+                android:contentDescription="@string/action_modify"
+                android:scaleType="center"
+                android:tint="#ffd0d0d0"
+                app:fabSize="normal"
+                app:layout_anchor="@id/lyMain"
+                app:layout_anchorGravity="bottom"
+                app:srcCompat="@drawable/btn_save"
+                app:useCompatPadding="true" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

@@ -1,4 +1,4 @@
-// NadaMillas (c) 2019 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019-2024 Baltasar MIT License <baltasarq@gmail.com>
 
 package com.devbaltasarq.nadamillas.core.storage;
 
@@ -8,13 +8,16 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 
 import com.devbaltasarq.nadamillas.core.YearInfo;
+import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
 
 import java.io.IOException;
+import java.time.Year;
 
 /** Represents a YearInfo in storage. */
 public class YearInfoStorage {
     public static final String FIELD_YEAR = "_id";
     public static final String FIELD_TARGET = "target";
+    public static final String FIELD_POOL_TARGET = "pool_target";
     public static final String FIELD_TOTAL = "total";
     public static final String FIELD_TOTAL_POOL = "total_pool";
 
@@ -36,11 +39,13 @@ public class YearInfoStorage {
     public ContentValues toValues()
     {
         final ContentValues toret = new ContentValues();
+        final YearInfo INFO = this.getYearInfo();
 
-        toret.put( FIELD_YEAR, this.getYearInfo().getYear() );
-        toret.put( FIELD_TOTAL, this.getYearInfo().getTotal() );
-        toret.put( FIELD_TARGET, this.getYearInfo().getTarget() );
-        toret.put( FIELD_TOTAL_POOL, this.getYearInfo().getTotalPool() );
+        toret.put( FIELD_YEAR, INFO.getYear() );
+        toret.put( FIELD_TOTAL, INFO.getDistance( YearInfo.SwimKind.TOTAL ) );
+        toret.put( FIELD_TARGET, INFO.getTarget( YearInfo.SwimKind.TOTAL ) );
+        toret.put( FIELD_TOTAL_POOL, INFO.getDistance( YearInfo.SwimKind.POOL ) );
+        toret.put( FIELD_POOL_TARGET, INFO.getTarget( YearInfo.SwimKind.POOL ) );
 
         return toret;
     }
@@ -51,11 +56,19 @@ public class YearInfoStorage {
       */
     public void toJSON(JsonWriter jsonWriter) throws IOException
     {
+        final YearInfo INFO = this.getYearInfo();
+
         jsonWriter.beginObject();
-        jsonWriter.name( FIELD_YEAR ).value( this.getYearInfo().getYear() );
-        jsonWriter.name( FIELD_TOTAL ).value( this.getYearInfo().getTotal() );
-        jsonWriter.name( FIELD_TARGET ).value( this.getYearInfo().getTarget() );
-        jsonWriter.name( FIELD_TOTAL_POOL ).value( this.getYearInfo().getTotalPool() );
+        jsonWriter.name( FIELD_YEAR )
+                        .value( INFO.getYear() );
+        jsonWriter.name( FIELD_TOTAL )
+                        .value( INFO.getDistance( YearInfo.SwimKind.TOTAL ) );
+        jsonWriter.name( FIELD_TARGET )
+                        .value( INFO.getTarget( YearInfo.SwimKind.TOTAL ) );
+        jsonWriter.name( FIELD_TOTAL_POOL )
+                        .value( INFO.getDistance( YearInfo.SwimKind.POOL ) );
+        jsonWriter.name( FIELD_POOL_TARGET )
+                        .value( INFO.getTarget( YearInfo.SwimKind.POOL ) );
         jsonWriter.endObject();
     }
 
@@ -70,6 +83,7 @@ public class YearInfoStorage {
         int target = -1;
         int total = -1;
         int poolTotal = -1;
+        int targetPool = 0;
 
         jsonReader.beginObject();
 
@@ -82,6 +96,10 @@ public class YearInfoStorage {
             else
             if ( NAME.equals( FIELD_TARGET ) ) {
                 target = jsonReader.nextInt();
+            }
+            else
+            if ( NAME.equals( FIELD_POOL_TARGET ) ) {
+                targetPool = jsonReader.nextInt();
             }
             else
             if ( NAME.equals( FIELD_TOTAL ) ) {
@@ -105,7 +123,7 @@ public class YearInfoStorage {
             throw new IOException( "reading YearInfo from JSON: missing data" );
         }
 
-        return new YearInfo( year, target, total, poolTotal );
+        return new YearInfo( year, target, total, poolTotal, targetPool );
     }
 
     /** Creates a new YearInfo object from the info stored in the Cursor.
@@ -114,13 +132,19 @@ public class YearInfoStorage {
       */
     public static YearInfo createFrom(Cursor cursor)
     {
-        int year = cursor.getInt( cursor.getColumnIndexOrThrow( YearInfoStorage.FIELD_YEAR ) );
-        int target = cursor.getInt( cursor.getColumnIndexOrThrow( YearInfoStorage.FIELD_TARGET ) );
-        int total = cursor.getInt( cursor.getColumnIndexOrThrow( YearInfoStorage.FIELD_TOTAL ) );
-        int totalPool = cursor.getInt( cursor.getColumnIndexOrThrow( YearInfoStorage.FIELD_TOTAL_POOL ) );
+        int year = cursor.getInt( cursor.getColumnIndexOrThrow( FIELD_YEAR ) );
+        int target = cursor.getInt( cursor.getColumnIndexOrThrow( FIELD_TARGET ) );
+        int total = cursor.getInt( cursor.getColumnIndexOrThrow( FIELD_TOTAL ) );
+        int totalPool = cursor.getInt( cursor.getColumnIndexOrThrow( FIELD_TOTAL_POOL ) );
+        int targetPoolColIndex = cursor.getColumnIndex( FIELD_POOL_TARGET );
+        int targetPool = 0;
 
-        return new YearInfo( year, target, total, totalPool );
+        if ( targetPoolColIndex > -1 ) {
+            targetPool = cursor.getInt( targetPoolColIndex );
+        }
+
+        return new YearInfo( year, target, total, totalPool, targetPool );
     }
 
-    private YearInfo yearInfo;
+    private final YearInfo yearInfo;
 }
