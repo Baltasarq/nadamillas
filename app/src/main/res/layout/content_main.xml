@@ -57,14 +57,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <TextView
+                <TextView       android:id="@+id/lblUnits"
                     android:textAlignment="textEnd"
                     android:gravity="end"
                     android:layout_marginStart="5dp"
                     android:layout_marginEnd="5dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_total"
+                    android:text="@string/label_km"
                     android:textSize="20sp"
                     android:textStyle="bold"/>
 
@@ -81,7 +81,6 @@
 
                 <TextView
                     android:layout_marginStart="5dp"
-                    android:layout_marginEnd="5dp"
                     android:textAlignment="textEnd"
                     android:gravity="end"
                     android:layout_width="wrap_content"
@@ -114,17 +113,8 @@
 
                 <TextView   android:id="@+id/lblTarget"
                     android:layout_marginStart="5dp"
-                    android:layout_marginEnd="5dp"
                     android:text=""
                     android:textAlignment="textEnd"
-                    android:gravity="end"
-                    android:textSize="15sp"/>
-
-                <TextView   android:id="@+id/lblUnits1"
-                    android:layout_marginEnd="5dp"
-                    android:text="@string/label_km"
-                    android:textAlignment="textEnd"
-                    android:textStyle="bold"
                     android:gravity="end"
                     android:textSize="15sp"/>
             </TableRow>
@@ -159,7 +149,6 @@
 
                 <TextView
                     android:layout_marginStart="5dp"
-                    android:layout_marginEnd="5dp"
                     android:textAlignment="textEnd"
                     android:gravity="end"
                     android:layout_width="wrap_content"
@@ -192,17 +181,8 @@
 
                 <TextView   android:id="@+id/lblTargetOWS"
                     android:layout_marginStart="5dp"
-                    android:layout_marginEnd="5dp"
                     android:text=""
                     android:textAlignment="textEnd"
-                    android:gravity="end"
-                    android:textSize="15sp"/>
-
-                <TextView   android:id="@+id/lblUnits2"
-                    android:layout_marginEnd="5dp"
-                    android:text="@string/label_km"
-                    android:textAlignment="textEnd"
-                    android:textStyle="bold"
                     android:gravity="end"
                     android:textSize="15sp"/>
             </TableRow>
@@ -273,14 +253,6 @@
                     android:layout_marginEnd="5dp"
                     android:text=""
                     android:textAlignment="textEnd"
-                    android:gravity="end"
-                    android:textSize="15sp"/>
-
-                <TextView   android:id="@+id/lblUnits3"
-                    android:layout_marginEnd="5dp"
-                    android:text="@string/label_km"
-                    android:textAlignment="textEnd"
-                    android:textStyle="bold"
                     android:gravity="end"
                     android:textSize="15sp"/>
             </TableRow>

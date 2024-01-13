@@ -387,17 +387,9 @@ public class MainActivity extends BaseActivity
 
     private void showUnits()
     {
-        final List<TextView> LABELS = this.lookForViews(
-                                        new int[] {
-                                            R.id.lblUnits1,
-                                            R.id.lblUnits2,
-                                            R.id.lblUnits3 });
+        final TextView LBL_UNITS = this.findViewById( R.id.lblUnits );
 
-        for(TextView lbl: LABELS) {
-            lbl.setText( settings.getDistanceUnits().toString() );
-        }
-
-        return;
+        LBL_UNITS.setText( settings.getDistanceUnits().toString() );
     }
 
     /** The new session handler. */
