@@ -36,7 +36,6 @@ import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.storage.SettingsStorage;
 
 import java.util.Calendar;
-import java.util.List;
 import java.util.Locale;
 
 
@@ -185,6 +184,13 @@ public class MainActivity extends BaseActivity
           || actionId == R.id.nav_stats )
         {
             this.onStats();
+            toret = true;
+        }
+        else
+        if ( actionId == R.id.action_achievements
+          || actionId == R.id.nav_achievements )
+        {
+            this.onAchievements();
             toret = true;
         }
         else
@@ -412,6 +418,12 @@ public class MainActivity extends BaseActivity
     private void onStats()
     {
         this.startActivity( new Intent( this, StatsActivity.class ) );
+    }
+
+    /** The achievements handler. */
+    private void onAchievements()
+    {
+        this.startActivity( new Intent( this, AchievementsActivity.class ) );
     }
 
     private final ActivityResultLauncher<Intent> LAUNCH_THEN_UPDATE =

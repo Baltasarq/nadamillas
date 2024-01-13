@@ -28,6 +28,10 @@
             android:label=""
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
+            android:name=".ui.AchievementsActivity"
+            android:label=""
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
             android:name=".ui.StatsActivity"
             android:label=""
             android:theme="@style/AppTheme.NoActionBar" />
@@ -58,9 +62,9 @@
         <activity
             android:name=".ui.EditYearInfoActivity"
             android:exported="false"
-            android:theme="@style/AppTheme.NoActionBar"
             android:label=""
+            android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateVisible|adjustResize" />
-
     </application>
+
 </manifest>

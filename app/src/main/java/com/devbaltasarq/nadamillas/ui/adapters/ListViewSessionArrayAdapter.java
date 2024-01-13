@@ -1,6 +1,8 @@
 // NadaMillas (c) 2019-2024 Baltasar MIT License <baltasarq@gmail.com>
 
+
 package com.devbaltasarq.nadamillas.ui.adapters;
+
 
 import android.content.Context;
 import androidx.annotation.NonNull;

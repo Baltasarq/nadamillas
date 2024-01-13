@@ -20,6 +20,11 @@
             android:icon="@drawable/ic_archive"
             android:title="@string/action_history" />
         <item
+            android:id="@+id/nav_achievements"
+            android:iconTint="#ffffffff"
+            android:icon="@drawable/ic_achievement"
+            android:title="@string/action_achievements" />
+        <item
             android:id="@+id/nav_stats"
             android:iconTint="#ffffffff"
             android:icon="@drawable/ic_stats"
