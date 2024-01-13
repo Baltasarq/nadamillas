@@ -209,8 +209,6 @@ public class MainActivity extends BaseActivity
     @Override
     protected void update()
     {
-        final int DAY_OF_YEAR = Calendar.getInstance().get( Calendar.DAY_OF_YEAR );
-        final double PROPORTION_OF_YEAR = 365.0 / DAY_OF_YEAR;
         final TextView LBL_WEEKDAY_NAME = this.findViewById( R.id.lblWeekDayName );
         final TextView LBL_DATE = this.findViewById( R.id.lblDate );
         final YearInfo INFO = dataStore.getCurrentYearInfo();
@@ -218,16 +216,14 @@ public class MainActivity extends BaseActivity
         LBL_WEEKDAY_NAME.setText( Util.getWeekDay( null, null ) );
         LBL_DATE.setText( Util.getSemiFullDate( null, null ) );
 
-        this.showProgressForTotals( INFO, PROPORTION_OF_YEAR );
-        this.showProgressForOWS( INFO, PROPORTION_OF_YEAR );
-        this.showProgressForPool( INFO, PROPORTION_OF_YEAR );
+        this.showProgressForTotals( INFO );
+        this.showProgressForOWS( INFO );
+        this.showProgressForPool( INFO );
 
         this.showUnits();
     }
 
-    private void showProgressForTotals(
-            final YearInfo INFO,
-            final double PROPORTION_OF_YEAR)
+    private void showProgressForTotals(final YearInfo INFO)
     {
         final TextView LBL_TOTAL = this.findViewById( R.id.lblTotal );
         final TextView LBL_PROJECTION = this.findViewById( R.id.lblProjection );
@@ -241,15 +237,14 @@ public class MainActivity extends BaseActivity
         String projectionPercentage = YearInfo.NOT_APPLYABLE;
 
         if ( INFO != null ) {
+            final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
+            final int TOTAL = INFO.getDistance( YearInfo.SwimKind.TOTAL );
             final int TARGET = INFO.getTarget( YearInfo.SwimKind.TOTAL );
             final int PROGRESS = (int) INFO.getProgress( YearInfo.SwimKind.TOTAL );
-            final int PROJECTED = (int)
-                                    ( INFO.getDistance( YearInfo.SwimKind.TOTAL )
-                                      * PROPORTION_OF_YEAR );
+            final int PROJECTED = (int) INFO.calcProjection( TOTAL );
             final int PROJECTED_PERCENTAGE = TARGET < 1 ?
                                                 1
-                                                : ( PROJECTED / TARGET ) * 100;
-            final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
+                                                : (int) INFO.calcProgress( PROJECTED, TARGET );
             final Thread SHOW_PROGRESS_THREAD = new Thread() {
                 @Override
                 public void run()
@@ -295,9 +290,7 @@ public class MainActivity extends BaseActivity
         LBL_TARGET.setText( target );
     }
 
-    private void showProgressForOWS(
-            final YearInfo INFO,
-            final double PROPORTION_OF_YEAR)
+    private void showProgressForOWS(final YearInfo INFO)
     {
         final TextView LBL_OPEN_WATERS = this.findViewById( R.id.lblOpenWaters );
         final TextView LBL_PROJECTION = this.findViewById( R.id.lblProjectionOWS );
@@ -310,17 +303,15 @@ public class MainActivity extends BaseActivity
 
         if ( INFO != null ) {
             final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
+            final int TOTAL = INFO.getDistance( YearInfo.SwimKind.OWS );
             final int TARGET = INFO.getTarget( YearInfo.SwimKind.OWS );
             final int PROGRESS = (int) INFO.getProgress( YearInfo.SwimKind.OWS );
-            final int PROJECTED = (int)
-                                    ( INFO.getDistance( YearInfo.SwimKind.OWS )
-                                      * PROPORTION_OF_YEAR );
+            final int PROJECTED = (int) INFO.calcProjection( TOTAL );
             final int PROJECTED_PERCENTAGE = TARGET < 1 ?
                                                 1
-                                                : ( PROJECTED / TARGET ) * 100;
+                                                : (int) INFO.calcProgress( PROJECTED, TARGET );
 
-            totalOpenWaters = DISTANCE_UTILS.toString(
-                                INFO.getDistance( YearInfo.SwimKind.OWS ) );
+            totalOpenWaters = DISTANCE_UTILS.toString( TOTAL );
             projection = DISTANCE_UTILS.toString( PROJECTED );
             projectionPercentage = PROJECTED_PERCENTAGE + "%";
             target = DISTANCE_UTILS.toString( TARGET );
@@ -340,9 +331,7 @@ public class MainActivity extends BaseActivity
         LBL_TARGET.setText( target );
     }
 
-    private void showProgressForPool(
-            final YearInfo INFO,
-            final double PROPORTION_OF_YEAR)
+    private void showProgressForPool(final YearInfo INFO)
     {
         final TextView LBL_POOL = this.findViewById( R.id.lblPool );
         final TextView LBL_PROJECTION = this.findViewById( R.id.lblProjectionPool );
@@ -355,17 +344,15 @@ public class MainActivity extends BaseActivity
 
         if ( INFO != null ) {
             final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
+            final int TOTAL = INFO.getDistance( YearInfo.SwimKind.POOL );
             final int TARGET = INFO.getTarget( YearInfo.SwimKind.POOL );
             final int PROGRESS = (int) INFO.getProgress( YearInfo.SwimKind.POOL );
-            final int PROJECTED = (int)
-                                    ( INFO.getDistance( YearInfo.SwimKind.POOL )
-                                    * PROPORTION_OF_YEAR );
+            final int PROJECTED = (int) INFO.calcProjection( TOTAL );
             final int PROJECTED_PERCENTAGE = TARGET < 1 ?
                                                 1
-                                                : ( PROJECTED / TARGET ) * 100;
+                                                : (int) INFO.calcProgress( PROJECTED, TARGET );
 
-            totalPool = DISTANCE_UTILS.toString(
-                                INFO.getDistance( YearInfo.SwimKind.POOL ) );
+            totalPool = DISTANCE_UTILS.toString( TOTAL );
             projection = DISTANCE_UTILS.toString( PROJECTED );
             projectionPercentage = PROJECTED_PERCENTAGE + "%";
             target = DISTANCE_UTILS.toString( TARGET );

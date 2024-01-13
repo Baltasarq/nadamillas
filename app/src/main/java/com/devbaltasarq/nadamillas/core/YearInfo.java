@@ -2,6 +2,7 @@
 
 package com.devbaltasarq.nadamillas.core;
 
+import java.util.Calendar;
 import java.util.Locale;
 
 /** Represents the accumulated distances. */
@@ -134,6 +135,49 @@ public class YearInfo {
         return;
     }
 
+    /** Calculates the progression given a distance and a target.
+      * as in a distance of 40 km., and a target of 100 km., returns 40%.
+      * @param distance the given progress.
+      * @param target the given target.
+      * @return a double in between 0 and 100.
+      */
+    public double calcProgress(int distance, int target)
+    {
+        double toret = 0;
+
+        if ( distance >= 0
+          && target > 0 )
+        {
+            toret = ( (double) distance / target ) * 100.0;
+        }
+
+        return toret;
+    }
+
+    /** Calculates an annual projection for a given distance.
+      * as in a distance of 40 km. at the end of march, it returns 120 km.
+      * @param distance a given distance.
+      * @return a value for the projection of the distance.
+      */
+    public double calcProjection(int distance)
+    {
+        final int DAY_OF_YEAR = Calendar.getInstance().get( Calendar.DAY_OF_YEAR );
+        final double PROPORTION_OF_YEAR = 365.0 / DAY_OF_YEAR;
+
+        return this.calcProjection( distance, PROPORTION_OF_YEAR );
+    }
+
+    /** Calculates an annual projection for a given distance.
+      * as in a distance of 40 km. at the end of march, it returns 120 km.
+      * @param distance a given distance.
+      * @param proportionOfYear the proportion of the year, i.e., 365/day.
+      * @return a value for the projection of the distance.
+      */
+    public double calcProjection(int distance, double proportionOfYear)
+    {
+        return distance * proportionOfYear;
+    }
+
     /** Updates this year info.
       * @param distance the distance to add (can be negative).
       * @param atPool indicates whether these meters are done at the pool.
@@ -211,19 +255,6 @@ public class YearInfo {
         return this.calcProgress(
                 this.getDistance( SwimKind.POOL ),
                 this.getTarget( SwimKind.POOL ) );
-    }
-
-    private double calcProgress(int total, int target)
-    {
-        double toret = 0;
-
-        if ( total >= 0
-                && target > 0 )
-        {
-            toret = ( (double) total / target ) * 100;
-        }
-
-        return toret;
     }
 
     /** @return the target for this year, as meters/yards. */
