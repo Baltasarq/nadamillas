@@ -58,7 +58,8 @@ public class YearInfoCursorAdapter extends CursorAdapter {
         final Locale LOCALE = Locale.getDefault();
         final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
         final TextView LBL_MAIN_DATA = view.findViewById( R.id.lblMainProgress );
-        final TextView LBL_AUX_DATA = view.findViewById( R.id.lblSecondaryProgress );
+        final TextView LBL_OWS_DATA = view.findViewById( R.id.lblProgressOWS );
+        final TextView LBL_POOL_DATA = view.findViewById( R.id.lblProgressPool );
         final TextView LBL_YEAR = view.findViewById( R.id.lblYear );
         final ImageView IV_ACHIEVEMENT = view.findViewById( R.id.ivAchievement );
         final String STR_UNITS = settings.getDistanceUnits().toString();
@@ -70,12 +71,13 @@ public class YearInfoCursorAdapter extends CursorAdapter {
                 DISTANCE_UTILS.toString( yearInfo.getDistance( YearInfo.SwimKind.TOTAL ) ),
                 PROGRESS,
                 STR_UNITS );
-        final String STR_AUX_DATA = String.format( LOCALE,
-                                    "%s %s (%d%%) - "
-                                    + "%s %s (%d%%)",
+        final String STR_OWS_DATA = String.format( LOCALE,
+                                    "%s %s (%d%%)",
                                     STR_OWS,
                                     DISTANCE_UTILS.toString( yearInfo.getDistance( YearInfo.SwimKind.OWS ) ),
-                                    (int) yearInfo.getProgress( YearInfo.SwimKind.OWS ),
+                                    (int) yearInfo.getProgress( YearInfo.SwimKind.OWS ) );
+        final String STR_POOL_DATA = String.format( LOCALE,
+                                    "%s %s (%d%%) %s.",
                                     STR_POOL,
                                     DISTANCE_UTILS.toString( yearInfo.getDistance( YearInfo.SwimKind.POOL ) ),
                                     (int) yearInfo.getProgress( YearInfo.SwimKind.POOL ),
@@ -83,9 +85,11 @@ public class YearInfoCursorAdapter extends CursorAdapter {
 
         LBL_YEAR.setText( Integer.toString( yearInfo.getYear() ) );
         LBL_MAIN_DATA.setText( STR_MAIN_DATA );
-        LBL_AUX_DATA.setText( STR_AUX_DATA );
+        LBL_OWS_DATA.setText( STR_OWS_DATA );
+        LBL_POOL_DATA.setText( STR_POOL_DATA );
 
         // Achievement image
+        IV_ACHIEVEMENT.setImageDrawable( null );
         if ( PROGRESS >= 100 ) {
             IV_ACHIEVEMENT.setImageDrawable(
                     AppCompatResources.getDrawable(

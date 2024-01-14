@@ -63,6 +63,24 @@
             android:orientation="vertical"
             android:gravity="center_vertical">
 
+
+            <TextView       android:id="@+id/lblYearToEdit"
+                android:layout_margin="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center|center_horizontal|center_vertical"
+                android:textStyle="bold"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:text="10224" />
+
+            <TextView       android:id="@+id/lblYearInfoToEdit"
+                android:layout_margin="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center|center_horizontal|center_vertical"
+                android:textStyle="bold"
+                android:text="950/1000 km." />
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"

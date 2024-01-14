@@ -21,6 +21,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 
 public class EditYearInfoActivity extends BaseActivity {
@@ -33,11 +34,22 @@ public class EditYearInfoActivity extends BaseActivity {
         this.setContentView( R.layout.activity_edit_year_info );
 
         final TextView LBL_TITLE = this.findViewById( R.id.lblTitle );
+        final TextView LBL_YEAR = this.findViewById( R.id.lblYearToEdit );
+        final TextView LBL_YEAR_INFO = this.findViewById( R.id.lblYearInfoToEdit );
+        final DistanceUtils DIST_UTILS = settings.getDistanceUtils();
 
         LBL_TITLE.setText(
                 this.getString( R.string.action_modify )
                 + " "
                 + this.getString( R.string.label_target ));
+
+        LBL_YEAR.setText( "" + yearInfo.getYear() );
+        LBL_YEAR_INFO.setText( String.format( Locale.getDefault(),
+                                        "%s: %s %s.",
+                                        this.getString( R.string.label_total_distance ),
+                                        DIST_UTILS.toString(
+                                            yearInfo.getDistance( YearInfo.SwimKind.TOTAL ) ),
+                                        settings.getDistanceUnits().toString() ));
 
         this.setButtonListeners();
         this.update();

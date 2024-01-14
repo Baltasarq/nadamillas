@@ -248,9 +248,7 @@ public class MainActivity extends BaseActivity
             final int TARGET = INFO.getTarget( YearInfo.SwimKind.TOTAL );
             final int PROGRESS = (int) INFO.getProgress( YearInfo.SwimKind.TOTAL );
             final int PROJECTED = (int) INFO.calcProjection( TOTAL );
-            final int PROJECTED_PERCENTAGE = TARGET < 1 ?
-                                                1
-                                                : (int) INFO.calcProgress( PROJECTED, TARGET );
+            final int PROJECTED_PERCENTAGE = (int) INFO.calcProgress( PROJECTED, TARGET );
             final Thread SHOW_PROGRESS_THREAD = new Thread() {
                 @Override
                 public void run()
@@ -313,9 +311,7 @@ public class MainActivity extends BaseActivity
             final int TARGET = INFO.getTarget( YearInfo.SwimKind.OWS );
             final int PROGRESS = (int) INFO.getProgress( YearInfo.SwimKind.OWS );
             final int PROJECTED = (int) INFO.calcProjection( TOTAL );
-            final int PROJECTED_PERCENTAGE = TARGET < 1 ?
-                                                1
-                                                : (int) INFO.calcProgress( PROJECTED, TARGET );
+            final int PROJECTED_PERCENTAGE = (int) INFO.calcProgress( PROJECTED, TARGET );
 
             totalOpenWaters = DISTANCE_UTILS.toString( TOTAL );
             projection = DISTANCE_UTILS.toString( PROJECTED );
@@ -354,9 +350,7 @@ public class MainActivity extends BaseActivity
             final int TARGET = INFO.getTarget( YearInfo.SwimKind.POOL );
             final int PROGRESS = (int) INFO.getProgress( YearInfo.SwimKind.POOL );
             final int PROJECTED = (int) INFO.calcProjection( TOTAL );
-            final int PROJECTED_PERCENTAGE = TARGET < 1 ?
-                                                1
-                                                : (int) INFO.calcProgress( PROJECTED, TARGET );
+            final int PROJECTED_PERCENTAGE = (int) INFO.calcProgress( PROJECTED, TARGET );
 
             totalPool = DISTANCE_UTILS.toString( TOTAL );
             projection = DISTANCE_UTILS.toString( PROJECTED );
