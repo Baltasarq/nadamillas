@@ -3,7 +3,7 @@ release/
 debug/
 
 *.iml
-.gradle
+.gradle/
 /local.properties
 /.idea/caches
 /.idea/libraries
@@ -14,3 +14,6 @@ debug/
 .DS_Store
 /captures
 .externalNativeBuild
+
+.idea/
+
