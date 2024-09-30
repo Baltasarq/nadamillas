@@ -155,7 +155,7 @@ public class Duration {
         }
     }
 
-    /** @return the duration in the format 00:00, minutes and secs. */
+    /** @return the duration in the format 00:00:00, hours, minutes and secs. */
     public String toChronoString()
     {
         return String.format (Locale.getDefault(),
@@ -167,14 +167,21 @@ public class Duration {
     {
         final int MINUTES = this.getMinutes();
         final int HOURS = this.getHours();
-        String toret = String.format( Locale.getDefault(), "%2d\"", this.getTimeInSeconds() );
+        String toret;
 
-        if ( MINUTES > 0 ) {
-            toret = String.format( Locale.getDefault(), "%02d'%02d\"", MINUTES, this.getSeconds() );
-        }
+        if ( HOURS == 0
+          && MINUTES == 0 )
+        {
+            toret = String.format( Locale.getDefault(), "%2d\"", this.getTimeInSeconds() );
+        } else {
+            final int SECONDS = this.getSeconds();
+            toret = "";
 
-        if ( HOURS > 0 ) {
-            toret = String.format( Locale.getDefault(), "%02dh", HOURS ) + toret;
+            if ( HOURS > 0 ) {
+                toret = String.format( Locale.getDefault(), "%02dh", HOURS );
+            }
+
+            toret += String.format( Locale.getDefault(), "%02d'%02d\"", MINUTES, SECONDS );
         }
 
         return toret;
