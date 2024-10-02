@@ -65,15 +65,17 @@ public class BarChart extends Drawable {
         private double y;
     }
 
-    /** Represents the correspondence between color and tag. */
+    /** Represents the correspondence between color and tag
+      * for a sequence of points. */
     public static class SeriesInfo {
-        /** Builds an association between color and tag,
-         * for explanatory purposes in the chart.
-         * @param tag the tag associated with a color
-         * @param color the color this tag is associated to, as an int,
-         *              format 0xaarrggbb, a: alpha, r: red, g: green, b: blue,
-         *              from 00 to ff.
-         */
+        /** Holds a sequence of points.
+          * Builds an association between color and tag,
+          * for explanatory purposes in the chart.
+          * @param tag the tag associated with a color
+          * @param color the color this tag is associated to, as an int,
+          *              format 0xaarrggbb, a: alpha, r: red, g: green, b: blue,
+          *              from 00 to ff.
+          */
         public SeriesInfo(String tag, int color)
         {
             this.tag = tag;
