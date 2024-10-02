@@ -42,6 +42,7 @@
     <string name="label_year">Año</string>
     <string name="label_month">Mes</string>
     <string name="label_week">Semana</string>
+    <string name="label_day">Día</string>
     <string name="label_target">objetivo</string>
     <string name="label_pool">piscina</string>
     <string name="label_open_waters">aguas abiertas</string>

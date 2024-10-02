@@ -50,6 +50,7 @@
     <string name="label_year">Year</string>
     <string name="label_month">Month</string>
     <string name="label_week">Week</string>
+    <string name="label_day">Day</string>
     <string name="label_target">target</string>
     <string name="label_pool">pool</string>
     <string name="label_guess">guess</string>
