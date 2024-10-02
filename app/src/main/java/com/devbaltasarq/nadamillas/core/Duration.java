@@ -165,6 +165,7 @@ public class Duration {
     @Override
     public String toString()
     {
+        final Locale DEF_LOC = Locale.getDefault();
         final int MINUTES = this.getMinutes();
         final int HOURS = this.getHours();
         String toret;
@@ -172,16 +173,16 @@ public class Duration {
         if ( HOURS == 0
           && MINUTES == 0 )
         {
-            toret = String.format( Locale.getDefault(), "%2d\"", this.getTimeInSeconds() );
+            toret = String.format( DEF_LOC, "%2d\"", this.getTimeInSeconds() );
         } else {
             final int SECONDS = this.getSeconds();
             toret = "";
 
             if ( HOURS > 0 ) {
-                toret = String.format( Locale.getDefault(), "%02dh", HOURS );
+                toret = String.format( DEF_LOC, "%02dh", HOURS );
             }
 
-            toret += String.format( Locale.getDefault(), "%02d'%02d\"", MINUTES, SECONDS );
+            toret += String.format( DEF_LOC, "%02d'%02d\"", MINUTES, SECONDS );
         }
 
         return toret;
