@@ -27,16 +27,16 @@ import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.DataStore;
+import com.devbaltasarq.nadamillas.core.Distance;
 import com.devbaltasarq.nadamillas.core.Session;
 import com.devbaltasarq.nadamillas.core.Util;
 import com.devbaltasarq.nadamillas.core.YearInfo;
-import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
+import com.devbaltasarq.nadamillas.core.Speed;
 import com.devbaltasarq.nadamillas.core.storage.YearInfoStorage;
 import com.devbaltasarq.nadamillas.ui.graph.BarChart;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 
 
@@ -194,10 +194,9 @@ public class StatsActivity extends BaseActivity {
         final BarChart.SeriesInfo OPEN_SERIE =
                 new BarChart.SeriesInfo(
                         this.getString( R.string.label_open_waters ), Color.CYAN );
-        final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
+        final Distance.Units UNITS = settings.getDistanceUnits();
         final int CURRENT_YEAR = Calendar.getInstance().get( Calendar.YEAR );
         final TextView TXT_REPORT = this.findViewById( R.id.txtReport );
-        final String STR_UNITS = settings.getDistanceUnits().toString();
         final String LBL_TOTAL = this.getString( R.string.label_total );
         final String LBL_DISTANCE = this.getString( R.string.label_distance );
         final String LBL_OPEN_WATERS = this.getString( R.string.label_open_waters );
@@ -218,17 +217,17 @@ public class StatsActivity extends BaseActivity {
             // Graph
             final int DIST_TOTAL =
                     YEAR_INFO.getDistance( YearInfo.SwimKind.TOTAL );
-            final double TOTAL_K =
-                    DISTANCE_UTILS.thousandUnitsFromUnits( DIST_TOTAL );
+            final Distance TOTAL_K = new Distance( DIST_TOTAL, UNITS );
 
-            if ( TOTAL_K > 0 ) {
+            if ( TOTAL_K.getValue() > 0 ) {
                 final int DIST_OW = DIST_TOTAL
                             - YEAR_INFO.getDistance( YearInfo.SwimKind.POOL );
-                final double TOTAL_OW = DISTANCE_UTILS.thousandUnitsFromUnits( DIST_OW );
-                final String STR_TOTAL_K = DISTANCE_UTILS.toString( DIST_TOTAL ) + STR_UNITS;
-                final String STR_TOTAL_OW = DISTANCE_UTILS.toString( DIST_OW ) + STR_UNITS;
+                final Distance DIST_TOTAL_OW = new Distance( DIST_OW, UNITS );
+                final double TOTAL_OW = DIST_TOTAL_OW.toThousandUnits();
+                final String STR_TOTAL_K = TOTAL_K.toString();
+                final String STR_TOTAL_OW = DIST_TOTAL_OW.toString();
 
-                TOTAL_SERIE.add( new BarChart.Point( DISPLAY_YEAR, TOTAL_K ) );
+                TOTAL_SERIE.add( new BarChart.Point( DISPLAY_YEAR, TOTAL_K.toThousandUnits() ) );
                 OPEN_SERIE.add( new BarChart.Point( DISPLAY_YEAR, TOTAL_OW ) );
 
                 // Report
@@ -258,9 +257,8 @@ public class StatsActivity extends BaseActivity {
         final BarChart.SeriesInfo SERIE_OPEN =
                 new BarChart.SeriesInfo(
                         this.getString( R.string.label_open_waters), Color.CYAN );
-        final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
+        final Distance.Units UNITS = settings.getDistanceUnits();
         final int NUM_COLUMNS_IN_MONTHLY_GRAPH = 12;
-        final String STR_UNITS = settings.getDistanceUnits().toString();
         final String LBL_TOTAL = this.getString( R.string.label_total );
         final String LBL_DISTANCE = this.getString( R.string.label_distance );
         final String LBL_OPEN_WATERS = this.getString( R.string.label_open_waters );
@@ -281,22 +279,20 @@ public class StatsActivity extends BaseActivity {
                 totalMeters += session.getDistance();
             }
 
-            final double TOTAL_K = DISTANCE_UTILS.thousandUnitsFromUnits( totalMeters );
-            final double TOTAL_OW = DISTANCE_UTILS.thousandUnitsFromUnits( totalOpenWaterMeters );
-            final String STR_TOTAL_K = DISTANCE_UTILS.toString( totalMeters ) + STR_UNITS;
-            final String STR_TOTAL_OW = DISTANCE_UTILS.toString( totalOpenWaterMeters ) + STR_UNITS;
+            final Distance TOTAL_K = new Distance( totalMeters, UNITS );
+            final Distance TOTAL_OW = new Distance( totalOpenWaterMeters, UNITS );
 
             // Graph
-            SERIE_TOTAL.add( new BarChart.Point( month + 1, TOTAL_K ) );
-            SERIE_OPEN.add( new BarChart.Point( month + 1, TOTAL_OW ) );
+            SERIE_TOTAL.add( new BarChart.Point( month + 1, TOTAL_K.toThousandUnits()) );
+            SERIE_OPEN.add( new BarChart.Point( month + 1, TOTAL_OW.toThousandUnits() ) );
 
             // Report
             TXT_REPORT.append( capitalize( LBL_TOTAL ) + ": "
                                 + year + "-" + ( month + 1) + '\n' );
             TXT_REPORT.append( capitalize( LBL_DISTANCE ) + ": "
-                                + STR_TOTAL_K + '\n' );
+                                + TOTAL_K + '\n' );
             TXT_REPORT.append( capitalize( LBL_OPEN_WATERS ) + ": "
-                                + STR_TOTAL_OW + '\n' );
+                                + TOTAL_OW + '\n' );
             TXT_REPORT.append( "\n" );
 
             // Next
@@ -313,7 +309,7 @@ public class StatsActivity extends BaseActivity {
                         this.getString( R.string.label_total ), Color.BLUE );
         final BarChart.SeriesInfo SERIE_OPEN = new BarChart.SeriesInfo(
                         this.getString( R.string.label_open_waters ), Color.CYAN );
-        final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
+        final Distance.Units UNITS = settings.getDistanceUnits();
         final TextView TXT_REPORT = this.findViewById( R.id.txtReport );
         final ArrayList<Integer> metersTotalPerWeek = new ArrayList<>( 6 );
         final ArrayList<Integer> metersOpenPerWeek = new ArrayList<>( 6 );
@@ -376,14 +372,20 @@ public class StatsActivity extends BaseActivity {
 
         // Pass sesssions to points
         for(int i = 0; i < metersTotalPerWeek.size(); ++i) {
-            final double TOTAL_PER_WEEK_K = DISTANCE_UTILS.thousandUnitsFromUnits( metersTotalPerWeek.get( i ) );
+            final double TOTAL_PER_WEEK_K = new Distance(
+                                                    metersTotalPerWeek.get( i ),
+                                                    UNITS )
+                                            .toThousandUnits();
 
             SERIE_TOTAL.add(
                     new BarChart.Point( i + 1, TOTAL_PER_WEEK_K ) );
         }
 
         for(int i = 0; i < metersOpenPerWeek.size(); ++i) {
-            final double TOTAL_OW_PER_WEEK_K = DISTANCE_UTILS.thousandUnitsFromUnits( metersOpenPerWeek.get( i ) );
+            final double TOTAL_OW_PER_WEEK_K = new Distance(
+                                                    metersOpenPerWeek.get( i ),
+                                                    UNITS )
+                                            .toThousandUnits();
 
             SERIE_OPEN.add(
                     new BarChart.Point( i + 1, TOTAL_OW_PER_WEEK_K ) );
@@ -391,8 +393,8 @@ public class StatsActivity extends BaseActivity {
 
         // Report
         for(int i = 0; i < metersTotalPerWeek.size(); ++i) {
-            final String STR_TOTAL_PER_WEEK_K = DISTANCE_UTILS.toString( metersTotalPerWeek.get( i ) );
-            final String STR_TOTAL_OW_PER_WEEK_K = DISTANCE_UTILS.toString( metersOpenPerWeek.get( i ) );
+            final String STR_TOTAL_PER_WEEK_K = Distance.format( metersTotalPerWeek.get( i ), UNITS );
+            final String STR_TOTAL_OW_PER_WEEK_K = Distance.format( metersOpenPerWeek.get( i ), UNITS );
 
             TXT_REPORT.append( capitalize( LBL_WEEK ) + " " + ( i + 1 ) + '\n' );
             TXT_REPORT.append( capitalize( LBL_DISTANCE ) + ": " + STR_TOTAL_PER_WEEK_K + STR_UNITS + '\n' );
@@ -401,12 +403,12 @@ public class StatsActivity extends BaseActivity {
         }
 
         TXT_REPORT.append( capitalize( LBL_TOTAL ) + ": "
-                           + DISTANCE_UTILS.toString( totalMeters )
+                           + Distance.format( totalMeters, UNITS )
                            + STR_UNITS + "\n" );
 
         TXT_REPORT.append( capitalize( LBL_TOTAL )
                 + " (" + LBL_OPEN_WATERS + "): "
-                + DISTANCE_UTILS.toString( owMeters )
+                + Distance.format( owMeters, UNITS )
                 + STR_UNITS + "\n" );
 
         SERIES.add( SERIE_TOTAL );
@@ -419,13 +421,12 @@ public class StatsActivity extends BaseActivity {
                 this.getString( R.string.label_total ), Color.BLUE );
         final BarChart.SeriesInfo SERIE_OPEN = new BarChart.SeriesInfo(
                 this.getString( R.string.label_open_waters ), Color.CYAN );
-        final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
+        final Distance.Units UNITS = settings.getDistanceUnits();
         final TextView TXT_REPORT = this.findViewById( R.id.txtReport );
         final String LBL_DISTANCE = this.getString( R.string.label_distance );
         final String LBL_OPEN_WATERS = this.getString( R.string.label_open_waters );
         final String LBL_TOTAL = capitalize( this.getString( R.string.label_total ) );
         final String LBL_MONTH = this.getString( R.string.label_month );
-        final String STR_UNITS = settings.getDistanceUnits().toString();
 
         // Prepare date
         final Calendar DATE = Calendar.getInstance();
@@ -462,19 +463,17 @@ public class StatsActivity extends BaseActivity {
             if ( dayTotalMeters > 0 ) {
                 TXT_REPORT.append(
                         Util.getShortDate()
-                        + "\n"+ LBL_DISTANCE + ": " + DISTANCE_UTILS.toString( dayTotalMeters )
-                        + STR_UNITS
+                        + "\n"+ LBL_DISTANCE + ": " + Distance.format( dayTotalMeters, UNITS )
                         + "\n" + capitalize( LBL_OPEN_WATERS )
-                        + ": " + DISTANCE_UTILS.toString( dayTotalOWS )
-                        + STR_UNITS
+                        + ": " + Distance.format( dayTotalOWS, UNITS )
                         + "\n\n"
                 );
             }
 
             final double DAY_TOTAL_K =
-                    DISTANCE_UTILS.thousandUnitsFromUnits( dayTotalMeters );
+                    new Distance( dayTotalMeters, UNITS ).toThousandUnits();
             final double DAY_OWS_K =
-                    DISTANCE_UTILS.thousandUnitsFromUnits( dayTotalMeters );
+                    new Distance( dayTotalOWS, UNITS ).toThousandUnits();
 
             totalDist += dayTotalMeters;
             totalOWDist += dayTotalOWS;
@@ -484,13 +483,11 @@ public class StatsActivity extends BaseActivity {
 
         // Report summary
         TXT_REPORT.append( LBL_TOTAL + ": "
-                + DISTANCE_UTILS.toString( totalDist )
-                + STR_UNITS + "\n" );
+                + Distance.format( totalDist, UNITS ) + "\n" );
 
         TXT_REPORT.append( LBL_TOTAL
                 + " (" + LBL_OPEN_WATERS + "): "
-                + DISTANCE_UTILS.toString( totalOWDist )
-                + STR_UNITS + "\n" );
+                + Distance.format( totalOWDist, UNITS ) + "\n" );
 
         // Finish series
         SERIES.add( SERIE_TOTAL );

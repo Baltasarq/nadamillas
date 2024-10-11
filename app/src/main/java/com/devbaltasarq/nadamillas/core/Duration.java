@@ -188,5 +188,16 @@ public class Duration {
         return toret;
     }
 
+    /** @return zero duration, zero seconds. */
+    public static Duration Zero()
+    {
+        if ( ZERO == null ) {
+            ZERO = new Duration( 0 );
+        }
+
+        return ZERO;
+    }
+
     private int secs;
+    private static Duration ZERO = null;
 }

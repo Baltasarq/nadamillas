@@ -11,7 +11,9 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
 
+import com.devbaltasarq.nadamillas.core.Duration;
 import com.devbaltasarq.nadamillas.core.Session;
+import com.devbaltasarq.nadamillas.core.Temperature;
 import com.devbaltasarq.nadamillas.core.Util;
 
 import java.io.IOException;
@@ -29,6 +31,8 @@ public class SessionStorage {
     public static final String FIELD_DISTANCE = "distance";
     public static final String FIELD_SECONDS = "seconds_used";
     public static final String FIELD_AT_POOL = "pool";
+    public static final String FIELD_IS_RACE = "race";
+    public static final String FIELD_TEMPERATURE = "temperature";
     public static final String FIELD_PLACE = "place";
     public static final String FIELD_NOTES = "notes";
 
@@ -94,6 +98,8 @@ public class SessionStorage {
         int distance = -1;
         int secs = 0;
         boolean atPool = false;
+        boolean isRace = false;
+        double temperature = Temperature.PREDETERMINED;
         String place = "";
         String notes = "";
 
@@ -102,42 +108,19 @@ public class SessionStorage {
         while( jsonReader.hasNext() ) {
             final String NAME = jsonReader.nextName();
 
-            if ( NAME.equals( FIELD_SESSION_ID ) ) {
-                id = jsonReader.nextInt();
-            }
-            else
-            if ( NAME.equals( FIELD_YEAR ) ) {
-                year = jsonReader.nextInt();
-            }
-            else
-            if ( NAME.equals( FIELD_MONTH ) ) {
-                month = jsonReader.nextInt();
-            }
-            else
-            if ( NAME.equals( FIELD_DAY ) ) {
-                day = jsonReader.nextInt();
-            }
-            else
-            if ( NAME.equals( FIELD_DISTANCE ) ) {
-                distance = jsonReader.nextInt();
-            }
-            else
-            if ( NAME.equals( FIELD_AT_POOL ) ) {
-                atPool = jsonReader.nextBoolean();
-            }
-            else
-            if ( NAME.equals( FIELD_PLACE ) ) {
-                place = jsonReader.nextString();
-            }
-            else
-            if ( NAME.equals( FIELD_NOTES ) ) {
-                notes = jsonReader.nextString();
-            }
-            else
-            if ( NAME.equals( FIELD_SECONDS ) ) {
-                secs = jsonReader.nextInt();
-            } else {
-                jsonReader.skipValue();
+            switch (NAME) {
+                case FIELD_SESSION_ID -> id = jsonReader.nextInt();
+                case FIELD_YEAR -> year = jsonReader.nextInt();
+                case FIELD_MONTH -> month = jsonReader.nextInt();
+                case FIELD_DAY -> day = jsonReader.nextInt();
+                case FIELD_DISTANCE -> distance = jsonReader.nextInt();
+                case FIELD_AT_POOL -> atPool = jsonReader.nextBoolean();
+                case FIELD_PLACE -> place = jsonReader.nextString();
+                case FIELD_NOTES -> notes = jsonReader.nextString();
+                case FIELD_SECONDS -> secs = jsonReader.nextInt();
+                case FIELD_TEMPERATURE -> temperature = jsonReader.nextDouble();
+                case FIELD_IS_RACE -> isRace = jsonReader.nextBoolean();
+                default -> jsonReader.skipValue();
             }
         }
 
@@ -156,8 +139,10 @@ public class SessionStorage {
                         id,
                         Util.dateFromData( year, month, day ),
                         distance,
-                        secs,
+                        new Duration( secs ),
                         atPool,
+                        isRace,
+                        temperature,
                         place,
                         notes );
     }
@@ -192,10 +177,12 @@ public class SessionStorage {
         // Extract data from cursor
         final int ID = c.getInt( c.getColumnIndexOrThrow( FIELD_SESSION_ID ) );
         final int DISTANCE = c.getInt( c.getColumnIndexOrThrow( FIELD_DISTANCE ) );
-        final boolean AT_POOL = c.getInt( c.getColumnIndexOrThrow( FIELD_AT_POOL ) ) != 0;
         final int DAY = c.getInt( c.getColumnIndexOrThrow( FIELD_DAY ) );
         final int MONTH = c.getInt( c.getColumnIndexOrThrow( FIELD_MONTH ) );
         final int YEAR = c.getInt( c.getColumnIndexOrThrow( FIELD_YEAR ) );
+        final boolean AT_POOL = c.getInt( c.getColumnIndexOrThrow( FIELD_AT_POOL ) ) != 0;
+        final boolean IS_RACE = c.getInt( c.getColumnIndexOrThrow( FIELD_IS_RACE ) ) != 0;
+        final double TEMPERATURE = c.getDouble( c.getColumnIndexOrThrow( FIELD_TEMPERATURE ) );
         final String PLACE = c.getString( c.getColumnIndexOrThrow( FIELD_PLACE ) );
         final String NOTES = c.getString( c.getColumnIndexOrThrow( FIELD_NOTES ) );
         int secsColumn = c.getColumnIndex( FIELD_SECONDS );
@@ -210,8 +197,10 @@ public class SessionStorage {
                         ID,
                         Util.dateFromData( YEAR, MONTH, DAY ),
                         DISTANCE,
-                        secs,
+                        new Duration( secs ),
                         AT_POOL,
+                        IS_RACE,
+                        TEMPERATURE,
                         PLACE,
                         NOTES );
     }
@@ -248,8 +237,10 @@ public class SessionStorage {
             toret = new Session(
                         new Date( extras.getLong( FIELD_DATE, TODAY ) ),
                         extras.getInt( FIELD_DISTANCE, 0 ),
-                        extras.getInt( FIELD_SECONDS, 0 ),
+                        new Duration( extras.getInt( FIELD_SECONDS, 0 ) ),
                         extras.getBoolean( FIELD_AT_POOL, true ),
+                        extras.getBoolean( FIELD_IS_RACE, false ),
+                        extras.getDouble( FIELD_TEMPERATURE, Temperature.PREDETERMINED ),
                         extras.getString( FIELD_PLACE, "" ),
                         extras.getString( FIELD_NOTES, "" ));
         }

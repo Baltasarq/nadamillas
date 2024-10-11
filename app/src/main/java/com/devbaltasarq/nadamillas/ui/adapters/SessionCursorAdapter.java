@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
+import com.devbaltasarq.nadamillas.core.Distance;
 import com.devbaltasarq.nadamillas.core.Session;
 import com.devbaltasarq.nadamillas.core.Settings;
 import com.devbaltasarq.nadamillas.core.Util;
@@ -68,6 +69,7 @@ public class SessionCursorAdapter extends CursorAdapter {
         final TextView LBL_SPEED = view.findViewById( R.id.lblSpeed );
         final ImageView IV_LOGO = view.findViewById( R.id.ivLogo );
         final String DATE = Util.getShortDate( session.getDate(), null );
+        final Distance.Units UNITS = settings.getDistanceUnits();
 
         if ( session.getDistance() > 0
           && session.getDuration().getTimeInSeconds() > 0 )
@@ -79,10 +81,11 @@ public class SessionCursorAdapter extends CursorAdapter {
         }
 
         // Basic data
-        LBL_DATA.setText( String.format( LOCALE, "%10s", DATE )
-                            + " " + session.getFormattedDistance(
-                                                historyActivity,
-                                                settings.getDistanceUnits() ) );
+        final String BASIC_DATA = String.format( LOCALE, "%10s", DATE )
+                                    + " "
+                                    + Distance.format( session.getDistance(), UNITS );
+
+        LBL_DATA.setText( BASIC_DATA );
 
         // Logo
         int drawableId = R.drawable.ic_sea;

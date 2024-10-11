@@ -9,8 +9,9 @@ import android.content.SharedPreferences;
 
 
 import com.devbaltasarq.nadamillas.R;
+import com.devbaltasarq.nadamillas.core.Distance;
 import com.devbaltasarq.nadamillas.core.Settings;
-import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
+import com.devbaltasarq.nadamillas.core.Speed;
 import com.devbaltasarq.nadamillas.core.settings.FirstDayOfWeek;
 import com.devbaltasarq.nadamillas.core.settings.PoolLength;
 
@@ -19,7 +20,7 @@ import java.util.Calendar;
 
 /** Represents the Settings object in storage. */
 public class SettingsStorage {
-    private static final String TAG_DISTANCE_UNITS = DistanceUtils.Units.class.getSimpleName();
+    private static final String TAG_DISTANCE_UNITS = Distance.Units.class.getSimpleName();
     private static final String TAG_POOL_LENGTH = PoolLength.class.getSimpleName();
     private static final String TAG_FIRST_DAY_OF_WEEK = FirstDayOfWeek.class.getSimpleName();
 
@@ -68,8 +69,8 @@ public class SettingsStorage {
     public static Settings restore(Context appContext)
     {
         final SharedPreferences PREFS = openPreferences( appContext );
-        final DistanceUtils.Units DIST_UNITS =
-                DistanceUtils.Units.fromOrdinal(
+        final Distance.Units DIST_UNITS =
+                Distance.Units.fromOrdinal(
                         PREFS.getInt( TAG_DISTANCE_UNITS, 0 ) );
 
         int posFdow = PREFS.getInt( TAG_FIRST_DAY_OF_WEEK, -1 );

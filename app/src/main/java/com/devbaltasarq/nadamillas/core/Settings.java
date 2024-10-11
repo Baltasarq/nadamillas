@@ -4,7 +4,6 @@
 package com.devbaltasarq.nadamillas.core;
 
 
-import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
 import com.devbaltasarq.nadamillas.core.settings.FirstDayOfWeek;
 import com.devbaltasarq.nadamillas.core.settings.PoolLength;
 
@@ -20,7 +19,7 @@ public class Settings {
       * @param firstDayOfWeek the first day of week, as a Calendar constant.
       * @param defaultPoolLength the preferred length of the pool.
       */
-    private Settings(DistanceUtils.Units units, FirstDayOfWeek firstDayOfWeek, PoolLength defaultPoolLength)
+    private Settings(Distance.Units units, FirstDayOfWeek firstDayOfWeek, PoolLength defaultPoolLength)
     {
         this.units = units;
         this.firstDayOfWeek = firstDayOfWeek;
@@ -28,7 +27,7 @@ public class Settings {
     }
 
     /** @return the distance units to be used. */
-    public DistanceUtils.Units getDistanceUnits()
+    public Distance.Units getDistanceUnits()
     {
         return this.units;
     }
@@ -36,7 +35,7 @@ public class Settings {
     /** Changes the units for distance.
      * @param distanceUnits the new units to use.
      */
-    public void setDistanceUnits(DistanceUtils.Units distanceUnits)
+    public void setDistanceUnits(Distance.Units distanceUnits)
     {
         this.units = distanceUnits;
     }
@@ -69,11 +68,6 @@ public class Settings {
         this.firstDayOfWeek = firstDayOfWeek;
     }
 
-    public DistanceUtils getDistanceUtils()
-    {
-        return DistanceUtils.createFor( this.getDistanceUnits() );
-    }
-
     @Override
     public String toString()
     {
@@ -85,14 +79,14 @@ public class Settings {
     }
 
     public static Settings createFrom(
-                                        DistanceUtils.Units distanceUnits,
+                                        Distance.Units distanceUnits,
                                         FirstDayOfWeek firstDayOfWeek,
                                         PoolLength defaultPoolLength)
     {
         return new Settings( distanceUnits, firstDayOfWeek, defaultPoolLength );
     }
 
-    private DistanceUtils.Units units;
+    private Distance.Units units;
     private FirstDayOfWeek firstDayOfWeek;
     private PoolLength defaultPoolLength;
 }

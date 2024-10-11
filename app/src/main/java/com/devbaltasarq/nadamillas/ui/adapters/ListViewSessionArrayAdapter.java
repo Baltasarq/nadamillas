@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
+import com.devbaltasarq.nadamillas.core.Distance;
 import com.devbaltasarq.nadamillas.core.Session;
 import com.devbaltasarq.nadamillas.ui.BrowseActivity;
 
@@ -36,6 +37,7 @@ public class ListViewSessionArrayAdapter extends ArrayAdapter<Session> {
     {
         final Session SESSION = this.getItem( position );
         final BrowseActivity ACTIVITY = (BrowseActivity) this.getContext();
+        final Distance.Units UNITS = settings.getDistanceUnits();
 
         if ( rowView == null ) {
             final LayoutInflater LAYOUT_INFLATER = LayoutInflater.from( this.getContext() );
@@ -73,10 +75,7 @@ public class ListViewSessionArrayAdapter extends ArrayAdapter<Session> {
                                         drawableId ) );
 
         // Set data
-        LBL_DATA.setText(
-                SESSION.getFormattedDistance(
-                                        ACTIVITY,
-                                        settings.getDistanceUnits() ) );
+        LBL_DATA.setText( Distance.format( SESSION.getDistance(), UNITS ) );
 
         if ( SESSION.getDistance() > 0
           && SESSION.getDuration().getTimeInSeconds() > 0 )

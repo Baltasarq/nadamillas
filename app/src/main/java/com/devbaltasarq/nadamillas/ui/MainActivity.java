@@ -18,7 +18,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
 
-import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
+import com.devbaltasarq.nadamillas.core.Distance;
+import com.devbaltasarq.nadamillas.core.Speed;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
@@ -235,6 +236,7 @@ public class MainActivity extends BaseActivity
         final TextView LBL_PROJECTION = this.findViewById( R.id.lblProjection );
         final TextView LBL_TARGET = this.findViewById( R.id.lblTarget );
         final ProgressView PROGRESS_VIEW = this.findViewById( R.id.pvProgress );
+        final Distance.Units UNITS = settings.getDistanceUnits();
 
         String total = "0";
         String progress = "0";
@@ -243,7 +245,6 @@ public class MainActivity extends BaseActivity
         String projectionPercentage = YearInfo.NOT_APPLYABLE;
 
         if ( INFO != null ) {
-            final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
             final int TOTAL = INFO.getDistance( YearInfo.SwimKind.TOTAL );
             final int TARGET = INFO.getTarget( YearInfo.SwimKind.TOTAL );
             final int PROGRESS = (int) INFO.getProgress( YearInfo.SwimKind.TOTAL );
@@ -271,12 +272,10 @@ public class MainActivity extends BaseActivity
                 }
             };
 
-            total = DISTANCE_UTILS.toString(
-                                INFO.getDistance( YearInfo.SwimKind.TOTAL ) );
-            projection = DISTANCE_UTILS.toString( PROJECTED );
+            total = Distance.format( INFO.getDistance( YearInfo.SwimKind.TOTAL ), UNITS );
+            projection = Distance.format( PROJECTED, UNITS );
             projectionPercentage = PROJECTED_PERCENTAGE + "%";
-            target = DISTANCE_UTILS.toString(
-                                INFO.getTarget( YearInfo.SwimKind.TOTAL ) );
+            target = Distance.format( INFO.getTarget( YearInfo.SwimKind.TOTAL ), UNITS );
             progress = PROGRESS + "%";
             SHOW_PROGRESS_THREAD.start();
         }
@@ -299,6 +298,7 @@ public class MainActivity extends BaseActivity
         final TextView LBL_OPEN_WATERS = this.findViewById( R.id.lblOpenWaters );
         final TextView LBL_PROJECTION = this.findViewById( R.id.lblProjectionOWS );
         final TextView LBL_TARGET = this.findViewById( R.id.lblTargetOWS );
+        final Distance.Units UNITS = settings.getDistanceUnits();
         String totalOpenWaters = "0";
         String target = YearInfo.NOT_APPLYABLE;
         String projection = YearInfo.NOT_APPLYABLE;
@@ -306,17 +306,16 @@ public class MainActivity extends BaseActivity
         String progress = "0";
 
         if ( INFO != null ) {
-            final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
             final int TOTAL = INFO.getDistance( YearInfo.SwimKind.OWS );
             final int TARGET = INFO.getTarget( YearInfo.SwimKind.OWS );
             final int PROGRESS = (int) INFO.getProgress( YearInfo.SwimKind.OWS );
             final int PROJECTED = (int) INFO.calcProjection( TOTAL );
             final int PROJECTED_PERCENTAGE = (int) INFO.calcProgress( PROJECTED, TARGET );
 
-            totalOpenWaters = DISTANCE_UTILS.toString( TOTAL );
-            projection = DISTANCE_UTILS.toString( PROJECTED );
+            totalOpenWaters = Distance.format( TOTAL, UNITS );
+            projection = Distance.format( PROJECTED, UNITS );
             projectionPercentage = PROJECTED_PERCENTAGE + "%";
-            target = DISTANCE_UTILS.toString( TARGET );
+            target = Distance.format( TARGET, UNITS );
             progress = PROGRESS + "%";
         }
 
@@ -345,17 +344,17 @@ public class MainActivity extends BaseActivity
         String progress = "0";
 
         if ( INFO != null ) {
-            final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
+            final Distance.Units UNITS = settings.getDistanceUnits();
             final int TOTAL = INFO.getDistance( YearInfo.SwimKind.POOL );
             final int TARGET = INFO.getTarget( YearInfo.SwimKind.POOL );
             final int PROGRESS = (int) INFO.getProgress( YearInfo.SwimKind.POOL );
             final int PROJECTED = (int) INFO.calcProjection( TOTAL );
             final int PROJECTED_PERCENTAGE = (int) INFO.calcProgress( PROJECTED, TARGET );
 
-            totalPool = DISTANCE_UTILS.toString( TOTAL );
-            projection = DISTANCE_UTILS.toString( PROJECTED );
+            totalPool = Distance.format( TOTAL, UNITS );
+            projection = Distance.format( PROJECTED, UNITS );
             projectionPercentage = PROJECTED_PERCENTAGE + "%";
-            target = DISTANCE_UTILS.toString( TARGET );
+            target = Distance.format( TARGET, UNITS );
             progress = PROGRESS + "%";
         }
 

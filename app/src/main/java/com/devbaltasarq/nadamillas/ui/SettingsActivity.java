@@ -21,7 +21,6 @@ import androidx.activity.OnBackPressedCallback;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CursorAdapter;
@@ -35,15 +34,16 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.AppInfo;
 import com.devbaltasarq.nadamillas.core.DataStore;
+import com.devbaltasarq.nadamillas.core.Distance;
 import com.devbaltasarq.nadamillas.core.Util;
 import com.devbaltasarq.nadamillas.core.YearInfo;
-import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
+import com.devbaltasarq.nadamillas.core.Speed;
 import com.devbaltasarq.nadamillas.core.settings.FirstDayOfWeek;
 import com.devbaltasarq.nadamillas.core.settings.PoolLength;
 import com.devbaltasarq.nadamillas.core.storage.SettingsStorage;
@@ -82,10 +82,10 @@ public class SettingsActivity extends BaseActivity {
         CB_DEFAULT_POOL_LENGTH.setSelection( settings.getDefaultPoolLength().ordinal() );
 
         // Prepare units spinner
-        final ArrayAdapter<DistanceUtils.Units> UNITS_ADAPTER = new ArrayAdapter<>(
+        final ArrayAdapter<Distance.Units> UNITS_ADAPTER = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
-                DistanceUtils.Units.values() );
+                Distance.Units.values() );
 
         CB_UNITS.setAdapter( UNITS_ADAPTER );
         CB_UNITS.setSelection( settings.getDistanceUnits().ordinal() );
@@ -304,7 +304,7 @@ public class SettingsActivity extends BaseActivity {
     /** Handler for the units changed event. */
     private void onUnitsChangedTo(int pos)
     {
-        settings.setDistanceUnits( DistanceUtils.Units.fromOrdinal( pos ) );
+        settings.setDistanceUnits( Distance.Units.fromOrdinal( pos ) );
         this.updateTarget();
     }
 
@@ -363,11 +363,11 @@ public class SettingsActivity extends BaseActivity {
         final TextView LBL_INFO = this.findViewById( R.id.lblTargetInfo );
         final TextView LBL_UNITS = this.findViewById( R.id.lblUnits );
         final YearInfo INFO = this.getSelectedYearInfo();
-        final DistanceUtils DISTANCE_UTIL = settings.getDistanceUtils();
+        final Distance.Units UNITS = settings.getDistanceUnits();
         int displayUnits = R.string.label_km;
 
         // Update units
-        if ( settings.getDistanceUnits() == DistanceUtils.Units.mi ) {
+        if ( settings.getDistanceUnits() == Distance.Units.mi ) {
             displayUnits = R.string.label_mi;
         }
 
@@ -376,19 +376,19 @@ public class SettingsActivity extends BaseActivity {
         if ( INFO != null ) {
             // Target & distance info
             LBL_DISTANCE.setText(
-                            DISTANCE_UTIL.toString(
-                                INFO.getDistance( YearInfo.SwimKind.TOTAL ) ) );
+                    Distance.format(
+                        INFO.getDistance( YearInfo.SwimKind.TOTAL ), UNITS ));
             LBL_TARGET_TOTAL.setText(
-                            DISTANCE_UTIL.toString(
-                                INFO.getTarget( YearInfo.SwimKind.TOTAL ) ) );
+                    Distance.format(
+                        INFO.getTarget( YearInfo.SwimKind.TOTAL ), UNITS ) );
             LBL_INFO.setText( String.format(
                                 Locale.getDefault(),
                                 "%s %s, %s %s",
-                                DISTANCE_UTIL.toString(
-                                        INFO.getTarget( YearInfo.SwimKind.OWS ) ),
+                                Distance.format(
+                                        INFO.getTarget( YearInfo.SwimKind.OWS ), UNITS ),
                                 this.getString( R.string.label_abbrev_open_waters ),
-                                DISTANCE_UTIL.toString(
-                                        INFO.getTarget( YearInfo.SwimKind.POOL ) ),
+                                Distance.format(
+                                        INFO.getTarget( YearInfo.SwimKind.POOL ), UNITS ),
                                 this.getString( R.string.label_pool ) ));
         }
 

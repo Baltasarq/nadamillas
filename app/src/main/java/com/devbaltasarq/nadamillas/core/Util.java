@@ -3,6 +3,10 @@
 
 package com.devbaltasarq.nadamillas.core;
 
+import android.content.Context;
+
+import com.devbaltasarq.nadamillas.R;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -10,7 +14,7 @@ import java.util.Date;
 import java.util.Locale;
 
 
-public class Util {
+public final class Util {
     /** @return the current date with the default locale. */
     public static Calendar getDate()
     {

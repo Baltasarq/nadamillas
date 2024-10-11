@@ -18,6 +18,7 @@ import android.os.Bundle;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 
+import com.devbaltasarq.nadamillas.core.Duration;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.core.content.ContextCompat;
@@ -58,7 +59,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         if ( date != null ) {
             final Bundle BUNDLE = new Bundle();
-            new SessionStorage( new Session( date, 0, 0, true, "", "" ) ).toBundle( BUNDLE );
+            new SessionStorage( new Session( date ) ).toBundle( BUNDLE );
             NEW_SESSION_DATA.putExtras( BUNDLE );
         }
 

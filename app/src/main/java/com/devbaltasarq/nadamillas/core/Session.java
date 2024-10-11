@@ -7,7 +7,6 @@ package com.devbaltasarq.nadamillas.core;
 import android.content.Context;
 
 import com.devbaltasarq.nadamillas.R;
-import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
 
 import java.util.Date;
 import java.util.Locale;
@@ -16,64 +15,69 @@ import java.util.Locale;
 public class Session {
     public static final int FAKE_ID = -1;
 
+    /** Creates a fake training session. */
+    public Session(Date date)
+    {
+        this( FAKE_ID,
+                date,
+                0,
+                new Duration( 0 ),
+                false,
+                false,
+                18,
+                "",
+                ""
+        );
+    }
+
     /** Creates a new training session.
       * @param date the date this session happened on.
       * @param distance the distance for this session.
+      * @param duration the duration of the session.
       * @param atPool whether this session was done at the pool or not.
+      * @param place the place the swim happened at.
+      * @param isCompetition was it a competition or training?
+      * @param temperature the temperature of the water
+      * @param notes any remarks.
       */
     public Session(Date date,
                    int distance,
                    Duration duration,
                    boolean atPool,
+                   boolean isCompetition,
+                   double temperature,
                    String place,
                    String notes)
     {
-        this( FAKE_ID, date, distance, duration, atPool, place, notes );
-    }
-
-    /** Creates a new training session.
-     * @param date the date this session happened on.
-     * @param distance the distance for this session.
-     * @param atPool whether this session was done at the pool or not.
-     */
-    public Session(Date date,
-                   int distance,
-                   int secs,
-                   boolean atPool,
-                   String place,
-                   String notes)
-    {
-        this( FAKE_ID, date, distance, new Duration( secs ), atPool, place, notes );
+        this( FAKE_ID,
+                date,
+                distance,
+                duration,
+                atPool,
+                isCompetition,
+                temperature,
+                place,
+                notes );
     }
 
     /** Creates a new training session.
      * @param id the unique id for this session.
      * @param date the date this session happened on.
      * @param distance the distance for this session.
+     * @param duration the duration of the session.
      * @param atPool whether this session was done at the pool or not.
-     */
-    public Session(int id,
-                   Date date,
-                   int distance,
-                   int secs,
-                   boolean atPool,
-                   String place,
-                   String notes)
-    {
-        this( id, date, distance, new Duration( secs ), atPool, place, notes );
-    }
-
-    /** Creates a new training session.
-     * @param id the unique id for this session.
-     * @param date the date this session happened on.
-     * @param distance the distance for this session.
-     * @param atPool whether this session was done at the pool or not.
+     * @param place the place the swim happened at.
+     * @param isCompetition was it a competition or training?
+     * @param temperature the temperature of the water
+     * @param notes any remarks.
      */
     public Session(int id,
                    Date date,
                    int distance,
                    Duration duration,
                    boolean atPool,
+                   boolean isCompetition,
+                   double temperature,
                    String place,
                    String notes)
     {
@@ -91,6 +95,8 @@ public class Session {
             notes = "";
         }
 
+        this.isCompetition = isCompetition;
+        this.temperature = temperature;
         this.place = Util.capitalize( place );
         this.notes = Util.capitalize( notes );
     }
@@ -125,6 +131,18 @@ public class Session {
         return this.atPool;
     }
 
+    /** @return whether this session was a competition or not. */
+    public boolean isCompetition()
+    {
+        return this.isCompetition;
+    }
+
+    /** @return the temperature of the water. */
+    public double getTemperature()
+    {
+        return this.temperature;
+    }
+
     /** @return the place this session happened on. */
     public String getPlace()
     {
@@ -137,103 +155,58 @@ public class Session {
         return this.notes;
     }
 
-    /** @return the formatted distance. */
-    public String getFormattedDistance(Context cntx, DistanceUtils.Units du)
-    {
-        final Locale LOCALE = Locale.getDefault();
-        int units = R.string.label_meter;
-
-        if ( du == DistanceUtils.Units.mi ) {
-            units = R.string.label_yard;
-        }
-
-        return String.format( LOCALE, "%6d%s",
-                this.getDistance(),
-                cntx.getString( units ) );
-    }
-
     /** @return the mean time for each 100m. */
-    public Duration getMeanTime()
+    public Duration getMeanTime(Distance.Units units)
     {
-        final double HUNDREDS = (double) this.getDistance() / 100;
-        int secs = 0;
-
-        if ( HUNDREDS > 0 ) {
-            secs = (int) Math.round( this.getDuration().getTimeInSeconds() / HUNDREDS );
-        }
-
-        return new Duration( secs );
+        return new Speed(
+                        new Distance( this.getDistance(), units ),
+                        this.getDuration() ).getMeanTime();
     }
 
     /** @return the mean time, as a string. */
-    public String getMeanTimeAsString(DistanceUtils.Units du)
+    public String getMeanTimeAsString(Distance.Units du)
     {
-        String distanceUnits = "m";
-
-        // Set distance units
-        if ( du == DistanceUtils.Units.mi ) {
-            distanceUnits = "y";
-        }
-
-        return this.getMeanTime().toString() + "/100" + distanceUnits;
+        return new Speed(
+                new Distance( this.getDistance(), du ),
+                this.getDuration() ).getMeanTimeAsStr();
     }
 
-    /** @return the mean velocity for this session. */
-    public double getSpeed(Settings settings)
+    /** Get the mean velocity for this session.
+      * @param units the units to use.
+      * @return the mean velocity for this session.
+      */
+    public double getSpeed(Distance.Units units)
     {
-        final DistanceUtils DISTANCE_UTIL = settings.getDistanceUtils();
-        final double DISTANCE = DISTANCE_UTIL.thousandUnitsFromUnits( this.getDistance() );
-        final double TIME = (double) this.getDuration().getTimeInSeconds() / 3600;
-        double toret = 0;
-
-        if ( TIME > 0 ) {
-            toret = DISTANCE / TIME;
-        }
-
-        return toret;
+        return new Speed(
+                    new Distance( this.getDistance(), units ),
+                    this.getDuration() ).getValue();
     }
 
     /** @return the mean velocity for this session, as a string. */
     public String getSpeedAsString(Settings settings)
     {
-        final String SPEED_UNITS = settings.getDistanceUnits().toString() + "/h";
+        final Distance.Units UNITS = settings.getDistanceUnits();
+        final Distance DIST = new Distance( this.getDistance(), UNITS );
 
-        return String.format( Locale.getDefault(), "%5.2f%s",
-                              this.getSpeed( settings ), SPEED_UNITS );
+        return new Speed( DIST, this.getDuration() ).toString();
     }
 
     /** @return get the whole speed information, as a formatted string. */
     public String getWholeSpeedFormattedString(Settings settings)
     {
-        return this.getSpeedAsString( settings )
-                + " - " + this.getMeanTimeAsString( settings.getDistanceUnits() );
+        final Distance.Units UNITS = settings.getDistanceUnits();
+        final Speed SPEED = new Speed(
+                                    new Distance( this.getDistance(), UNITS ),
+                                    this.getDuration() );
+
+        return this.getDuration() + " - " + SPEED;
     }
 
+    /** @return get the time and the whole speed information, as a formatted string. */
     public String getTimeAndWholeSpeedFormattedString(Settings settings)
     {
         return this.getDuration().toString()
                 + "\n" + this.getWholeSpeedFormattedString( settings );
-    }
-
-    public String toHumanReadableString(Context ctx, Settings settings)
-    {
-        String fmt = ctx.getString( R.string.fmt_human_readable_info );
-        String place = ctx.getString( R.string.label_pool ).toLowerCase();
-
-        if ( !this.isAtPool() ) {
-            place = ctx.getString( R.string.label_open_waters ).toLowerCase();
-        }
-
-        if ( !this.getPlace().isEmpty() ) {
-            place += " (" + this.getPlace() + ")";
-        }
-
-        return fmt.replace( "$date", Util.getShortDate( this.getDate(), null ) )
-                            .replace( "$distance",
-                                            this.getFormattedDistance(
-                                                    ctx,
-                                                    settings.getDistanceUnits() ) )
-                            .replace( "$place", place );
     }
 
     /** Creates a new session with a given id and session number.
@@ -247,6 +220,8 @@ public class Session {
                             this.getDistance(),
                             this.getDuration(),
                             this.isAtPool(),
+                            this.isCompetition(),
+                            this.getTemperature(),
                             this.place,
                             this.notes );
     }
@@ -259,10 +234,10 @@ public class Session {
                 + this.getDate().hashCode()
                 + this.getDistance()
                 + this.getDuration().hashCode()
+                + Boolean.hashCode( this.isAtPool() )
+                + Double.hashCode( this.getTemperature() )
                 + this.getPlace().hashCode()
-                + this.getNotes().hashCode()
-                + ( this.isAtPool() ? 31 : 37 )
-        );
+                + this.getNotes().hashCode() );
     }
 
     @Override
@@ -274,8 +249,11 @@ public class Session {
             toret = this.getDate().equals( OTHER_SESSION.getDate() )
                     && this.getDistance() == OTHER_SESSION.getDistance()
                     && this.getDuration().equals( OTHER_SESSION.getDuration() )
+                    && this.isAtPool() == OTHER_SESSION.isAtPool()
+                    && this.isCompetition() == OTHER_SESSION.isCompetition()
+                    && this.getTemperature() == OTHER_SESSION.getTemperature()
                     && this.getPlace().equals( OTHER_SESSION.getPlace() )
-                    && this.isAtPool() == OTHER_SESSION.isAtPool();
+                    && this.getNotes().equals( OTHER_SESSION.getNotes() );
         }
 
         return toret;
@@ -285,14 +263,43 @@ public class Session {
     public String toString()
     {
         return String.format( Locale.getDefault(),
-                                "%03d: %s: %7dm (%s) %s - %s (%s)",
+                                "%03d: %s: %7dm (%s) %5.2fº %s %s - %s (%s)",
                                 this.getId(),
                                 Util.getShortDate( this.getDate(), null ),
                                 this.getDistance(),
                                 this.getDuration().toString(),
+                                this.getTemperature(),
+                                this.isCompetition() ? "race" : "training",
                                 this.isAtPool() ? "at pool" : "open water",
                                 this.getPlace(),
                                 this.getNotes() );
+    }
+
+    public static String summaryFromSessionData(
+            Context ctx,
+            Settings settings,
+            Date date,
+            boolean isAtPool,
+            String place,
+            int distance)
+    {
+        String fmt = ctx.getString( R.string.fmt_human_readable_info );
+        final Distance.Units UNITS = settings.getDistanceUnits();
+
+        if ( place.isEmpty() ) {
+            place = ctx.getString( R.string.label_pool );
+        }
+
+        if ( !isAtPool ) {
+            place = ctx.getString( R.string.label_open_waters );
+        }
+
+        place = " (" + place.toLowerCase() + ")";
+        return fmt.replace( "$date",
+                        Util.getShortDate( date, null ) )
+                .replace( "$distance",
+                        Distance.format( distance, UNITS ) )
+                .replace( "$place", place );
     }
 
     private final int id;
@@ -300,6 +307,8 @@ public class Session {
     private final int distance;
     private final Duration duration;
     private final boolean atPool;
+    private final boolean isCompetition;
+    private final double temperature;
     private final String place;
     private final String notes;
 }

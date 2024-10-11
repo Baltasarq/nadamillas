@@ -8,10 +8,8 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 
 import com.devbaltasarq.nadamillas.core.YearInfo;
-import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
 
 import java.io.IOException;
-import java.time.Year;
 
 /** Represents a YearInfo in storage. */
 public class YearInfoStorage {

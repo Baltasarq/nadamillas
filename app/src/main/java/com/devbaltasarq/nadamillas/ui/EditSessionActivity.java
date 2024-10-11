@@ -8,7 +8,8 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
+import com.devbaltasarq.nadamillas.core.Distance;
+import com.devbaltasarq.nadamillas.core.Speed;
 import com.devbaltasarq.nadamillas.core.settings.PoolLength;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.appcompat.widget.Toolbar;
@@ -20,7 +21,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
@@ -109,7 +109,7 @@ public class EditSessionActivity extends BaseActivity {
         final TextView LBL_LENGTH2 = this.findViewById( R.id.lblLength2 );
 
         // Prepares the label for distance
-        if ( settings.getDistanceUnits() == DistanceUtils.Units.mi ) {
+        if ( settings.getDistanceUnits() == Distance.Units.mi ) {
             LBL_LENGTH1.setText( R.string.label_yard );
             LBL_LENGTH2.setText( R.string.label_yard );
         }
@@ -464,28 +464,24 @@ public class EditSessionActivity extends BaseActivity {
     private void calculatePoolLaps()
     {
         if ( !this.blockListeners ) {
-            final Session FAKE_SESSION = new Session(
-                                                this.date,
-                                                this.distance,
-                                                this.duration,
-                                                this.atPool,
-                                                this.place,
-                                                this.notes );
             final EditText ED_POOL_LAPS = this.findViewById( R.id.edLaps );
             int poolLength = this.getPoolLength();
             int numLaps = 0;
+            String strNumLaps = "";
 
             if ( poolLength > 0 ) {
-                int modLaps = FAKE_SESSION.getDistance() % poolLength;
-                numLaps = FAKE_SESSION.getDistance() / poolLength;
+                int modLaps = this.distance % poolLength;
+                numLaps = this.distance / poolLength;
 
                 if ( modLaps != 0 ) {
                     ++numLaps;
                 }
             }
 
+            strNumLaps += numLaps;
+
             this.blockListeners = true;
-            ED_POOL_LAPS.setText( Integer.toString( numLaps ) );
+            ED_POOL_LAPS.setText( strNumLaps );
             this.blockListeners = false;
         }
 
@@ -496,17 +492,13 @@ public class EditSessionActivity extends BaseActivity {
     private void calculateMeanSpeed()
     {
         final TextView LBL_SPEED = this.findViewById( R.id.lblSpeed );
-        final Session FAKE_SESSION = new Session(
-                                            this.date,
-                                            this.distance,
-                                            this.duration,
-                                            this.atPool,
-                                            this.place,
-                                            this.notes );
+        final Distance.Units UNITS = settings.getDistanceUnits();
+        final Speed SPEED = new Speed(
+                                new Distance( this.distance, UNITS ),
+                                this.duration );
+        final String TEXT = SPEED + " - " + SPEED.getMeanTimeAsStr();
 
-        LBL_SPEED.setText( FAKE_SESSION.getSpeedAsString( settings )
-                            + " - "
-                            + FAKE_SESSION.getMeanTimeAsString( settings.getDistanceUnits() ) );
+        LBL_SPEED.setText( TEXT );
     }
 
     /** Calculates the distance given the laps. */
@@ -516,9 +508,10 @@ public class EditSessionActivity extends BaseActivity {
             final EditText ED_DISTANCE = this.findViewById( R.id.edDistance );
             int laps = this.getNumLaps();
             int poolLength = this.getPoolLength();
+            final String STR_DIST_BY_LAPS = "" + ( laps * poolLength );
 
             this.blockListeners = true;
-            ED_DISTANCE.setText( "" + ( laps * poolLength ) );
+            ED_DISTANCE.setText( STR_DIST_BY_LAPS );
             this.blockListeners = false;
         }
 
@@ -528,15 +521,14 @@ public class EditSessionActivity extends BaseActivity {
     /** Share the text summary of this session. */
     private void shareSessionSummary()
     {
-        final Session FAKE_SESSION = new Session(
-                                        this.date,
-                                        this.distance,
-                                        this.duration,
-                                        this.atPool,
-                                        this.place,
-                                        this.notes );
-
-        this.share( FAKE_SESSION.toHumanReadableString( this, settings ) );
+        this.share(
+                Session.summaryFromSessionData(
+                        this,
+                        settings,
+                        this.date,
+                        this.atPool,
+                        this.place,
+                        this.distance ));
     }
 
     @Override
@@ -558,6 +550,8 @@ public class EditSessionActivity extends BaseActivity {
                             this.distance,
                             this.duration,
                             this.atPool,
+                            false,
+                            0.0,
                             this.place,
                             this.notes ) ).toBundle( DATA );
         RET_DATA.putExtras( DATA );

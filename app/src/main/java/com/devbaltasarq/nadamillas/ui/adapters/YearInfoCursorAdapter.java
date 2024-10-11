@@ -17,9 +17,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.devbaltasarq.nadamillas.R;
+import com.devbaltasarq.nadamillas.core.Distance;
 import com.devbaltasarq.nadamillas.core.Settings;
 import com.devbaltasarq.nadamillas.core.YearInfo;
-import com.devbaltasarq.nadamillas.core.settings.DistanceUtils;
+import com.devbaltasarq.nadamillas.core.Speed;
 import com.devbaltasarq.nadamillas.core.storage.YearInfoStorage;
 import com.devbaltasarq.nadamillas.ui.AchievementsActivity;
 
@@ -56,7 +57,7 @@ public class YearInfoCursorAdapter extends CursorAdapter {
     private static void updateViewWith(@NonNull View view, @NonNull YearInfo yearInfo)
     {
         final Locale LOCALE = Locale.getDefault();
-        final DistanceUtils DISTANCE_UTILS = settings.getDistanceUtils();
+        final Distance.Units UNITS = settings.getDistanceUnits();
         final TextView LBL_MAIN_DATA = view.findViewById( R.id.lblMainProgress );
         final TextView LBL_OWS_DATA = view.findViewById( R.id.lblProgressOWS );
         final TextView LBL_POOL_DATA = view.findViewById( R.id.lblProgressPool );
@@ -68,22 +69,23 @@ public class YearInfoCursorAdapter extends CursorAdapter {
         final int PROGRESS = (int) yearInfo.getProgress( YearInfo.SwimKind.TOTAL );
         final String STR_MAIN_DATA = String.format( LOCALE,
                 "%s (%d%%) %s.",
-                DISTANCE_UTILS.toString( yearInfo.getDistance( YearInfo.SwimKind.TOTAL ) ),
+                Distance.format( yearInfo.getDistance( YearInfo.SwimKind.TOTAL ), UNITS ),
                 PROGRESS,
                 STR_UNITS );
         final String STR_OWS_DATA = String.format( LOCALE,
                                     "%s %s (%d%%)",
                                     STR_OWS,
-                                    DISTANCE_UTILS.toString( yearInfo.getDistance( YearInfo.SwimKind.OWS ) ),
+                                    Distance.format( yearInfo.getDistance( YearInfo.SwimKind.OWS ), UNITS ),
                                     (int) yearInfo.getProgress( YearInfo.SwimKind.OWS ) );
         final String STR_POOL_DATA = String.format( LOCALE,
                                     "%s %s (%d%%) %s.",
                                     STR_POOL,
-                                    DISTANCE_UTILS.toString( yearInfo.getDistance( YearInfo.SwimKind.POOL ) ),
+                                    Distance.format( yearInfo.getDistance( YearInfo.SwimKind.POOL ), UNITS ),
                                     (int) yearInfo.getProgress( YearInfo.SwimKind.POOL ),
                                     STR_UNITS );
+        final String STR_YEAR =  "" + yearInfo.getYear();
 
-        LBL_YEAR.setText( Integer.toString( yearInfo.getYear() ) );
+        LBL_YEAR.setText( STR_YEAR );
         LBL_MAIN_DATA.setText( STR_MAIN_DATA );
         LBL_OWS_DATA.setText( STR_OWS_DATA );
         LBL_POOL_DATA.setText( STR_POOL_DATA );
