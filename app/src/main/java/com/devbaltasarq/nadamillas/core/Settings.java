@@ -4,6 +4,7 @@
 package com.devbaltasarq.nadamillas.core;
 
 
+import com.devbaltasarq.nadamillas.core.session.Distance;
 import com.devbaltasarq.nadamillas.core.settings.FirstDayOfWeek;
 import com.devbaltasarq.nadamillas.core.settings.PoolLength;
 

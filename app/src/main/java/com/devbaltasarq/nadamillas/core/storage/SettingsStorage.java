@@ -9,9 +9,8 @@ import android.content.SharedPreferences;
 
 
 import com.devbaltasarq.nadamillas.R;
-import com.devbaltasarq.nadamillas.core.Distance;
+import com.devbaltasarq.nadamillas.core.session.Distance;
 import com.devbaltasarq.nadamillas.core.Settings;
-import com.devbaltasarq.nadamillas.core.Speed;
 import com.devbaltasarq.nadamillas.core.settings.FirstDayOfWeek;
 import com.devbaltasarq.nadamillas.core.settings.PoolLength;
 

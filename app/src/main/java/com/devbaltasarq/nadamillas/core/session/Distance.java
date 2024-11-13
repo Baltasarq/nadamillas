@@ -1,8 +1,10 @@
 // NadaMillas (c) 2019-2024 Baltasar MIT License <baltasarq@gmail.com>
 
 
-package com.devbaltasarq.nadamillas.core;
+package com.devbaltasarq.nadamillas.core.session;
 
+
+import java.util.Locale;
 
 public final class Distance {
     /** Distance units. */
@@ -73,8 +75,8 @@ public final class Distance {
     }
 
     /** Converts the distance to the distance in the thousands.
-     * @return the same distance in km or mi, depending on settings.
-     */
+      * @return the same distance in km or mi, depending on settings.
+      */
     public double toThousandUnits()
     {
         double toret = Units.kmFromM( this.getValue() );
@@ -86,10 +88,20 @@ public final class Distance {
         return toret;
     }
 
+    /** Converts the distance to the distance in the thousands.
+      * @return the same distance in km or mi, depending on settings, as String.
+      */
+    public String toThousandUnitsAsString()
+    {
+        return String.format( Locale.getDefault(),
+                            "%04.2f", this.toThousandUnits() );
+    }
+
     @Override
     public String toString()
     {
-        return this.toThousandUnits() + this.getUnits().toString();
+        return this.toThousandUnitsAsString()
+                + " " + this.getUnits().toString() + ".";
     }
 
     /** Creates a new distance object, from a distance in thousands.
@@ -108,16 +120,49 @@ public final class Distance {
         return new Distance( d, units );
     }
 
-    /** Formats a distance in basic units to a string.
-      * @param units the distance units.
-      * @param distanceInBasicUnits the given distance.
-      * @return a string representing a vi
-      */
-    public static String format(int distanceInBasicUnits, Units units)
-    {
-        return new Distance( distanceInBasicUnits, units ).toString();
-    }
-
     private final Units units;
     private final int distanceInBasicUnits;
+
+
+    public static class Fmt {
+        /** Used in the format() static methods. */
+        public enum UnitsUse {
+            NO_UNITS, UNITS
+        }
+
+        /** Formats a distance in basic units to a string.
+         * @param units the distance units.
+         * @param distanceInBasicUnits the given distance.
+         * @param unitsUse use of the units, as in 3.5 km.
+         * @return a string representing a given distance.
+         */
+        public static String format(int distanceInBasicUnits, Distance.Units units, UnitsUse unitsUse)
+        {
+            final Distance DIST = new Distance( distanceInBasicUnits, units );
+            String toret = "";
+
+            if ( unitsUse == UnitsUse.UNITS ) {
+                toret = DIST.toString();
+            }
+            else
+            if ( unitsUse == UnitsUse.NO_UNITS ) {
+                toret = DIST.toThousandUnitsAsString();
+            } else {
+                throw new IllegalArgumentException( unitsUse + "?? not supported." );
+            }
+
+            return toret;
+        }
+
+        /** Formats a distance in basic units to a string,
+         * WITH UNITS, as in 3500 -> 3.5 km.
+         * @param units the distance units.
+         * @param distanceInBasicUnits the given distance.
+         * @return a string representing a given distance.
+         */
+        public static String format(int distanceInBasicUnits, Distance.Units units)
+        {
+            return format( distanceInBasicUnits, units, UnitsUse.UNITS );
+        }
+    }
 }

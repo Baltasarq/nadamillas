@@ -35,15 +35,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
-import java.util.function.Consumer;
 
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.AppInfo;
 import com.devbaltasarq.nadamillas.core.DataStore;
-import com.devbaltasarq.nadamillas.core.Distance;
-import com.devbaltasarq.nadamillas.core.Util;
+import com.devbaltasarq.nadamillas.core.session.Distance;
+import com.devbaltasarq.nadamillas.core.session.Date;
 import com.devbaltasarq.nadamillas.core.YearInfo;
-import com.devbaltasarq.nadamillas.core.Speed;
 import com.devbaltasarq.nadamillas.core.settings.FirstDayOfWeek;
 import com.devbaltasarq.nadamillas.core.settings.PoolLength;
 import com.devbaltasarq.nadamillas.core.storage.SettingsStorage;
@@ -266,7 +264,7 @@ public class SettingsActivity extends BaseActivity {
         final AlertDialog.Builder DLG = new AlertDialog.Builder( this );
 
         // Create years
-        final int YEAR = Util.getYearFrom( Util.getDate().getTime() );
+        final int YEAR = new Date().getYear();
         final String[] YEARS = new String[ MARGIN_FOR_YEARS * 2 ];
 
         final ArrayAdapter<String> YEARS_ADAPTER = new ArrayAdapter<>( this,
@@ -376,18 +374,18 @@ public class SettingsActivity extends BaseActivity {
         if ( INFO != null ) {
             // Target & distance info
             LBL_DISTANCE.setText(
-                    Distance.format(
+                    Distance.Fmt.format(
                         INFO.getDistance( YearInfo.SwimKind.TOTAL ), UNITS ));
             LBL_TARGET_TOTAL.setText(
-                    Distance.format(
+                    Distance.Fmt.format(
                         INFO.getTarget( YearInfo.SwimKind.TOTAL ), UNITS ) );
             LBL_INFO.setText( String.format(
                                 Locale.getDefault(),
                                 "%s %s, %s %s",
-                                Distance.format(
+                                Distance.Fmt.format(
                                         INFO.getTarget( YearInfo.SwimKind.OWS ), UNITS ),
                                 this.getString( R.string.label_abbrev_open_waters ),
-                                Distance.format(
+                                Distance.Fmt.format(
                                         INFO.getTarget( YearInfo.SwimKind.POOL ), UNITS ),
                                 this.getString( R.string.label_pool ) ));
         }

@@ -1,7 +1,7 @@
 // NadaMillas (c) 2019-2024-2024 Baltasar MIT License <baltasarq@gmail.com>
 
 
-package com.devbaltasarq.nadamillas.core;
+package com.devbaltasarq.nadamillas.core.session;
 
 
 import java.util.Locale;

@@ -6,9 +6,14 @@ package com.devbaltasarq.nadamillas.ui;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import androidx.appcompat.widget.Toolbar;
+
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.DataStore;
@@ -31,13 +36,11 @@ public class HistoryActivity extends BaseActivity {
         final ImageButton BT_BACK = this.findViewById( R.id.btCloseHistory );
         final ImageButton BT_SCRSHOT = this.findViewById( R.id.btTakeScrshotForHistory );
 
-        FB_NEW.setOnClickListener( v -> HistoryActivity.this.onNew() );
-        BT_BACK.setOnClickListener( v -> HistoryActivity.this.finish() );
-        BT_SCRSHOT.setOnClickListener( v -> {
-                final HistoryActivity SELF = HistoryActivity.this;
-
-                SELF.shareScreenShot( LOG_TAG, SELF.takeScreenshot( LOG_TAG ) );
-        });
+        FB_NEW.setOnClickListener( v -> this.onNew() );
+        BT_BACK.setOnClickListener( v -> this.finish() );
+        BT_SCRSHOT.setOnClickListener( v ->
+                this.shareScreenShot( LOG_TAG, this.takeScreenshot( LOG_TAG ) )
+        );
 
         this.createAllSessionsList();
     }
@@ -56,6 +59,36 @@ public class HistoryActivity extends BaseActivity {
         super.onPause();
 
         DataStore.close( this.sessionsCursor.getCursor() );
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        /*this.getMenuInflater().inflate( R.menu.history, menu );
+        menu.getItem( R.id.menu_history_filter ).setVisible( false );
+         */
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        if ( item.getItemId() == R.id.menu_history_back ) {
+            this.finish();
+            return true;
+        }
+        else
+        if ( item.getItemId() == R.id.menu_history_filter ) {
+            this.onFilter();
+            return true;
+        }
+
+        return super.onOptionsItemSelected( item );
+    }
+
+    public void onFilter()
+    {
+        new FilterDialog( this ).show();
     }
 
     /** Handle the ops menu event. */

@@ -14,13 +14,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
-import com.devbaltasarq.nadamillas.core.Distance;
-import com.devbaltasarq.nadamillas.core.Util;
+import com.devbaltasarq.nadamillas.core.session.Distance;
+import com.devbaltasarq.nadamillas.core.session.Date;
 import com.devbaltasarq.nadamillas.core.YearInfo;
-import com.devbaltasarq.nadamillas.core.Speed;
+import com.devbaltasarq.nadamillas.core.session.Distance.Fmt.UnitsUse;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -46,12 +45,11 @@ public class EditYearInfoActivity extends BaseActivity {
         LBL_TITLE.setText( TITLE );
         LBL_YEAR.setText( STR_YEAR );
         LBL_YEAR_INFO.setText( String.format( Locale.getDefault(),
-                                        "%s: %s %s.",
+                                        "%s: %s.",
                                         this.getString( R.string.label_total_distance ),
-                                        Distance.format(
-                                            yearInfo.getDistance( YearInfo.SwimKind.TOTAL ),
-                                            UNITS ),
-                                        UNITS.toString() ));
+                                        Distance.Fmt.format(
+                                                yearInfo.getDistance( YearInfo.SwimKind.TOTAL ),
+                                                UNITS )));
 
         this.setButtonListeners();
         this.update();
@@ -157,16 +155,16 @@ public class EditYearInfoActivity extends BaseActivity {
         final TextView LBL_OWS = this.findViewById( R.id.lblTargetOWS );
         final TextView LBL_POOL = this.findViewById( R.id.lblTargetPool );
         final TextView LBL_TOTAL = this.findViewById( R.id.lblTargetTotal );
-        final String TARGET_OWS = Distance.format(
+        final String TARGET_OWS = Distance.Fmt.format(
                                             yearInfo.getTarget( YearInfo.SwimKind.OWS ),
-                                            UNITS );
+                                            UNITS, UnitsUse.NO_UNITS );
 
-        final String TARGET_POOL = Distance.format(
+        final String TARGET_POOL = Distance.Fmt.format(
                                             yearInfo.getTarget( YearInfo.SwimKind.POOL ),
-                                            UNITS );
-        final String TARGET_TOTAL = Distance.format(
+                                            UNITS, UnitsUse.NO_UNITS );
+        final String TARGET_TOTAL = Distance.Fmt.format(
                                             yearInfo.getTarget( YearInfo.SwimKind.TOTAL ),
-                                            UNITS );
+                                            UNITS, UnitsUse.NO_UNITS );
 
         LBL_OWS.setText( TARGET_OWS );
         LBL_POOL.setText( TARGET_POOL );
@@ -176,7 +174,11 @@ public class EditYearInfoActivity extends BaseActivity {
     /** Store the yearInfo object and finish. */
     private void store()
     {
-        if ( Util.getDate().get( Calendar.MONTH ) > 9 ) {
+        final YearInfo OLD_YEAR_INFO = dataStore.getOrCreateInfoFor( yearInfo.getYear() );
+
+        if ( OLD_YEAR_INFO.getTarget( YearInfo.SwimKind.TOTAL ) > 0
+          && new Date().getMonth() > 9 )
+        {
             final AlertDialog.Builder DLG = new AlertDialog.Builder( this );
 
             DLG.setMessage( R.string.message_objectives_not_editable_now );

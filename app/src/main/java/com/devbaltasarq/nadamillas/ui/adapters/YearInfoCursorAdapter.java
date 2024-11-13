@@ -17,10 +17,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.devbaltasarq.nadamillas.R;
-import com.devbaltasarq.nadamillas.core.Distance;
+import com.devbaltasarq.nadamillas.core.session.Distance;
 import com.devbaltasarq.nadamillas.core.Settings;
 import com.devbaltasarq.nadamillas.core.YearInfo;
-import com.devbaltasarq.nadamillas.core.Speed;
 import com.devbaltasarq.nadamillas.core.storage.YearInfoStorage;
 import com.devbaltasarq.nadamillas.ui.AchievementsActivity;
 
@@ -69,18 +68,18 @@ public class YearInfoCursorAdapter extends CursorAdapter {
         final int PROGRESS = (int) yearInfo.getProgress( YearInfo.SwimKind.TOTAL );
         final String STR_MAIN_DATA = String.format( LOCALE,
                 "%s (%d%%) %s.",
-                Distance.format( yearInfo.getDistance( YearInfo.SwimKind.TOTAL ), UNITS ),
+                Distance.Fmt.format( yearInfo.getDistance( YearInfo.SwimKind.TOTAL ), UNITS ),
                 PROGRESS,
                 STR_UNITS );
         final String STR_OWS_DATA = String.format( LOCALE,
                                     "%s %s (%d%%)",
                                     STR_OWS,
-                                    Distance.format( yearInfo.getDistance( YearInfo.SwimKind.OWS ), UNITS ),
+                                    Distance.Fmt.format( yearInfo.getDistance( YearInfo.SwimKind.OWS ), UNITS ),
                                     (int) yearInfo.getProgress( YearInfo.SwimKind.OWS ) );
         final String STR_POOL_DATA = String.format( LOCALE,
                                     "%s %s (%d%%) %s.",
                                     STR_POOL,
-                                    Distance.format( yearInfo.getDistance( YearInfo.SwimKind.POOL ), UNITS ),
+                                    Distance.Fmt.format( yearInfo.getDistance( YearInfo.SwimKind.POOL ), UNITS ),
                                     (int) yearInfo.getProgress( YearInfo.SwimKind.POOL ),
                                     STR_UNITS );
         final String STR_YEAR =  "" + yearInfo.getYear();

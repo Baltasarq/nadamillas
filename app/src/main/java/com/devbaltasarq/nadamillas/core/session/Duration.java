@@ -1,6 +1,6 @@
 // NadaMillas (c) 2019-2024 Baltasar MIT License <baltasarq@gmail.com>
 
-package com.devbaltasarq.nadamillas.core;
+package com.devbaltasarq.nadamillas.core.session;
 
 import java.util.Locale;
 
@@ -68,10 +68,8 @@ public class Duration {
     {
         boolean toret = false;
 
-        if ( o instanceof Duration ) {
-            final Duration dot = (Duration) o;
-
-            toret = ( this.getTimeInSeconds() == dot.getTimeInSeconds() );
+        if ( o instanceof final Duration DOT) {
+            toret = ( this.getTimeInSeconds() == DOT.getTimeInSeconds() );
         }
 
         return toret;
@@ -123,26 +121,12 @@ public class Duration {
     }
 
     /** Parses the time as the user enters it.
-      * @param mode 0 for seconds, 1 for minutes.
-      * @param txt The text for the value in seconds or minutes.
-      */
-    public void parse(int mode, String txt) throws NumberFormatException
-    {
-        if ( mode < 0
-          || mode >= TimeUnit.values().length )
-        {
-            mode = 0;
-        }
-
-        parse( TimeUnit.fromOrdinal( mode ), txt );
-    }
-
-    /** Parses the time as the user enters it.
-      * @param mode Basically, 0 for seconds, 1 for minutes.
-      * @param txt The text for the value in seconds or minutes.
+      * @param mode the corresponding enumeration value for minutes and seconds.
+      * @param txt the text for the value in seconds or minutes.
+      * @return the new value of this.secs.
       * @see TimeUnit
       */
-    public void parse(TimeUnit mode, String txt) throws NumberFormatException
+    public int parse(TimeUnit mode, String txt) throws NumberFormatException
     {
         float timeValue = Float.parseFloat( txt );
 
@@ -153,13 +137,8 @@ public class Duration {
         if ( mode == TimeUnit.Minutes ) {
             this.secs = ( (int) (60 * timeValue) );
         }
-    }
 
-    /** @return the duration in the format 00:00:00, hours, minutes and secs. */
-    public String toChronoString()
-    {
-        return String.format (Locale.getDefault(),
-                "%02d:%02d:%02d", this.getHours(), this.getMinutes(), this.getSeconds() );
+        return this.secs;
     }
 
     @Override

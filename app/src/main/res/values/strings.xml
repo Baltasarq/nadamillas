@@ -70,6 +70,13 @@
     <string name="label_place">Place</string>
     <string name="label_notes">Notes</string>
     <string name="label_share">Share</string>
+    <string name="label_filter">Filter</string>
+    <string name="label_operator">Operator</string>
+    <string name="label_field">Field</string>
+    <string name="label_value">Value</string>
+    <string name="label_training">Training</string>
+    <string name="label_competition">Competition</string>
+    <string name="label_temperature">Temperature</string>
 
     <!-- Messages -->
     <string name="message_finished">Finished.</string>

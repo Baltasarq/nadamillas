@@ -8,8 +8,10 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.devbaltasarq.nadamillas.core.Distance;
-import com.devbaltasarq.nadamillas.core.Speed;
+import com.devbaltasarq.nadamillas.core.StringUtil;
+import com.devbaltasarq.nadamillas.core.session.Distance;
+import com.devbaltasarq.nadamillas.core.session.Speed;
+import com.devbaltasarq.nadamillas.core.session.Temperature;
 import com.devbaltasarq.nadamillas.core.settings.PoolLength;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.appcompat.widget.Toolbar;
@@ -27,13 +29,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
-import com.devbaltasarq.nadamillas.core.Duration;
+import com.devbaltasarq.nadamillas.core.session.Duration;
 import com.devbaltasarq.nadamillas.core.Session;
-import com.devbaltasarq.nadamillas.core.Util;
+import com.devbaltasarq.nadamillas.core.session.Date;
 import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 
 
@@ -55,9 +58,11 @@ public class EditSessionActivity extends BaseActivity {
         boolean isEdit = false;
 
         this.blockListeners = true;
-        this.date = Util.getDate().getTime();
+        this.date = new Date();
         this.duration = new Duration( 0 );
         this.place = this.notes = "";
+        this.temperature = Temperature.PREDETERMINED;
+        this.isCompetition = false;
 
         if ( DATA != null ) {
             final Session SESSION = SessionStorage.createFrom( DATA );
@@ -72,10 +77,12 @@ public class EditSessionActivity extends BaseActivity {
                     this.duration = SESSION.getDuration();
                     this.place = SESSION.getPlace();
                     this.notes = SESSION.getNotes();
+                    this.temperature = SESSION.getTemperature();
+                    this.isCompetition = SESSION.isCompetition();
                 }
             } else {
-                long instant = DATA.getLong( SessionStorage.FIELD_DATE, this.date.getTime() );
-                this.date = new Date( instant );
+                long instant = DATA.getLong( SessionStorage.FIELD_DATE, this.date.getTimeInMillis() );
+                this.date = Date.from( instant );
             }
         }
 
@@ -99,6 +106,7 @@ public class EditSessionActivity extends BaseActivity {
         final ImageButton BT_DATE = this.findViewById( R.id.btDate );
         final ImageButton BT_SHARE = this.findViewById( R.id.btShareEditSession );
         final RadioGroup GRD_WATER_TYPES = this.findViewById( R.id.grdWaters );
+        final RadioGroup GRD_SESSION_TYPE = this.findViewById( R.id.grdSessionType );
         final RadioButton RBT_POOL = this.findViewById( R.id.rbtPool );
         final RadioButton RBT_OWS = this.findViewById( R.id.rbtOWS);
         final ImageButton BT_SAVE = this.findViewById( R.id.btSaveSession );
@@ -107,6 +115,9 @@ public class EditSessionActivity extends BaseActivity {
         final Spinner CB_POOL_LENGTH = this.findViewById( R.id.cbPoolLength );
         final TextView LBL_LENGTH1 = this.findViewById( R.id.lblLength1 );
         final TextView LBL_LENGTH2 = this.findViewById( R.id.lblLength2 );
+        final TextView ED_TEMPERATURE = this.findViewById( R.id.edTemperature );
+        final RadioButton RBT_TRAINING = this.findViewById( R.id.rbtTraining );
+        final RadioButton RBT_COMPETITION = this.findViewById( R.id.rbtCompetition);
 
         // Prepares the label for distance
         if ( settings.getDistanceUnits() == Distance.Units.mi ) {
@@ -159,12 +170,19 @@ public class EditSessionActivity extends BaseActivity {
         });
 
         // Prepare remaining widgets
-        ED_DATE.setText( Util.getShortDate( this.date, null ) );
+        ED_DATE.setText( this.date.toShortDateString() );
+        ED_TEMPERATURE.setText( String.format( Locale.getDefault(), "%04.2f", this.temperature ) );
 
         if ( this.atPool ) {
             GRD_WATER_TYPES.check( RBT_POOL.getId() );
         } else {
             GRD_WATER_TYPES.check( RBT_OWS.getId() );
+        }
+
+        if ( this.isCompetition ) {
+            GRD_SESSION_TYPE.check( RBT_COMPETITION.getId() );
+        } else {
+            GRD_SESSION_TYPE.check( RBT_TRAINING.getId() );
         }
 
         if ( this.distance > 0 ) {
@@ -182,6 +200,12 @@ public class EditSessionActivity extends BaseActivity {
 
         RBT_OWS.setCompoundDrawablesWithIntrinsicBounds( 0, 0, R.drawable.ic_sea, 0 );
         RBT_OWS.setOnCheckedChangeListener( (bt, isChecked) -> this.chkAtPool() );
+
+        RBT_TRAINING.setCompoundDrawablesWithIntrinsicBounds( 0, 0, R.drawable.ic_training, 0 );
+        RBT_TRAINING.setOnCheckedChangeListener( (bt, isChecked) -> this.chkIsCompetition() );
+
+        RBT_COMPETITION.setCompoundDrawablesWithIntrinsicBounds( 0, 0, R.drawable.ic_competition, 0 );
+        RBT_COMPETITION.setOnCheckedChangeListener( (bt, isChecked) -> this.chkIsCompetition() );
 
         // Set listeners
         BT_BACK.setOnClickListener( v -> EditSessionActivity.this.finish() );
@@ -288,7 +312,21 @@ public class EditSessionActivity extends BaseActivity {
             @Override
             public void afterTextChanged(Editable s)
             {
-                EditSessionActivity.this.place = Util.capitalize( s.toString() );
+                EditSessionActivity.this.place = StringUtil.capitalize( s.toString() );
+            }
+        });
+
+        ED_TEMPERATURE.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s)
+            {
+                EditSessionActivity.this.storeTemperature();
             }
         });
 
@@ -307,7 +345,7 @@ public class EditSessionActivity extends BaseActivity {
             @Override
             public void afterTextChanged(Editable s)
             {
-                EditSessionActivity.this.notes = Util.capitalize( s.toString() );
+                EditSessionActivity.this.notes = StringUtil.capitalize( s.toString() );
             }
         });
 
@@ -329,13 +367,11 @@ public class EditSessionActivity extends BaseActivity {
     /** Launch a date picker dialog. */
     private void chooseDate()
     {
-        final int[] DATA_DATE = Util.dataFromDate( Calendar.getInstance().getTime() );
+        final int[] DATA_DATE = Date.dataFromDate( Calendar.getInstance().getTime() );
         final DatePickerDialog dlg = new DatePickerDialog(
                 this,
                 R.style.DialogTheme,
-                (dp, y, m, d) ->
-                        EditSessionActivity.this.setDate(
-                                Util.dateFromData( y, m ,d ) ),
+                (dp, y, m, d) -> this.setDate( Date.from( y, m, d ) ),
                 DATA_DATE[ 0 ],
                 DATA_DATE[ 1 ],
                 DATA_DATE[ 2 ]
@@ -358,13 +394,21 @@ public class EditSessionActivity extends BaseActivity {
         LY_POOL_LAPS.setVisibility( this.atPool ? View.VISIBLE : View.GONE );
     }
 
+    /** Checks whether we are in a session which is a competition or not. */
+    private void chkIsCompetition()
+    {
+        final RadioButton RBT_COMPETITION = this.findViewById( R.id.rbtCompetition );
+
+        this.isCompetition = RBT_COMPETITION.isChecked();
+    }
+
     /** Updates the date info, and reflects the change in the view. */
     private void setDate(Date d)
     {
         final EditText ED_DATE = this.findViewById( R.id.edDate );
 
         this.date = d;
-        ED_DATE.setText( Util.getShortDate( this.date, null ) );
+        ED_DATE.setText( this.date.toShortDateString() );
 
     }
 
@@ -382,6 +426,24 @@ public class EditSessionActivity extends BaseActivity {
                         "unable to convert to int: " + contents
                         + " still " + this.distance
                 );
+            }
+        }
+
+        return;
+    }
+
+    /** Stores the temperature. */
+    private void storeTemperature()
+    {
+        final EditText ED_TEMPERATURE = this.findViewById( R.id.edTemperature );
+        final String STR_TEMPERATURE = ED_TEMPERATURE.getText().toString().trim();
+
+        if ( !STR_TEMPERATURE.isEmpty() ) {
+            try {
+                final NumberFormat NF = NumberFormat.getInstance( Locale.getDefault() );
+                this.temperature = NF.parse( STR_TEMPERATURE ).doubleValue();
+            } catch(ParseException exc) {
+                Log.d( LOG_TAG, "temperature parsing exception: " + exc.getMessage() );
             }
         }
 
@@ -550,8 +612,8 @@ public class EditSessionActivity extends BaseActivity {
                             this.distance,
                             this.duration,
                             this.atPool,
-                            false,
-                            0.0,
+                            this.isCompetition,
+                            this.temperature,
                             this.place,
                             this.notes ) ).toBundle( DATA );
         RET_DATA.putExtras( DATA );
@@ -566,6 +628,8 @@ public class EditSessionActivity extends BaseActivity {
     private Duration duration;
     private String place;
     private String notes;
+    private double temperature;
     private boolean blockListeners;
     private boolean atPool;
+    private boolean isCompetition;
 }

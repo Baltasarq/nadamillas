@@ -13,10 +13,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
-import com.devbaltasarq.nadamillas.core.Distance;
+import com.devbaltasarq.nadamillas.core.session.Distance;
 import com.devbaltasarq.nadamillas.core.Session;
 import com.devbaltasarq.nadamillas.core.Settings;
-import com.devbaltasarq.nadamillas.core.Util;
 import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 import com.devbaltasarq.nadamillas.ui.HistoryActivity;
 
@@ -68,7 +67,7 @@ public class SessionCursorAdapter extends CursorAdapter {
         final TextView LBL_DATA = view.findViewById( R.id.lblData );
         final TextView LBL_SPEED = view.findViewById( R.id.lblSpeed );
         final ImageView IV_LOGO = view.findViewById( R.id.ivLogo );
-        final String DATE = Util.getShortDate( session.getDate(), null );
+        final String DATE = session.getDate().toShortDateString();
         final Distance.Units UNITS = settings.getDistanceUnits();
 
         if ( session.getDistance() > 0
@@ -83,7 +82,7 @@ public class SessionCursorAdapter extends CursorAdapter {
         // Basic data
         final String BASIC_DATA = String.format( LOCALE, "%10s", DATE )
                                     + " "
-                                    + Distance.format( session.getDistance(), UNITS );
+                                    + Distance.Fmt.format( session.getDistance(), UNITS );
 
         LBL_DATA.setText( BASIC_DATA );
 

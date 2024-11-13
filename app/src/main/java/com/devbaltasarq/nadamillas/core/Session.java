@@ -7,8 +7,11 @@ package com.devbaltasarq.nadamillas.core;
 import android.content.Context;
 
 import com.devbaltasarq.nadamillas.R;
+import com.devbaltasarq.nadamillas.core.session.Distance;
+import com.devbaltasarq.nadamillas.core.session.Duration;
+import com.devbaltasarq.nadamillas.core.session.Speed;
+import com.devbaltasarq.nadamillas.core.session.Date;
 
-import java.util.Date;
 import java.util.Locale;
 
 
@@ -97,8 +100,8 @@ public class Session {
 
         this.isCompetition = isCompetition;
         this.temperature = temperature;
-        this.place = Util.capitalize( place );
-        this.notes = Util.capitalize( notes );
+        this.place = StringUtil.capitalize( place );
+        this.notes = StringUtil.capitalize( notes );
     }
 
     /** @return the id for this session. Is FAKE_ID if fake. */
@@ -265,7 +268,7 @@ public class Session {
         return String.format( Locale.getDefault(),
                                 "%03d: %s: %7dm (%s) %5.2fº %s %s - %s (%s)",
                                 this.getId(),
-                                Util.getShortDate( this.getDate(), null ),
+                                this.date.toShortDateString(),
                                 this.getDistance(),
                                 this.getDuration().toString(),
                                 this.getTemperature(),
@@ -296,9 +299,9 @@ public class Session {
 
         place = " (" + place.toLowerCase() + ")";
         return fmt.replace( "$date",
-                        Util.getShortDate( date, null ) )
+                        date.toShortDateString() )
                 .replace( "$distance",
-                        Distance.format( distance, UNITS ) )
+                        Distance.Fmt.format( distance, UNITS ) )
                 .replace( "$place", place );
     }
 

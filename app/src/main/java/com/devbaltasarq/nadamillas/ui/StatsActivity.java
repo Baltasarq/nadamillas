@@ -27,11 +27,10 @@ import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.DataStore;
-import com.devbaltasarq.nadamillas.core.Distance;
+import com.devbaltasarq.nadamillas.core.session.Distance;
 import com.devbaltasarq.nadamillas.core.Session;
-import com.devbaltasarq.nadamillas.core.Util;
+import com.devbaltasarq.nadamillas.core.session.Date;
 import com.devbaltasarq.nadamillas.core.YearInfo;
-import com.devbaltasarq.nadamillas.core.Speed;
 import com.devbaltasarq.nadamillas.core.storage.YearInfoStorage;
 import com.devbaltasarq.nadamillas.ui.graph.BarChart;
 
@@ -323,9 +322,8 @@ public class StatsActivity extends BaseActivity {
         int weekIndex = 0;
 
         // Prepare date
-        final Calendar DATE = Calendar.getInstance();
-        DATE.set( year, month, 1 );
-        final int LAST_DAY_OF_MONTH = DATE.getActualMaximum( Calendar.DAY_OF_MONTH );
+        Date date = Date.from( year, month, 1 );
+        int LAST_DAY_OF_MONTH = date.getLastDayOfMonth();
 
         // Prepare report
         TXT_REPORT.setText( String.format( Locale.getDefault(),
@@ -341,10 +339,10 @@ public class StatsActivity extends BaseActivity {
 
         // Run all over the dates of that month
         for(int i = 1; i <= LAST_DAY_OF_MONTH; ++i) {
-            DATE.set( year, month, i );
+            date = Date.from( year, month, i );
 
             // Change of week ?
-            if ( DATE.get( Calendar.DAY_OF_WEEK ) == firstDayOfWeek
+            if ( date.getWeekDay() == firstDayOfWeek
               && i != 1 )
             {
                 metersTotalPerWeek.add( 0 );
@@ -353,7 +351,7 @@ public class StatsActivity extends BaseActivity {
             }
 
             // Retrieve the sessions for this date
-            final Session[] SESSIONS = dataStore.getSessionsForDay( DATE.getTime() );
+            final Session[] SESSIONS = dataStore.getSessionsForDay( date );
 
             for(Session session: SESSIONS) {
                 totalMeters += session.getDistance();
@@ -393,8 +391,8 @@ public class StatsActivity extends BaseActivity {
 
         // Report
         for(int i = 0; i < metersTotalPerWeek.size(); ++i) {
-            final String STR_TOTAL_PER_WEEK_K = Distance.format( metersTotalPerWeek.get( i ), UNITS );
-            final String STR_TOTAL_OW_PER_WEEK_K = Distance.format( metersOpenPerWeek.get( i ), UNITS );
+            final String STR_TOTAL_PER_WEEK_K = Distance.Fmt.format( metersTotalPerWeek.get( i ), UNITS );
+            final String STR_TOTAL_OW_PER_WEEK_K = Distance.Fmt.format( metersOpenPerWeek.get( i ), UNITS );
 
             TXT_REPORT.append( capitalize( LBL_WEEK ) + " " + ( i + 1 ) + '\n' );
             TXT_REPORT.append( capitalize( LBL_DISTANCE ) + ": " + STR_TOTAL_PER_WEEK_K + STR_UNITS + '\n' );
@@ -403,12 +401,12 @@ public class StatsActivity extends BaseActivity {
         }
 
         TXT_REPORT.append( capitalize( LBL_TOTAL ) + ": "
-                           + Distance.format( totalMeters, UNITS )
+                           + Distance.Fmt.format( totalMeters, UNITS )
                            + STR_UNITS + "\n" );
 
         TXT_REPORT.append( capitalize( LBL_TOTAL )
                 + " (" + LBL_OPEN_WATERS + "): "
-                + Distance.format( owMeters, UNITS )
+                + Distance.Fmt.format( owMeters, UNITS )
                 + STR_UNITS + "\n" );
 
         SERIES.add( SERIE_TOTAL );
@@ -429,9 +427,8 @@ public class StatsActivity extends BaseActivity {
         final String LBL_MONTH = this.getString( R.string.label_month );
 
         // Prepare date
-        final Calendar DATE = Calendar.getInstance();
-        DATE.set( year, month, 1 );
-        final int LAST_DAY_OF_MONTH = DATE.getActualMaximum( Calendar.DAY_OF_MONTH );
+        Date date = Date.from( year, month, 1 );
+        final int LAST_DAY_OF_MONTH = date.getLastDayOfMonth();
 
         // Prepare report
         TXT_REPORT.setText( String.format( Locale.getDefault(),
@@ -447,10 +444,10 @@ public class StatsActivity extends BaseActivity {
             int dayTotalMeters = 0;
             int dayTotalOWS = 0;
 
-            DATE.set( year, month, i );
+            date = Date.from( year, month, i );
 
             // Retrieve the sessions for this date
-            final Session[] SESSIONS = dataStore.getSessionsForDay( DATE.getTime() );
+            final Session[] SESSIONS = dataStore.getSessionsForDay( date );
 
             for(Session session: SESSIONS) {
                 dayTotalMeters += session.getDistance();
@@ -462,10 +459,10 @@ public class StatsActivity extends BaseActivity {
 
             if ( dayTotalMeters > 0 ) {
                 TXT_REPORT.append(
-                        Util.getShortDate()
-                        + "\n"+ LBL_DISTANCE + ": " + Distance.format( dayTotalMeters, UNITS )
+                        date.toShortDateString()
+                        + "\n"+ LBL_DISTANCE + ": " + Distance.Fmt.format( dayTotalMeters, UNITS )
                         + "\n" + capitalize( LBL_OPEN_WATERS )
-                        + ": " + Distance.format( dayTotalOWS, UNITS )
+                        + ": " + Distance.Fmt.format( dayTotalOWS, UNITS )
                         + "\n\n"
                 );
             }
@@ -483,11 +480,11 @@ public class StatsActivity extends BaseActivity {
 
         // Report summary
         TXT_REPORT.append( LBL_TOTAL + ": "
-                + Distance.format( totalDist, UNITS ) + "\n" );
+                + Distance.Fmt.format( totalDist, UNITS ) + "\n" );
 
         TXT_REPORT.append( LBL_TOTAL
                 + " (" + LBL_OPEN_WATERS + "): "
-                + Distance.format( totalOWDist, UNITS ) + "\n" );
+                + Distance.Fmt.format( totalOWDist, UNITS ) + "\n" );
 
         // Finish series
         SERIES.add( SERIE_TOTAL );

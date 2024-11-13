@@ -11,13 +11,13 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
 
-import com.devbaltasarq.nadamillas.core.Duration;
+import com.devbaltasarq.nadamillas.core.StringUtil;
+import com.devbaltasarq.nadamillas.core.session.Duration;
 import com.devbaltasarq.nadamillas.core.Session;
-import com.devbaltasarq.nadamillas.core.Temperature;
-import com.devbaltasarq.nadamillas.core.Util;
+import com.devbaltasarq.nadamillas.core.session.Temperature;
+import com.devbaltasarq.nadamillas.core.session.Date;
 
 import java.io.IOException;
-import java.util.Date;
 
 
 /** Represents a session stored in the database. */
@@ -31,7 +31,7 @@ public class SessionStorage {
     public static final String FIELD_DISTANCE = "distance";
     public static final String FIELD_SECONDS = "seconds_used";
     public static final String FIELD_AT_POOL = "pool";
-    public static final String FIELD_IS_RACE = "race";
+    public static final String FIELD_IS_COMPETITION = "race";
     public static final String FIELD_TEMPERATURE = "temperature";
     public static final String FIELD_PLACE = "place";
     public static final String FIELD_NOTES = "notes";
@@ -48,7 +48,7 @@ public class SessionStorage {
     public ContentValues toValues()
     {
         final ContentValues toret = new ContentValues();
-        final int[] DATE_DATA = Util.dataFromDate( this.session.getDate() );
+        final int[] DATE_DATA = this.session.getDate().toData();
 
         toret.put( FIELD_SESSION_ID, this.session.getId() );
         toret.put( FIELD_YEAR, DATE_DATA[ 0 ] );
@@ -56,9 +56,11 @@ public class SessionStorage {
         toret.put( FIELD_DAY, DATE_DATA[ 2 ] );
         toret.put( FIELD_DISTANCE, this.session.getDistance() );
         toret.put( FIELD_AT_POOL, this.session.isAtPool() );
-        toret.put( FIELD_PLACE, Util.capitalize( this.session.getPlace() ) );
-        toret.put( FIELD_NOTES, Util.capitalize( this.session.getNotes() ) );
+        toret.put( FIELD_PLACE, StringUtil.capitalize( this.session.getPlace() ) );
+        toret.put( FIELD_NOTES, StringUtil.capitalize( this.session.getNotes() ) );
         toret.put( FIELD_SECONDS, this.session.getDuration().getTimeInSeconds() );
+        toret.put( FIELD_IS_COMPETITION, this.session.isCompetition() );
+        toret.put( FIELD_TEMPERATURE, this.session.getTemperature() );
 
         return toret;
     }
@@ -69,7 +71,7 @@ public class SessionStorage {
       */
     public void toJSON(JsonWriter jsonWriter) throws IOException
     {
-        final int[] DATE_DATA = Util.dataFromDate( this.session.getDate() );
+        final int[] DATE_DATA = this.session.getDate().toData();
 
         jsonWriter.beginObject();
         jsonWriter.name( FIELD_SESSION_ID ).value( this.session.getId() );
@@ -80,6 +82,8 @@ public class SessionStorage {
         jsonWriter.name( FIELD_SECONDS ).value( this.session.getDuration().getTimeInSeconds() );
         jsonWriter.name( FIELD_AT_POOL ).value( this.session.isAtPool() );
         jsonWriter.name( FIELD_PLACE ).value( this.session.getPlace() );
+        jsonWriter.name( FIELD_TEMPERATURE ).value( this.session.getTemperature() );
+        jsonWriter.name( FIELD_IS_COMPETITION ).value( this.session.isCompetition() );
         jsonWriter.name( FIELD_NOTES ).value( this.session.getNotes() );
         jsonWriter.endObject();
     }
@@ -108,7 +112,7 @@ public class SessionStorage {
         while( jsonReader.hasNext() ) {
             final String NAME = jsonReader.nextName();
 
-            switch (NAME) {
+            switch ( NAME ) {
                 case FIELD_SESSION_ID -> id = jsonReader.nextInt();
                 case FIELD_YEAR -> year = jsonReader.nextInt();
                 case FIELD_MONTH -> month = jsonReader.nextInt();
@@ -119,7 +123,7 @@ public class SessionStorage {
                 case FIELD_NOTES -> notes = jsonReader.nextString();
                 case FIELD_SECONDS -> secs = jsonReader.nextInt();
                 case FIELD_TEMPERATURE -> temperature = jsonReader.nextDouble();
-                case FIELD_IS_RACE -> isRace = jsonReader.nextBoolean();
+                case FIELD_IS_COMPETITION -> isRace = jsonReader.nextBoolean();
                 default -> jsonReader.skipValue();
             }
         }
@@ -137,7 +141,7 @@ public class SessionStorage {
 
         return new Session(
                         id,
-                        Util.dateFromData( year, month, day ),
+                        Date.from( year, month, day ),
                         distance,
                         new Duration( secs ),
                         atPool,
@@ -154,12 +158,14 @@ public class SessionStorage {
     {
         final Session SESSION = this.getSession();
 
-        bundle.putLong( FIELD_DATE, SESSION.getDate().getTime() );
+        bundle.putLong( FIELD_DATE, SESSION.getDate().getTimeInMillis() );
         bundle.putInt( FIELD_DISTANCE, SESSION.getDistance() );
         bundle.putInt( FIELD_SECONDS, SESSION.getDuration().getTimeInSeconds() );
         bundle.putBoolean( FIELD_AT_POOL, SESSION.isAtPool() );
-        bundle.putString( FIELD_PLACE, Util.capitalize( SESSION.getPlace() ) );
-        bundle.putString( FIELD_NOTES, Util.capitalize( SESSION.getNotes() ) );
+        bundle.putString( FIELD_PLACE, StringUtil.capitalize( SESSION.getPlace() ) );
+        bundle.putDouble( FIELD_TEMPERATURE, SESSION.getTemperature() );
+        bundle.putBoolean( FIELD_IS_COMPETITION, SESSION.isCompetition() );
+        bundle.putString( FIELD_NOTES, StringUtil.capitalize( SESSION.getNotes() ) );
     }
 
     /** @return the session wrapped. */
@@ -181,7 +187,7 @@ public class SessionStorage {
         final int MONTH = c.getInt( c.getColumnIndexOrThrow( FIELD_MONTH ) );
         final int YEAR = c.getInt( c.getColumnIndexOrThrow( FIELD_YEAR ) );
         final boolean AT_POOL = c.getInt( c.getColumnIndexOrThrow( FIELD_AT_POOL ) ) != 0;
-        final boolean IS_RACE = c.getInt( c.getColumnIndexOrThrow( FIELD_IS_RACE ) ) != 0;
+        final boolean IS_RACE = c.getInt( c.getColumnIndexOrThrow( FIELD_IS_COMPETITION ) ) != 0;
         final double TEMPERATURE = c.getDouble( c.getColumnIndexOrThrow( FIELD_TEMPERATURE ) );
         final String PLACE = c.getString( c.getColumnIndexOrThrow( FIELD_PLACE ) );
         final String NOTES = c.getString( c.getColumnIndexOrThrow( FIELD_NOTES ) );
@@ -195,7 +201,7 @@ public class SessionStorage {
 
         return new Session(
                         ID,
-                        Util.dateFromData( YEAR, MONTH, DAY ),
+                        Date.from( YEAR, MONTH, DAY ),
                         DISTANCE,
                         new Duration( secs ),
                         AT_POOL,
@@ -232,14 +238,14 @@ public class SessionStorage {
         Session toret = null;
 
         if ( extras != null ) {
-            final long TODAY = Util.getDate().getTimeInMillis();
+            final long TODAY = new Date().getTimeInMillis();
 
             toret = new Session(
-                        new Date( extras.getLong( FIELD_DATE, TODAY ) ),
+                        Date.from( extras.getLong( FIELD_DATE, TODAY ) ),
                         extras.getInt( FIELD_DISTANCE, 0 ),
                         new Duration( extras.getInt( FIELD_SECONDS, 0 ) ),
                         extras.getBoolean( FIELD_AT_POOL, true ),
-                        extras.getBoolean( FIELD_IS_RACE, false ),
+                        extras.getBoolean( FIELD_IS_COMPETITION, false ),
                         extras.getDouble( FIELD_TEMPERATURE, Temperature.PREDETERMINED ),
                         extras.getString( FIELD_PLACE, "" ),
                         extras.getString( FIELD_NOTES, "" ));

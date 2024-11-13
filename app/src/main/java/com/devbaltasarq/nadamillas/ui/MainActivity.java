@@ -18,8 +18,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
 
-import com.devbaltasarq.nadamillas.core.Distance;
-import com.devbaltasarq.nadamillas.core.Speed;
+import com.devbaltasarq.nadamillas.core.session.Distance;
+import com.devbaltasarq.nadamillas.core.session.Distance.Fmt.UnitsUse;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
@@ -31,12 +31,11 @@ import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.AppInfo;
-import com.devbaltasarq.nadamillas.core.Util;
+import com.devbaltasarq.nadamillas.core.session.Date;
 import com.devbaltasarq.nadamillas.core.YearInfo;
 import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.storage.SettingsStorage;
 
-import java.util.Calendar;
 import java.util.Locale;
 
 
@@ -101,12 +100,12 @@ public class MainActivity extends BaseActivity
         super.onResume();
 
         final Context APP_CONTEXT = this.getApplicationContext();
-        final Calendar DATE = Util.getDate();
+        final Date DATE = new Date();
 
         dataStore = DataStore.createFor( APP_CONTEXT );
         settings = SettingsStorage.restore( APP_CONTEXT );
 
-        if ( DATE.get( Calendar.DAY_OF_WEEK ) == Calendar.MONDAY ) {
+        if ( DATE.getWeekDay() == DATE.getMondayWeekDayCode() ) {
             Thread backupThread = new Thread() {
                 @Override
                 public void run() {
@@ -219,9 +218,10 @@ public class MainActivity extends BaseActivity
         final TextView LBL_WEEKDAY_NAME = this.findViewById( R.id.lblWeekDayName );
         final TextView LBL_DATE = this.findViewById( R.id.lblDate );
         final YearInfo INFO = dataStore.getCurrentYearInfo();
+        final Date DATE = new Date();
 
-        LBL_WEEKDAY_NAME.setText( Util.getWeekDay( null, null ) );
-        LBL_DATE.setText( Util.getSemiFullDate( null, null ) );
+        LBL_WEEKDAY_NAME.setText( DATE.getWeekDayName() );
+        LBL_DATE.setText( DATE.toSemiFullDateString() );
 
         this.showProgressForTotals( INFO );
         this.showProgressForOWS( INFO );
@@ -272,10 +272,15 @@ public class MainActivity extends BaseActivity
                 }
             };
 
-            total = Distance.format( INFO.getDistance( YearInfo.SwimKind.TOTAL ), UNITS );
-            projection = Distance.format( PROJECTED, UNITS );
+            total = Distance.Fmt.format(
+                                INFO.getDistance( YearInfo.SwimKind.TOTAL ),
+                                UNITS,
+                                UnitsUse.NO_UNITS );
+            projection = Distance.Fmt.format( PROJECTED, UNITS, UnitsUse.NO_UNITS );
             projectionPercentage = PROJECTED_PERCENTAGE + "%";
-            target = Distance.format( INFO.getTarget( YearInfo.SwimKind.TOTAL ), UNITS );
+            target = Distance.Fmt.format(
+                                INFO.getTarget( YearInfo.SwimKind.TOTAL ),
+                                UNITS, UnitsUse.NO_UNITS );
             progress = PROGRESS + "%";
             SHOW_PROGRESS_THREAD.start();
         }
@@ -312,10 +317,10 @@ public class MainActivity extends BaseActivity
             final int PROJECTED = (int) INFO.calcProjection( TOTAL );
             final int PROJECTED_PERCENTAGE = (int) INFO.calcProgress( PROJECTED, TARGET );
 
-            totalOpenWaters = Distance.format( TOTAL, UNITS );
-            projection = Distance.format( PROJECTED, UNITS );
+            totalOpenWaters = Distance.Fmt.format( TOTAL, UNITS, UnitsUse.NO_UNITS );
+            projection = Distance.Fmt.format( PROJECTED, UNITS, UnitsUse.NO_UNITS );
             projectionPercentage = PROJECTED_PERCENTAGE + "%";
-            target = Distance.format( TARGET, UNITS );
+            target = Distance.Fmt.format( TARGET, UNITS, UnitsUse.NO_UNITS );
             progress = PROGRESS + "%";
         }
 
@@ -351,10 +356,10 @@ public class MainActivity extends BaseActivity
             final int PROJECTED = (int) INFO.calcProjection( TOTAL );
             final int PROJECTED_PERCENTAGE = (int) INFO.calcProgress( PROJECTED, TARGET );
 
-            totalPool = Distance.format( TOTAL, UNITS );
-            projection = Distance.format( PROJECTED, UNITS );
+            totalPool = Distance.Fmt.format( TOTAL, UNITS, UnitsUse.NO_UNITS );
+            projection = Distance.Fmt.format( PROJECTED, UNITS, UnitsUse.NO_UNITS );
             projectionPercentage = PROJECTED_PERCENTAGE + "%";
-            target = Distance.format( TARGET, UNITS );
+            target = Distance.Fmt.format( TARGET, UNITS, UnitsUse.NO_UNITS );
             progress = PROGRESS + "%";
         }
 

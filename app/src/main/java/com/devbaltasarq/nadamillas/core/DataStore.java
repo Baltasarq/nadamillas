@@ -13,6 +13,8 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
 
+import com.devbaltasarq.nadamillas.core.session.Temperature;
+import com.devbaltasarq.nadamillas.core.session.Date;
 import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 import com.devbaltasarq.nadamillas.core.storage.YearInfoStorage;
 
@@ -30,7 +32,6 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Objects;
 
 
@@ -118,7 +119,7 @@ public class DataStore extends SQLiteOpenHelper {
                         + SessionStorage.FIELD_NOTES + " text NOT NULL DEFAULT \"\","
                         + SessionStorage.FIELD_TEMPERATURE
                                         + " real NOT NULL DEFAULT " + Temperature.PREDETERMINED + ","
-                        + SessionStorage.FIELD_IS_RACE + " boolean NOT NULL DEFAULT FALSE)"
+                        + SessionStorage.FIELD_IS_COMPETITION + " boolean NOT NULL DEFAULT FALSE)"
         );
     }
 
@@ -190,7 +191,7 @@ public class DataStore extends SQLiteOpenHelper {
                 try {
                     // Add the race column to the sessions table.
                     db.execSQL( "ALTER TABLE " + TABLE_SESSIONS
-                            + " ADD COLUMN " +  SessionStorage.FIELD_IS_RACE
+                            + " ADD COLUMN " +  SessionStorage.FIELD_IS_COMPETITION
                             + " boolean NOT NULL DEFAULT FALSE;" );
                 } catch(SQLException exc) {
                     Log.e( LOG_TAG, "db.upgradeSessionsTable(): "
@@ -288,7 +289,7 @@ public class DataStore extends SQLiteOpenHelper {
       */
     public YearInfo getOrCreateInfoFor(final Date DATE)
     {
-        final int YEAR = Util.getYearFrom( DATE );
+        final int YEAR = DATE.getYear();
         final Cursor CURSOR = this.getAllYearInfosCursorWith(
                 YearInfoStorage.FIELD_YEAR + "=?",
                 new String[]{ Integer.toString( YEAR ) } );
@@ -312,7 +313,7 @@ public class DataStore extends SQLiteOpenHelper {
       */
     public YearInfo getOrCreateInfoFor(int year)
     {
-        return getOrCreateInfoFor( Util.dateFromData( year, 1, 1 ) );
+        return getOrCreateInfoFor( Date.from( year, 1, 1 ) );
     }
 
     public Cursor getDescendingAllYearInfosCursor()
@@ -375,12 +376,9 @@ public class DataStore extends SQLiteOpenHelper {
 
     private YearInfo createYearInfoFor(final Date DATE, int distance)
     {
-        final Calendar CAL = Calendar.getInstance();
         final String MSG = ", adding distance: " + distance;
+        int year = DATE.getYear();
         YearInfo toret;
-
-        CAL.setTime( DATE );
-        int year = CAL.get( Calendar.YEAR );
 
         Log.d( LOG_TAG,"Creating missing year info: " + year + MSG );
 
@@ -457,7 +455,7 @@ public class DataStore extends SQLiteOpenHelper {
      */
     public Session[] getSessionsForMonth(Date d)
     {
-        final int[] YMD = Util.dataFromDate( d );
+        final int[] YMD = d.toData();
 
         return getSessionsForMonth( YMD[ 0 ], YMD[ 1 ] );
     }
@@ -485,7 +483,7 @@ public class DataStore extends SQLiteOpenHelper {
      */
     public Session[] getSessionsForDay(Date d)
     {
-        final int[] YMD = Util.dataFromDate( d );
+        final int[] YMD = d.toData();
 
         return getSessionsForDay( YMD[ 0 ], YMD[ 1 ], YMD[ 2 ] );
     }
@@ -884,7 +882,7 @@ public class DataStore extends SQLiteOpenHelper {
 
     private String createExportFileName()
     {
-        return NAME + "-" + Util.getISODate() + "." + EXT_BACKUP_FILE;
+        return NAME + "-" + new Date() + "." + EXT_BACKUP_FILE;
     }
 
     public void backup()
@@ -934,7 +932,7 @@ public class DataStore extends SQLiteOpenHelper {
         }
 
         try {
-            File tempFile = this.createTempFile( NAME, Long.toString( Util.getDate().getTimeInMillis() ) );
+            File tempFile = this.createTempFile( NAME, Long.toString( new Date().getTimeInMillis() ) );
 
             try (Writer tempStream = openWriterFor( tempFile )) {
                 this.toJSON( tempStream );

@@ -4,7 +4,7 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="testRunner" value="GRADLE" />
+        <option name="testRunner" value="CHOOSE_PER_TEST" />
         <option name="externalProjectPath" value="$USER_HOME$/Dropbox/Prys/Android/nadamillas" />
         <option name="gradleHome" value="/usr/share/java/gradle" />
         <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
@@ -17,7 +17,7 @@
         <option name="resolveExternalAnnotations" value="false" />
       </GradleProjectSettings>
       <GradleProjectSettings>
-        <option name="testRunner" value="GRADLE" />
+        <option name="testRunner" value="CHOOSE_PER_TEST" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="gradleHome" value="/usr/share/java/gradle" />
         <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />

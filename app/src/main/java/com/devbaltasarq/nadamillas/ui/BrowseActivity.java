@@ -13,12 +13,10 @@ import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.Session;
-import com.devbaltasarq.nadamillas.core.Util;
+import com.devbaltasarq.nadamillas.core.session.Date;
 import com.devbaltasarq.nadamillas.ui.adapters.ListViewSessionArrayAdapter;
 import com.github.sundeepk.compactcalendarview.CompactCalendarView;
 import com.github.sundeepk.compactcalendarview.domain.Event;
-
-import java.util.Date;
 
 
 public class BrowseActivity extends BaseActivity {
@@ -41,13 +39,13 @@ public class BrowseActivity extends BaseActivity {
         // Connect listeners
         CV_CALENDAR.setListener( new CompactCalendarView.CompactCalendarViewListener() {
             @Override
-            public void onDayClick(Date dateClicked) {
-                BrowseActivity.this.onDateChanged( dateClicked );
+            public void onDayClick(java.util.Date dateClicked) {
+                BrowseActivity.this.onDateChanged( Date.from( dateClicked.getTime() ) );
             }
 
             @Override
-            public void onMonthScroll(Date firstDayOfNewMonth) {
-                BrowseActivity.this.highlightDays( firstDayOfNewMonth );
+            public void onMonthScroll(java.util.Date firstDayOfNewMonth) {
+                BrowseActivity.this.highlightDays( Date.from( firstDayOfNewMonth.getTime() )   );
             }
         });
 
@@ -73,8 +71,8 @@ public class BrowseActivity extends BaseActivity {
 
         final CompactCalendarView CV_CALENDAR = this.findViewById( R.id.cvCalendar );
 
-        this.currentDate = Util.getDate().getTime();
-        CV_CALENDAR.setCurrentDate( this.currentDate );
+        this.currentDate = new Date();
+        CV_CALENDAR.setCurrentDate( this.currentDate.getInnerCalendar().getTime() );
 
         this.onDateChanged();
         this.update();
@@ -95,7 +93,7 @@ public class BrowseActivity extends BaseActivity {
     private void updateCalendarDate(Date date)
     {
         final TextView LBL_YEARMONTH = this.findViewById( R.id.lblYearMonth );
-        String isoCalendarDate = Util.getISODate( date );
+        String isoCalendarDate = date.toString();
 
         // Remove the day
         int posLastDelimiter = isoCalendarDate.lastIndexOf( '-' );
@@ -122,7 +120,7 @@ public class BrowseActivity extends BaseActivity {
                 indicatorColor = Color.CYAN;
             }
 
-            Event ev1 = new Event( indicatorColor, session.getDate().getTime(), "extra" );
+            Event ev1 = new Event( indicatorColor, session.getDate().getTimeInMillis(), "extra" );
             CV_CALENDAR.addEvent( ev1 );
         }
 
@@ -155,7 +153,7 @@ public class BrowseActivity extends BaseActivity {
         final TextView LBL_SELECTED_DAY = this.findViewById( R.id.lblSelectedDay );
 
         this.currentDate = date;
-        LBL_SELECTED_DAY.setText( Util.getFullDate( date, null ) );
+        LBL_SELECTED_DAY.setText( date.toFullDateString() );
         this.updateCalendarDate( date );
         this.updateSessions();
     }

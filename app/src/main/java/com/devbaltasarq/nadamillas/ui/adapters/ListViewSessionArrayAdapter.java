@@ -16,8 +16,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
-import com.devbaltasarq.nadamillas.core.Distance;
+import com.devbaltasarq.nadamillas.core.session.Distance;
 import com.devbaltasarq.nadamillas.core.Session;
+import com.devbaltasarq.nadamillas.core.session.Duration;
 import com.devbaltasarq.nadamillas.ui.BrowseActivity;
 
 import static com.devbaltasarq.nadamillas.ui.BaseActivity.settings;
@@ -62,10 +63,22 @@ public class ListViewSessionArrayAdapter extends ArrayAdapter<Session> {
         final TextView LBL_DATA = rowView.findViewById( R.id.lblData );
         final TextView LBL_SPEED = rowView.findViewById( R.id.lblSpeed );
 
-        // Set appropriate icon
+        // Set appropriate icon and default data
+        Duration duration = Duration.Zero();
         int drawableId = R.drawable.ic_sea;
+        boolean atPool = false;
+        String fmtSwimData = "";
+        int distance = 0;
 
-        if ( SESSION.isAtPool() ) {
+        // Set data, provided it is safe
+        if ( SESSION != null ) {
+            atPool = SESSION.isAtPool();
+            distance = SESSION.getDistance();
+            duration = SESSION.getDuration();
+            fmtSwimData = SESSION.getTimeAndWholeSpeedFormattedString( settings );
+        }
+
+        if ( atPool ) {
             drawableId = R.drawable.ic_pool;
         }
 
@@ -75,13 +88,13 @@ public class ListViewSessionArrayAdapter extends ArrayAdapter<Session> {
                                         drawableId ) );
 
         // Set data
-        LBL_DATA.setText( Distance.format( SESSION.getDistance(), UNITS ) );
+        LBL_DATA.setText( Distance.Fmt.format( distance, UNITS ) );
 
-        if ( SESSION.getDistance() > 0
-          && SESSION.getDuration().getTimeInSeconds() > 0 )
+        if ( distance > 0
+          && duration.getTimeInSeconds() > 0 )
         {
             LBL_SPEED.setVisibility( View.VISIBLE );
-            LBL_SPEED.setText( SESSION.getTimeAndWholeSpeedFormattedString( settings ) );
+            LBL_SPEED.setText( fmtSwimData );
         } else {
             LBL_SPEED.setVisibility( View.GONE );
         }

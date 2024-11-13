@@ -18,7 +18,6 @@ import android.os.Bundle;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 
-import com.devbaltasarq.nadamillas.core.Duration;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.core.content.ContextCompat;
@@ -32,14 +31,13 @@ import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.Session;
 import com.devbaltasarq.nadamillas.core.Settings;
-import com.devbaltasarq.nadamillas.core.Util;
+import com.devbaltasarq.nadamillas.core.session.Date;
 import com.devbaltasarq.nadamillas.core.storage.SessionStorage;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -218,7 +216,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                     this.getString( R.string.action_share ) ) );
         } catch(Exception exc) {
             this.showStatus( logTag, this.getString( R.string.message_io_error ) );
-            Log.e( logTag, exc.getMessage() );
+            Log.e( logTag, "" + exc.getMessage() );
         }
 
         return;
@@ -235,8 +233,9 @@ public abstract class BaseActivity extends AppCompatActivity {
     {
         final int WIDTH = V1.getWidth();
         final int HEIGHT = V1.getHeight();
-        final String FMT_DATE_TIME = Util.getISODate()
-                + "-" + Util.getTimeAsString().replace( ':', '_' );
+        final Date DATE = new Date();
+        final String FMT_DATE_TIME = DATE
+                            + "-" + DATE.toTimeString().replace( ':', '_' );
         File toret = null;
 
         try {
@@ -280,13 +279,13 @@ public abstract class BaseActivity extends AppCompatActivity {
       * @return a list of T objects with the given ids.
       * @param <T> T must derive from View (for instance, T = TextView).
      */
-    protected<T> List<T> lookForViews(int[] ids)
+    protected<T extends View> List<T> lookForViews(int[] ids)
     {
         final List<T> TORET = new ArrayList<>( ids.length );
 
         // Find them all
         for(int id: ids) {
-            TORET.add( (T) this.findViewById( id ) );
+            TORET.add( this.findViewById( id ) );
         }
 
         return TORET;

@@ -52,6 +52,13 @@
     <string name="label_import_from_scratch">Importar eliminando los datos</string>
     <string name="label_add_to_database">Importar añadiendo a los datos</string>
     <string name="message_screenshot">Captura de pantalla guardada.</string>
+    <string name="label_filter">Filtro</string>
+    <string name="label_operator">Operador</string>
+    <string name="label_field">Campo</string>
+    <string name="label_value">Valor</string>
+    <string name="label_training">Entreno</string>
+    <string name="label_competition">Competición</string>
+    <string name="label_temperature">Temperatura</string>
     <string name="message_finished">Terminado.</string>
     <string name="message_no_day_selected">Por favor seleccione un día.</string>
     <string name="message_year_info_created">Info del nuevo año creado.</string>
