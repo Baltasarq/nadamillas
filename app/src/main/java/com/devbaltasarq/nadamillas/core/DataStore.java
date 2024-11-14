@@ -43,8 +43,9 @@ public class DataStore extends SQLiteOpenHelper {
     private static final int VERSION_5_2020_PLACE = 5;
     private static final int VERSION_7_2023_NOTES = 7;
     private static final int VERSION_8_2023_TARGET_POOL = 8;
-    private static final int VERSION_9_2024_TEMP_AND_RACE = 10;
-    private static final int VERSION = VERSION_9_2024_TEMP_AND_RACE;
+    private static final int VERSION_10_2024_TEMP_AND_RACE = 10;
+    private static final int VERSION_11_2024_BOOT_FIX = 11;
+    private static final int VERSION = VERSION_11_2024_BOOT_FIX;
     private static final String NAME = "swimming_workouts";
     private static final String TABLE_YEARS = "years";
     private static final String TABLE_SESSIONS = "workouts";
@@ -53,7 +54,7 @@ public class DataStore extends SQLiteOpenHelper {
     {
         super( context, NAME, null, VERSION );
 
-        Log.d( LOG_TAG, "database opened");
+        Log.d( LOG_TAG, "database opened" );
 
         // Preparing directories
         DIR_TEMP = context.getCacheDir();
@@ -140,7 +141,7 @@ public class DataStore extends SQLiteOpenHelper {
         createSessionsTable( db );
 
         if ( newVersion > oldVersion ) {
-            if ( newVersion <= VERSION_3_2019_SECS ) {
+            if ( newVersion >= VERSION_3_2019_SECS ) {
                 try {
                     // Add the time column to the sessions table.
                     db.execSQL( "ALTER TABLE " + TABLE_SESSIONS
@@ -152,7 +153,7 @@ public class DataStore extends SQLiteOpenHelper {
                 }
             }
 
-            if ( newVersion <= VERSION_5_2020_PLACE ) {
+            if ( newVersion >= VERSION_5_2020_PLACE ) {
                 try {
                     // Add the place column to the sessions table.
                     db.execSQL( "ALTER TABLE " + TABLE_SESSIONS
@@ -164,7 +165,7 @@ public class DataStore extends SQLiteOpenHelper {
                 }
             }
 
-            if ( newVersion <= VERSION_7_2023_NOTES ) {
+            if ( newVersion >= VERSION_7_2023_NOTES ) {
                 try {
                     // Add the notes column to the sessions table.
                     db.execSQL( "ALTER TABLE " + TABLE_SESSIONS
@@ -176,7 +177,7 @@ public class DataStore extends SQLiteOpenHelper {
                 }
             }
 
-            if ( newVersion <= VERSION_9_2024_TEMP_AND_RACE ) {
+            if ( newVersion >= VERSION_10_2024_TEMP_AND_RACE) {
                 try {
                     // Add the temperature column to the sessions table.
                     db.execSQL( "ALTER TABLE " + TABLE_SESSIONS
@@ -190,19 +191,15 @@ public class DataStore extends SQLiteOpenHelper {
 
                 try {
                     // Add the race column to the sessions table.
-                    db.execSQL( "ALTER TABLE " + TABLE_SESSIONS
-                            + " ADD COLUMN " +  SessionStorage.FIELD_IS_COMPETITION
-                            + " boolean NOT NULL DEFAULT FALSE;" );
+                    db.execSQL( String.format(
+                                    "ALTER TABLE %s "
+                                    + "ADD COLUMN %s boolean "
+                                    + "NOT NULL DEFAULT FALSE;",
+                                    TABLE_SESSIONS,
+                                    SessionStorage.FIELD_IS_COMPETITION ));
                 } catch(SQLException exc) {
                     Log.e( LOG_TAG, "db.upgradeSessionsTable(): "
                             + "adding 'isRace' field: " + exc.getMessage() );
-                }
-
-                try {
-                    convertAllSessionsForTemperature( db );
-                } catch(SQLException exc) {
-                    Log.e( LOG_TAG, "db.upgradeSessionsTable(): "
-                            + "extracting temperature from sessions' notes: " + exc.getMessage() );
                 }
             }
         }
@@ -230,42 +227,6 @@ public class DataStore extends SQLiteOpenHelper {
         }
 
         return;
-    }
-
-    private static void convertAllSessionsForTemperature(SQLiteDatabase db)
-    {
-        Log.d( LOG_TAG, "Converting all sessions" );
-
-        try (final Cursor CURSOR = db.rawQuery( "SELECT * FROM " + TABLE_SESSIONS, null ))
-        {
-            if ( CURSOR.moveToFirst() ) {
-                do {
-                    final Session SESSION = SessionStorage.createFrom( CURSOR );
-                    double temperature = Converters.parseTemperature( SESSION.getNotes() );
-
-                    Log.d( LOG_TAG, "Session: " + SESSION );
-                    Log.d( LOG_TAG, "    Session notes: " + SESSION.getNotes() );
-                    Log.d( LOG_TAG, "    Session temperature: " + temperature );
-
-                    if ( temperature >= 0 ) {
-                        final SessionStorage SSTOR = new SessionStorage( SESSION );
-                        final ContentValues VALS = SSTOR.toValues();
-
-                        Log.d( LOG_TAG, "found temperature in notes in: " + SESSION.getNotes() );
-                        VALS.put( SessionStorage.FIELD_TEMPERATURE, temperature );
-                        db.update( TABLE_SESSIONS,
-                                    VALS,
-                                    SessionStorage.FIELD_SESSION_ID + " = ?",
-                                    new String[]{ "" + SESSION.getId() } );
-                        Log.d( LOG_TAG, "session updated" );
-                    }
-                } while ( CURSOR.moveToNext() );
-            }
-        } catch(SQLException exc) {
-            Log.e( LOG_TAG, "converting notes -> temperatures in sessions: " + exc.getMessage() );
-        }
-
-        Log.d( LOG_TAG, "Finished converting all sessions" );
     }
 
     public File getBackupDir()
@@ -1186,57 +1147,4 @@ public class DataStore extends SQLiteOpenHelper {
     private static File DIR_FILES;
     private static File DIR_BACKUP;
     public static File DIR_TEMP;
-
-    private static class Converters {
-        /**
-         * Given a string of comments, it determines
-         * if there is a temperature information,
-         * and if it exists, it returns it.
-         * If not, it returns -1;
-         * @param cmms The comments string.
-         * @return the temperature parsed, -1 if no temperature is found.
-         */
-        private static double parseTemperature(String cmms)
-        {
-            final String[] LINES = cmms.trim().split( "\n" );
-            double toret = -1;
-
-            for(String s: LINES) {
-                s = s.trim();
-                int posDeg = s.indexOf( '\u00b0' );
-
-                if ( posDeg < 0 ) {
-                    // Check for the masculine ordinal
-                    posDeg = s.indexOf( '\u00ba' );
-                }
-
-                if ( posDeg >= 0 ) {
-                    int posDigsStart = posDeg - 1;
-
-                    // Look for the beginning of the digits
-                    while( posDigsStart >= 0
-                        && Character.isDigit( s.charAt( posDigsStart ) ) )
-                    {
-                        --posDigsStart;
-                    }
-
-                    if ( posDigsStart < 0
-                      || !Character.isDigit( s.charAt( posDigsStart ) ) )
-                    {
-                        ++posDigsStart;
-                    }
-
-                    if ( posDigsStart <= ( s.length() - 1 )
-                      && ( posDeg - posDigsStart ) > 0 )
-                    {
-                        // Extract the substring
-                        toret = Double.parseDouble( s.substring( posDigsStart, posDeg ) );
-                        break;
-                    }
-                }
-            }
-
-            return toret;
-        }
-    }
 }
