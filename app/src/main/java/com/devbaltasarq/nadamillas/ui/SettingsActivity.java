@@ -359,17 +359,8 @@ public class SettingsActivity extends BaseActivity {
         final TextView LBL_DISTANCE = this.findViewById( R.id.lblDistanceInfo );
         final TextView LBL_TARGET_TOTAL = this.findViewById( R.id.lblTargetTotal );
         final TextView LBL_INFO = this.findViewById( R.id.lblTargetInfo );
-        final TextView LBL_UNITS = this.findViewById( R.id.lblUnits );
         final YearInfo INFO = this.getSelectedYearInfo();
         final Distance.Units UNITS = settings.getDistanceUnits();
-        int displayUnits = R.string.label_km;
-
-        // Update units
-        if ( settings.getDistanceUnits() == Distance.Units.mi ) {
-            displayUnits = R.string.label_mi;
-        }
-
-        LBL_UNITS.setText( displayUnits );
 
         if ( INFO != null ) {
             // Target & distance info

@@ -558,7 +558,7 @@ public class EditSessionActivity extends BaseActivity {
         final Speed SPEED = new Speed(
                                 new Distance( this.distance, UNITS ),
                                 this.duration );
-        final String TEXT = SPEED + " - " + SPEED.getMeanTimeAsStr();
+        final String TEXT = SPEED.getSpeedPerHourAsString() + " - " + SPEED;
 
         LBL_SPEED.setText( TEXT );
     }

@@ -158,44 +158,8 @@ public class Session {
         return this.notes;
     }
 
-    /** @return the mean time for each 100m. */
-    public Duration getMeanTime(Distance.Units units)
-    {
-        return new Speed(
-                        new Distance( this.getDistance(), units ),
-                        this.getDuration() ).getMeanTime();
-    }
-
-    /** @return the mean time, as a string. */
-    public String getMeanTimeAsString(Distance.Units du)
-    {
-        return new Speed(
-                new Distance( this.getDistance(), du ),
-                this.getDuration() ).getMeanTimeAsStr();
-    }
-
-    /** Get the mean velocity for this session.
-      * @param units the units to use.
-      * @return the mean velocity for this session.
-      */
-    public double getSpeed(Distance.Units units)
-    {
-        return new Speed(
-                    new Distance( this.getDistance(), units ),
-                    this.getDuration() ).getValue();
-    }
-
-    /** @return the mean velocity for this session, as a string. */
-    public String getSpeedAsString(Settings settings)
-    {
-        final Distance.Units UNITS = settings.getDistanceUnits();
-        final Distance DIST = new Distance( this.getDistance(), UNITS );
-
-        return new Speed( DIST, this.getDuration() ).toString();
-    }
-
-    /** @return get the whole speed information, as a formatted string. */
-    public String getWholeSpeedFormattedString(Settings settings)
+    /** @return get the whole time and speed information, as a formatted string. */
+    public String getTimeAndWholeSpeedFormattedString(Settings settings)
     {
         final Distance.Units UNITS = settings.getDistanceUnits();
         final Speed SPEED = new Speed(
@@ -203,13 +167,6 @@ public class Session {
                                     this.getDuration() );
 
         return this.getDuration() + " - " + SPEED;
-    }
-
-    /** @return get the time and the whole speed information, as a formatted string. */
-    public String getTimeAndWholeSpeedFormattedString(Settings settings)
-    {
-        return this.getDuration().toString()
-                + "\n" + this.getWholeSpeedFormattedString( settings );
     }
 
     /** Creates a new session with a given id and session number.

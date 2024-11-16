@@ -9,6 +9,9 @@ import java.util.Locale;
 
 /** Represents the relation between a distance dnd a duration. */
 public final class Speed {
+    private static String MPH = "mph";
+    private static String KMH = "km/h";
+
     public Speed(Distance dist, Duration duration)
     {
         this.distance = dist;
@@ -42,20 +45,8 @@ public final class Speed {
         return new Duration( secs );
     }
 
-    public String getMeanTimeAsStr()
-    {
-        String distanceUnits = "m";
-
-        // Set distance units
-        if ( this.getDistance().getUnits() == Distance.Units.mi ) {
-            distanceUnits = "y";
-        }
-
-        return this.getMeanTime() + "/100" + distanceUnits;
-    }
-
     /** @return the mean velocity for this session, km/h. */
-    public double getValue()
+    public double getSpeedPerHour()
     {
         final double DISTANCE = this.getDistance().toThousandUnits();
         final double TIME = (double) this.getDuration().getTimeInSeconds() / 3600;
@@ -68,13 +59,31 @@ public final class Speed {
         return toret;
     }
 
+    public String getSpeedPerHourAsString()
+    {
+        String units = KMH;
+
+        if ( this.getDistance().getUnits() == Distance.Units.mi ) {
+            units = MPH;
+        }
+
+        return String.format( Locale.getDefault(),
+                "%5.2f %s",
+                this.getSpeedPerHour(),
+                units );
+    }
+
     @Override
     public String toString()
     {
-        return String.format( Locale.getDefault(),
-                "%5.2f%s",
-                this.getValue(),
-                this.getDistance().getUnits().toString() );
+        String distanceUnits = "m";
+
+        // Set distance units
+        if ( this.getDistance().getUnits() == Distance.Units.mi ) {
+            distanceUnits = "y";
+        }
+
+        return this.getMeanTime() + "/100 " + distanceUnits + ".";
     }
 
     private final Distance distance;

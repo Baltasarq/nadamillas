@@ -38,7 +38,7 @@ public enum PoolLength {
      */
     public static PoolLength fromLength(int length)
     {
-        PoolLength toret = null;
+        PoolLength toret = getDefault();
 
         switch( length ) {
             case 25 -> toret = P25;
@@ -67,6 +67,12 @@ public enum PoolLength {
 
 
         return stringList;
+    }
+
+    /** @return the default pool length. */
+    public static PoolLength getDefault()
+    {
+        return P25;
     }
 
     private final int distance;

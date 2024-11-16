@@ -4,16 +4,30 @@
 package com.devbaltasarq.nadamillas.core.session;
 
 
+import android.util.Log;
+
 import java.util.Locale;
 
 public final class Distance {
     /** Distance units. */
     public enum Units { km, mi;
+        private static final String LOG_TAG = Units.class.getSimpleName();
 
         /** @return the corresponding enum value, given its position. */
         public static Units fromOrdinal(int pos)
         {
-            return Units.values()[ pos ];
+            final Units[] ALL_UNITS = Units.values();
+            Units toret = getDefault();
+
+            if ( pos >= 0
+              && pos < ALL_UNITS.length )
+            {
+                toret = Units.values()[ pos ];
+            } else {
+                Log.e( LOG_TAG, "Units.fromOrdinal(): out of bounds: " + pos );
+            }
+
+            return toret;
         }
 
         /** Converts a distance in meters to kilometers.
@@ -50,6 +64,12 @@ public final class Distance {
         public static int ydFromMi(int yards)
         {
             return yards * 1650;
+        }
+
+        /** @return the default unit. */
+        public static Units getDefault()
+        {
+            return km;
         }
     }
 

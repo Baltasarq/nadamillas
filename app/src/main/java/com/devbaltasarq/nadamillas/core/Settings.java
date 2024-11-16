@@ -4,16 +4,19 @@
 package com.devbaltasarq.nadamillas.core;
 
 
+import android.util.Log;
+
 import com.devbaltasarq.nadamillas.core.session.Distance;
 import com.devbaltasarq.nadamillas.core.settings.FirstDayOfWeek;
 import com.devbaltasarq.nadamillas.core.settings.PoolLength;
 
 import java.util.Locale;
+import java.util.Objects;
 
 
 /** Represents the possible settings of the app. */
 public class Settings {
-    public static final String LOG_TAG = Settings.class.getSimpleName();
+    private static final String LOG_TAG = Settings.class.getSimpleName();
 
     /** Creates a new settings object with the given values.
       * @param units the DistanceUnits to be used.
@@ -82,9 +85,24 @@ public class Settings {
     public static Settings createFrom(
                                         Distance.Units distanceUnits,
                                         FirstDayOfWeek firstDayOfWeek,
-                                        PoolLength defaultPoolLength)
+                                        PoolLength poolLength)
     {
-        return new Settings( distanceUnits, firstDayOfWeek, defaultPoolLength );
+        if ( distanceUnits == null ) {
+            distanceUnits = Distance.Units.getDefault();
+            Log.e( LOG_TAG, "creating Settings: distanceUnits was null" );
+        }
+
+        if ( firstDayOfWeek == null ) {
+            firstDayOfWeek = FirstDayOfWeek.getDefault();
+            Log.e( LOG_TAG, "creating Settings: firstDayOfWeek was null" );
+        }
+
+        if ( poolLength == null ) {
+            poolLength = PoolLength.getDefault();
+            Log.e( LOG_TAG, "creating Settings: poolLength was null" );
+        }
+
+        return new Settings( distanceUnits, firstDayOfWeek, poolLength );
     }
 
     private Distance.Units units;

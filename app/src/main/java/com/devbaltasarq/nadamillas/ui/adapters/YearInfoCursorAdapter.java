@@ -75,13 +75,12 @@ public class YearInfoCursorAdapter extends CursorAdapter {
                                     "%s %s (%d%%)",
                                     STR_OWS,
                                     Distance.Fmt.format( yearInfo.getDistance( YearInfo.SwimKind.OWS ), UNITS ),
-                                    (int) yearInfo.getProgress( YearInfo.SwimKind.OWS ) );
+                                    (int) yearInfo.getProgress( YearInfo.SwimKind.OWS ));
         final String STR_POOL_DATA = String.format( LOCALE,
-                                    "%s %s (%d%%) %s.",
+                                    "%s %s (%d%%)",
                                     STR_POOL,
                                     Distance.Fmt.format( yearInfo.getDistance( YearInfo.SwimKind.POOL ), UNITS ),
-                                    (int) yearInfo.getProgress( YearInfo.SwimKind.POOL ),
-                                    STR_UNITS );
+                                    (int) yearInfo.getProgress( YearInfo.SwimKind.POOL ));
         final String STR_YEAR =  "" + yearInfo.getYear();
 
         LBL_YEAR.setText( STR_YEAR );

@@ -4,11 +4,17 @@
 package com.devbaltasarq.nadamillas.core.settings;
 
 
+import android.util.Log;
+
+import com.devbaltasarq.nadamillas.core.session.Distance;
+
 import java.util.Calendar;
 
 
 public enum FirstDayOfWeek {
     MONDAY(Calendar.MONDAY), SUNDAY(Calendar.SUNDAY);
+
+    private static String LOG_TAG = FirstDayOfWeek.class.getSimpleName();
 
     FirstDayOfWeek(int value)
     {
@@ -24,7 +30,18 @@ public enum FirstDayOfWeek {
     /** @return the corresponding enum value, given its position. */
     public static FirstDayOfWeek fromOrdinal(int pos)
     {
-        return FirstDayOfWeek.values()[ pos ];
+        final FirstDayOfWeek[] ALL_DAYS = FirstDayOfWeek.values();
+        FirstDayOfWeek toret = getDefault();
+
+        if ( pos >= 0
+          && pos < ALL_DAYS.length )
+        {
+            toret = ALL_DAYS[ pos ];
+        } else {
+            Log.e( LOG_TAG, "FirstDayOfWeek.fromOrdinal(): out of bounds: " + pos );
+        }
+
+        return toret;
     }
 
     /** Builds a new FirstDayOfWeek from a calendar value.
@@ -40,6 +57,12 @@ public enum FirstDayOfWeek {
         }
 
         return toret;
+    }
+
+    /** @return the default value. */
+    public static FirstDayOfWeek getDefault()
+    {
+        return MONDAY;
     }
 
     private final int value;
