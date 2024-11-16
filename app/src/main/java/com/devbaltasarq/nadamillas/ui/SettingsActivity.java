@@ -340,7 +340,9 @@ public class SettingsActivity extends BaseActivity {
                 if ( INFO != null ) {
                     toret = INFO;
                 } else {
-                    Log.e( LOG_TAG, "no info for year: " + SELECTED_YEAR );
+                    final String MSG = "no info for year: " + SELECTED_YEAR;
+                    Log.e( LOG_TAG, MSG );
+                    throw new Error( MSG );
                 }
             } catch(SQLException exc) {
                 Log.e( LOG_TAG, "" + exc.getMessage() );
