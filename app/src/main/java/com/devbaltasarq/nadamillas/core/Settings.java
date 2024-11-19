@@ -11,7 +11,6 @@ import com.devbaltasarq.nadamillas.core.settings.FirstDayOfWeek;
 import com.devbaltasarq.nadamillas.core.settings.PoolLength;
 
 import java.util.Locale;
-import java.util.Objects;
 
 
 /** Represents the possible settings of the app. */
@@ -45,7 +44,7 @@ public class Settings {
     }
 
     /** @return the default or favourite pool length */
-    public PoolLength getDefaultPoolLength()
+    public PoolLength getPoolLength()
     {
         return this.defaultPoolLength;
     }
@@ -79,7 +78,7 @@ public class Settings {
                                 "units: %s, first day of week: %s, default pool length: %s",
                                 this.getDistanceUnits(),
                                 this.getFirstDayOfWeek().toString(),
-                                this.getDefaultPoolLength().toString() );
+                                this.getPoolLength().toString() );
     }
 
     public static Settings createFrom(

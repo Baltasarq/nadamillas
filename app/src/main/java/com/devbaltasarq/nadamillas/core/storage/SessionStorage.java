@@ -212,18 +212,20 @@ public class SessionStorage {
     }
 
     /** Creates a Session object from a Bundle.
-     * @param data the bundle to build the Session from.
-     * @return a new Session object.
-     */
+      * @param data the intent with a bundle to build the Session from.
+      * @return a new Session object.
+      * @throws Error if the data arg is null.
+      */
     public static Session createFrom(Intent data)
     {
-        Session toret = null;
+        Session toret;
 
         if ( data != null ) {
             toret = createFrom( data.getExtras() );
         } else {
-            Log.e( LOG_TAG, "ERROR: null intent to create session from!!!" );
-            System.exit( -1 );
+            final String MSG = "ERROR: null intent to create session from!!!";
+            Log.e( LOG_TAG, MSG );
+            throw new Error( MSG );
         }
 
         return toret;
@@ -232,10 +234,11 @@ public class SessionStorage {
     /** Creates a Session object from a Bundle.
       * @param extras the bundle to build the Session from.
       * @return a new Session object.
+      * @throws Error if the extras arg is null.
       */
     public static Session createFrom(Bundle extras)
     {
-        Session toret = null;
+        Session toret;
 
         if ( extras != null ) {
             final long TODAY = new Date().getTimeInMillis();
@@ -249,6 +252,10 @@ public class SessionStorage {
                         extras.getDouble( FIELD_TEMPERATURE, Temperature.PREDETERMINED ),
                         extras.getString( FIELD_PLACE, "" ),
                         extras.getString( FIELD_NOTES, "" ));
+        } else {
+            final String MSG = "ERROR: null bundle to create session from!!!";
+            Log.e( LOG_TAG, MSG );
+            throw new Error( MSG );
         }
 
         return toret;

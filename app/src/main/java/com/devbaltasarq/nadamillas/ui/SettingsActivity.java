@@ -77,7 +77,7 @@ public class SettingsActivity extends BaseActivity {
         );
 
         CB_DEFAULT_POOL_LENGTH.setAdapter( POOL_LENGTH_ADAPTER );
-        CB_DEFAULT_POOL_LENGTH.setSelection( settings.getDefaultPoolLength().ordinal() );
+        CB_DEFAULT_POOL_LENGTH.setSelection( settings.getPoolLength().ordinal() );
 
         // Prepare units spinner
         final ArrayAdapter<Distance.Units> UNITS_ADAPTER = new ArrayAdapter<>(
@@ -325,13 +325,10 @@ public class SettingsActivity extends BaseActivity {
     {
         final Spinner CB_YEARS = this.findViewById( R.id.cbYears );
         final Cursor SELECTED_YEAR_CURSOR = (Cursor) CB_YEARS.getSelectedItem();
-        Cursor cursor = null;
         YearInfo toret = null;
 
         if ( SELECTED_YEAR_CURSOR != null ) {
-            try {
-                cursor = dataStore.getDescendingAllYearInfosCursor();
-
+            try (Cursor cursor = dataStore.getDescendingAllYearInfosCursor()) {
                 final int SELECTED_YEAR = SELECTED_YEAR_CURSOR.getInt(
                                             cursor.getColumnIndexOrThrow(
                                                 YearInfoStorage.FIELD_YEAR ) );
@@ -346,8 +343,6 @@ public class SettingsActivity extends BaseActivity {
                 }
             } catch(SQLException exc) {
                 Log.e( LOG_TAG, "" + exc.getMessage() );
-            } finally {
-                DataStore.close( cursor );
             }
         } else {
             Log.d( LOG_TAG, "unable to update the target");

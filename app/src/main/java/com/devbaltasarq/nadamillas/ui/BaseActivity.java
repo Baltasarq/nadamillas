@@ -168,18 +168,21 @@ public abstract class BaseActivity extends AppCompatActivity {
     /** Shares an image of the screen to mail, WhatsApp... */
     protected void shareScreenShot(String logTag, File f)
     {
-        final Thread SAVE_THREAD = new Thread() {
-            @Override
-            public void run()
-            {
-                final BaseActivity SELF = BaseActivity.this;
+        if ( f == null ) {
+            Log.e( LOG_TAG, "the file with the scrshot was null" );
+        } else {
+            final Thread SAVE_THREAD = new Thread() {
+                @Override
+                public void run()
+                {
+                    final BaseActivity SELF = BaseActivity.this;
 
-                SELF.share( logTag, "image/*", f );
+                    SELF.share( logTag, "image/*", f );
+                }
+            };
 
-            }
-        };
-
-        SAVE_THREAD.start();
+            SAVE_THREAD.start();
+        }
     }
 
     /** Shares any file to mail, WhatsApp... */
@@ -222,7 +225,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         return;
     }
 
-    /** @return a screenshot image file in the private storage. */
+    /** @return a screenshot image file in the private storage, or null if errors. */
     protected File takeScreenshot(String logTag)
     {
         return this.saveScreenBitmapToTempFile( logTag, this.getWindow().getDecorView().getRootView() );

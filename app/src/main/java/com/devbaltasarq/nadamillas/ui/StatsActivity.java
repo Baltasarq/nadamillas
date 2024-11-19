@@ -26,7 +26,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.devbaltasarq.nadamillas.R;
-import com.devbaltasarq.nadamillas.core.DataStore;
 import com.devbaltasarq.nadamillas.core.session.Distance;
 import com.devbaltasarq.nadamillas.core.Session;
 import com.devbaltasarq.nadamillas.core.session.Date;
@@ -94,7 +93,7 @@ public class StatsActivity extends BaseActivity {
         final ArrayAdapter<String> CB_YEARS_ADAPTER = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
-                this.retrieveAllYearInfos()
+                this.retrieveExistingYearsAsString()
         );
 
         CB_YEARS.setAdapter( CB_YEARS_ADAPTER );
@@ -155,14 +154,13 @@ public class StatsActivity extends BaseActivity {
         BT_BACK.setOnClickListener( v ->StatsActivity.this.finish() );
     }
 
-    private String[] retrieveAllYearInfos()
+    private String[] retrieveExistingYearsAsString()
     {
-        final int CURRENT_YEAR = Calendar.getInstance().get( Calendar.YEAR );
-        Cursor cursor = null;
-        String[] toret = null;
+        final int CURRENT_YEAR = new Date().getYear();
+        String[] toret = new String[ 0 ];
 
-        try {
-            cursor = dataStore.getDescendingAllYearInfosCursor();
+        try (Cursor cursor = dataStore.getDescendingAllYearInfosCursor())
+        {
             final ArrayList<String> YEARS = new ArrayList<>( cursor.getCount() );
 
             while( cursor.moveToNext() ) {
@@ -175,11 +173,9 @@ public class StatsActivity extends BaseActivity {
                 }
             }
 
-            toret = YEARS.toArray( new String[0] );
+            toret = YEARS.toArray( new String[ 0 ] );
         } catch(SQLException exc) {
             Log.e( LOG_TAG, "retrieveAllYearsInfo(): " + exc.getMessage() );
-        } finally {
-            DataStore.close( cursor );
         }
 
         return toret;

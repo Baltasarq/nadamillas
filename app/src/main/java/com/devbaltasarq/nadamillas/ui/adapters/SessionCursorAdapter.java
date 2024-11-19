@@ -45,19 +45,12 @@ public class SessionCursorAdapter extends CursorAdapter {
         final ImageButton BT_MENU = VIEW.findViewById( R.id.btEntryOpsMenu );
         final Session SESSION = SessionStorage.createFrom( CURSOR );
 
-        historyActivity = ACTIVITY;
-
         updateViewWith( VIEW, SESSION );
 
         // Set entry menu listener
-        BT_MENU.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                historyActivity = ACTIVITY;
-                selectedSession = SESSION;
-
-                ACTIVITY.onEntryOpsMenu();
-            }
+        BT_MENU.setOnClickListener( (v) -> {
+            selectedSession = SESSION;
+            ACTIVITY.onEntryOpsMenu();
         });
     }
 
@@ -94,10 +87,8 @@ public class SessionCursorAdapter extends CursorAdapter {
         }
 
         IV_LOGO.setImageDrawable( AppCompatResources.getDrawable( view.getContext(), drawableId ) );
-        historyActivity = null;
     }
 
     public static Session selectedSession;
     private static Settings settings;
-    private static HistoryActivity historyActivity;
 }

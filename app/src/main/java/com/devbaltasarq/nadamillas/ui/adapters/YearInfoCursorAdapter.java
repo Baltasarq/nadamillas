@@ -4,6 +4,7 @@
 package com.devbaltasarq.nadamillas.ui.adapters;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.view.LayoutInflater;
@@ -21,7 +22,6 @@ import com.devbaltasarq.nadamillas.core.session.Distance;
 import com.devbaltasarq.nadamillas.core.Settings;
 import com.devbaltasarq.nadamillas.core.YearInfo;
 import com.devbaltasarq.nadamillas.core.storage.YearInfoStorage;
-import com.devbaltasarq.nadamillas.ui.AchievementsActivity;
 
 import java.util.Locale;
 
@@ -45,10 +45,7 @@ public class YearInfoCursorAdapter extends CursorAdapter {
     @Override
     public void bindView(final View VIEW, Context context, final Cursor CURSOR)
     {
-        final AchievementsActivity ACTIVITY = (AchievementsActivity) context;
         final YearInfo YEAR_INFO = YearInfoStorage.createFrom( CURSOR );
-
-        achievementsActivity = ACTIVITY;
 
         updateViewWith( VIEW, YEAR_INFO );
     }
@@ -63,8 +60,8 @@ public class YearInfoCursorAdapter extends CursorAdapter {
         final TextView LBL_YEAR = view.findViewById( R.id.lblYear );
         final ImageView IV_ACHIEVEMENT = view.findViewById( R.id.ivAchievement );
         final String STR_UNITS = settings.getDistanceUnits().toString();
-        final String STR_OWS = achievementsActivity.getString( R.string.label_abbrev_open_waters );
-        final String STR_POOL = achievementsActivity.getString( R.string.label_pool );
+        final String STR_OWS = view.getContext().getString( R.string.label_abbrev_open_waters );
+        final String STR_POOL = view.getContext().getString( R.string.label_pool );
         final int PROGRESS = (int) yearInfo.getProgress( YearInfo.SwimKind.TOTAL );
         final String STR_MAIN_DATA = String.format( LOCALE,
                 "%s (%d%%) %s.",
@@ -97,9 +94,8 @@ public class YearInfoCursorAdapter extends CursorAdapter {
                                             R.drawable.ic_achievement ) );
         }
 
-        achievementsActivity = null;
+        return;
     }
 
     private static Settings settings;
-    private static AchievementsActivity achievementsActivity;
 }

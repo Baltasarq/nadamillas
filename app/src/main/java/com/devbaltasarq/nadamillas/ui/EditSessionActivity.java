@@ -146,7 +146,7 @@ public class EditSessionActivity extends BaseActivity {
             }
         });
 
-        CB_POOL_LENGTH.setSelection( settings.getDefaultPoolLength().ordinal(), false );
+        CB_POOL_LENGTH.setSelection( settings.getPoolLength().ordinal(), false );
 
         // Prepares the laps editor
         ED_LAPS.setText( "0" );

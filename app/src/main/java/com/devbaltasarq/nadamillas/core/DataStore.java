@@ -251,15 +251,23 @@ public class DataStore extends SQLiteOpenHelper {
     public YearInfo getOrCreateInfoFor(final Date DATE)
     {
         final int YEAR = DATE.getYear();
-        final Cursor CURSOR = this.getAllYearInfosCursorWith(
-                YearInfoStorage.FIELD_YEAR + "=?",
-                new String[]{ Integer.toString( YEAR ) } );
-        YearInfo toret = null;
+        YearInfo toret;
 
-        if ( CURSOR.moveToFirst() ) {
-            toret = YearInfoStorage.createFrom( CURSOR );
-        } else {
-            Log.d( LOG_TAG, "no records found for " + YEAR + ": " + CURSOR.getCount() );
+        try (final Cursor CURSOR = this.getAllYearInfosCursorWith(
+                YearInfoStorage.FIELD_YEAR + "=?",
+                new String[]{ Integer.toString( YEAR ) } ))
+        {
+            if ( CURSOR.moveToFirst() ) {
+                toret = YearInfoStorage.createFrom( CURSOR );
+            } else {
+                Log.d( LOG_TAG, "no records found for " + YEAR
+                                    + ": " + CURSOR.getCount() );
+                toret = this.createYearInfoFor( DATE, 0 );
+                Log.i( LOG_TAG, "created yearinfo: " + toret );
+            }
+        } catch(SQLException exc) {
+            Log.d( LOG_TAG, "error retrieving record for " + YEAR
+                                + ": " + exc.getMessage() );
             toret = this.createYearInfoFor( DATE, 0 );
             Log.i( LOG_TAG, "created yearinfo: " + toret );
         }
@@ -310,14 +318,18 @@ public class DataStore extends SQLiteOpenHelper {
 
         Log.d( LOG_TAG, "storing year info record: " + yinfo );
 
-        final Cursor CURSOR = this.getAllYearInfosCursorWith(
+        try (final Cursor CURSOR = this.getAllYearInfosCursorWith(
                                         YearInfoStorage.FIELD_YEAR + "=?",
-                                        new String[]{ STR_YEAR } );
-
-        // Found? Delete it.
-        if ( CURSOR.moveToFirst() ) {
-            Log.d( LOG_TAG, "erasing existing year info record" );
-            DB.delete( TABLE_YEARS, YearInfoStorage.FIELD_YEAR + "=?", new String[]{ STR_YEAR } );
+                                        new String[]{ STR_YEAR } ))
+        {
+            // Found? Delete it.
+            if ( CURSOR.moveToFirst() ) {
+                Log.d( LOG_TAG, "erasing existing year info record" );
+                DB.delete( TABLE_YEARS, YearInfoStorage.FIELD_YEAR + "=?", new String[]{ STR_YEAR } );
+            }
+        } catch(SQLException exc)
+        {
+            Log.e( LOG_TAG, "locating and deleting YearInfo for: " + yinfo );
         }
 
         try {
@@ -526,15 +538,14 @@ public class DataStore extends SQLiteOpenHelper {
       */
     private Session[] retrieveSessionsWith(String query, String[] queryArgs)
     {
-        Cursor cursor = null;
-        Session[] toret = null;
+        Session[] toret;
         int numSessions = 0;
 
         Log.d( LOG_TAG, "Retrieve with query: " + stringFromQuery( query, queryArgs ) );
 
-        try {
+        try (Cursor cursor = this.getAllSessionsCursorWith( query, queryArgs ))
+        {
             // Build query
-            cursor = this.getAllSessionsCursorWith( query, queryArgs );
             toret = new Session[ cursor.getCount() ];
 
             // Retrieve sessions
@@ -549,9 +560,8 @@ public class DataStore extends SQLiteOpenHelper {
 
             numSessions = toret.length;
         } catch(SQLException exc) {
+            toret = new Session[ 0 ];
             Log.e( LOG_TAG, "db.retrieveSessionsWith(): " + exc.getMessage() );
-        } finally {
-            close( cursor );
         }
 
         Log.d( LOG_TAG, "retrieved " + numSessions + " sessions" );
@@ -598,18 +608,22 @@ public class DataStore extends SQLiteOpenHelper {
 
     public void recalculateAll()
     {
-        final Cursor YEAR_INFO_CURSOR = this.getDescendingAllYearInfosCursor();
-
-        if ( YEAR_INFO_CURSOR.moveToFirst() ) {
-            do {
-                this.recalculate(
-                        YEAR_INFO_CURSOR.getInt(
-                            YEAR_INFO_CURSOR.getColumnIndexOrThrow(
-                                    YearInfoStorage.FIELD_YEAR
+        try (final Cursor YEAR_INFO_CURSOR = this.getDescendingAllYearInfosCursor())
+        {
+            if ( YEAR_INFO_CURSOR.moveToFirst() ) {
+                do {
+                    this.recalculate(
+                            YEAR_INFO_CURSOR.getInt(
+                                YEAR_INFO_CURSOR.getColumnIndexOrThrow(
+                                        YearInfoStorage.FIELD_YEAR
+                                )
                             )
-                        )
-                );
-            } while( YEAR_INFO_CURSOR.moveToNext() );
+                    );
+                } while( YEAR_INFO_CURSOR.moveToNext() );
+            }
+        } catch(SQLException exc)
+        {
+            Log.e( LOG_TAG, "error recalculating: " + exc.getMessage() );
         }
 
         return;
@@ -617,16 +631,13 @@ public class DataStore extends SQLiteOpenHelper {
 
     public void recalculate(int year)
     {
-        Cursor cursor = null;
         YearInfo info = null;
-
         int target = 0;
         int targetPool = 0;
         int totalMeters = 0;
         int totalMetersPool = 0;
 
-        try {
-            cursor = this.getAllSessionsCursorFor( year );
+        try (Cursor cursor = this.getAllSessionsCursorFor( year )) {
             info = this.getOrCreateInfoFor( year );
 
             if ( cursor.moveToFirst() ) {
@@ -645,8 +656,6 @@ public class DataStore extends SQLiteOpenHelper {
             }
         } catch(SQLException exc) {
             Log.e( LOG_TAG, "db.recalculate(): " + exc.getMessage() );
-        } finally {
-            close( cursor );
         }
 
         // Build & store the target
@@ -798,21 +807,16 @@ public class DataStore extends SQLiteOpenHelper {
 
     private void allYearInfosTo(JsonWriter jsonWriter) throws IOException
     {
-        Cursor cursorYearInfo = null;
-
         jsonWriter.beginArray();
 
-        try {
-            cursorYearInfo = this.getAllYearInfosCursorWith( null, null );
-
+        try (Cursor cursorYearInfo = this.getAllYearInfosCursorWith( null, null ))
+        {
             while ( cursorYearInfo.moveToNext() ) {
                 new YearInfoStorage(
                         YearInfoStorage.createFrom( cursorYearInfo ) ).toJSON( jsonWriter );
             }
         } catch(SQLException exc) {
             Log.e( LOG_TAG, "retrieving all year infos: " + exc.getMessage() );
-        } finally {
-            close( cursorYearInfo );
         }
 
         jsonWriter.endArray();
@@ -820,13 +824,10 @@ public class DataStore extends SQLiteOpenHelper {
 
     private void allSessionsTo(JsonWriter jsonWriter) throws IOException
     {
-        Cursor cursorSessions = null;
-
         jsonWriter.beginArray();
 
-        try {
-            cursorSessions = this.getAllSessionsCursor();
-
+        try (Cursor cursorSessions = this.getAllSessionsCursor())
+        {
             while ( cursorSessions.moveToNext() ) {
                 new SessionStorage(
                         SessionStorage.createFrom( cursorSessions ) ).toJSON( jsonWriter );
@@ -834,8 +835,6 @@ public class DataStore extends SQLiteOpenHelper {
         } catch(SQLException exc) {
             Log.e( LOG_TAG, "db.allSessionsTo(): writing all sesions to json: "
                             + exc.getMessage() );
-        } finally {
-            close( cursorSessions );
         }
 
         jsonWriter.endArray();
@@ -885,7 +884,7 @@ public class DataStore extends SQLiteOpenHelper {
 
     public File saveTo(File dir) throws IOException
     {
-        File toret = null;
+        File toret;
         final String EXPT_FILE_NAME = this.createExportFileName();
 
         if ( dir == null ) {
@@ -893,16 +892,18 @@ public class DataStore extends SQLiteOpenHelper {
         }
 
         try {
-            File tempFile = this.createTempFile( NAME, Long.toString( new Date().getTimeInMillis() ) );
+            File tempFile = this.createTempFile( NAME,
+                                    Long.toString( new Date().getTimeInMillis() ) );
 
             try (Writer tempStream = openWriterFor( tempFile )) {
                 this.toJSON( tempStream );
             }
 
+            // Move to the result file
             toret = new File( dir, EXPT_FILE_NAME );
             copyFile( tempFile, toret );
             if ( !tempFile.delete() ) {
-                throw new IOException( "unable to delete: " + tempFile.getName() );
+                throw new IOException( "unable to delete temp file: " + tempFile.getName() );
             }
         } catch(IOException exc)
         {

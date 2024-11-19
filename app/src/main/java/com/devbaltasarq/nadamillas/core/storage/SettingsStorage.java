@@ -35,13 +35,18 @@ public class SettingsStorage {
     {
         final SharedPreferences PREFS = openPreferences( this.applicationContext );
         final SharedPreferences.Editor editor = PREFS.edit();
+        int poolLength = this.getSettings().getPoolLength().getLength();
+
+        if ( poolLength == 0 ) {
+            throw new Error( "poolLength == 0 !!" );
+        }
 
         editor.putInt( TAG_DISTANCE_UNITS,
                        this.getSettings().getDistanceUnits().ordinal() );
         editor.putInt( TAG_FIRST_DAY_OF_WEEK,
                         this.getSettings().getFirstDayOfWeek().ordinal() );
         editor.putInt( TAG_POOL_LENGTH,
-                        this.getSettings().getDefaultPoolLength().getLength() );
+                        poolLength );
         editor.apply();
     }
 
