@@ -37,10 +37,6 @@ public class SettingsStorage {
         final SharedPreferences.Editor editor = PREFS.edit();
         int poolLength = this.getSettings().getPoolLength().getLength();
 
-        if ( poolLength == 0 ) {
-            throw new Error( "poolLength == 0 !!" );
-        }
-
         editor.putInt( TAG_DISTANCE_UNITS,
                        this.getSettings().getDistanceUnits().ordinal() );
         editor.putInt( TAG_FIRST_DAY_OF_WEEK,
@@ -73,12 +69,13 @@ public class SettingsStorage {
     public static Settings restore(Context appContext)
     {
         final SharedPreferences PREFS = openPreferences( appContext );
+        final int DEFAULT_POOL_LENGTH = PoolLength.getDefault().getLength();
         final Distance.Units DIST_UNITS =
                 Distance.Units.fromOrdinal(
                         PREFS.getInt( TAG_DISTANCE_UNITS, 0 ) );
 
         int posFdow = PREFS.getInt( TAG_FIRST_DAY_OF_WEEK, -1 );
-        FirstDayOfWeek fDoW;
+        FirstDayOfWeek fDoW = FirstDayOfWeek.getDefault();
 
         if ( posFdow < 0
           || posFdow >= FirstDayOfWeek.values().length )
@@ -92,7 +89,7 @@ public class SettingsStorage {
 
         final PoolLength POOL_LENGTH =
                 PoolLength.fromLength(
-                        PREFS.getInt( TAG_POOL_LENGTH, 25 ) );
+                        PREFS.getInt( TAG_POOL_LENGTH, DEFAULT_POOL_LENGTH ) );
 
         return Settings.createFrom( DIST_UNITS, fDoW, POOL_LENGTH );
     }
