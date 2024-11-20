@@ -313,7 +313,6 @@ public class StatsActivity extends BaseActivity {
         final String LBL_TOTAL = this.getString( R.string.label_total );
         final String LBL_WEEK = this.getString( R.string.label_week );
         final String LBL_MONTH = this.getString( R.string.label_month );
-        final String STR_UNITS = settings.getDistanceUnits().toString();
         int firstDayOfWeek = settings.getFirstDayOfWeek().getCalendarValue();
         int weekIndex = 0;
 
@@ -391,19 +390,19 @@ public class StatsActivity extends BaseActivity {
             final String STR_TOTAL_OW_PER_WEEK_K = Distance.Fmt.format( metersOpenPerWeek.get( i ), UNITS );
 
             TXT_REPORT.append( capitalize( LBL_WEEK ) + " " + ( i + 1 ) + '\n' );
-            TXT_REPORT.append( capitalize( LBL_DISTANCE ) + ": " + STR_TOTAL_PER_WEEK_K + STR_UNITS + '\n' );
-            TXT_REPORT.append( capitalize( LBL_OPEN_WATERS ) + ": " + STR_TOTAL_OW_PER_WEEK_K + STR_UNITS + '\n' );
+            TXT_REPORT.append( capitalize( LBL_DISTANCE ) + ": " + STR_TOTAL_PER_WEEK_K + '\n' );
+            TXT_REPORT.append( capitalize( LBL_OPEN_WATERS ) + ": " + STR_TOTAL_OW_PER_WEEK_K + '\n' );
             TXT_REPORT.append( "\n" );
         }
 
         TXT_REPORT.append( capitalize( LBL_TOTAL ) + ": "
                            + Distance.Fmt.format( totalMeters, UNITS )
-                           + STR_UNITS + "\n" );
+                           + "\n" );
 
         TXT_REPORT.append( capitalize( LBL_TOTAL )
                 + " (" + LBL_OPEN_WATERS + "): "
                 + Distance.Fmt.format( owMeters, UNITS )
-                + STR_UNITS + "\n" );
+                + "\n" );
 
         SERIES.add( SERIE_TOTAL );
         SERIES.add( SERIE_OPEN );
