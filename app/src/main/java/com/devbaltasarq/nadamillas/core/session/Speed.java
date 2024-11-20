@@ -1,4 +1,4 @@
-// NadaMillas (c) 2019-2024-2024 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019-2023/24 Baltasar MIT License <baltasarq@gmail.com>
 
 
 package com.devbaltasarq.nadamillas.core.session;
@@ -83,7 +83,7 @@ public final class Speed {
             distanceUnits = "y";
         }
 
-        return this.getMeanTime() + "/100 " + distanceUnits + ".";
+        return this.getMeanTime() + "/100" + distanceUnits + ".";
     }
 
     private final Distance distance;
