@@ -1,4 +1,4 @@
-// NadaMillas (c) 2019-2024-2024 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019-2023/24 Baltasar MIT License <baltasarq@gmail.com>
 
 
 package com.devbaltasarq.nadamillas.ui;
