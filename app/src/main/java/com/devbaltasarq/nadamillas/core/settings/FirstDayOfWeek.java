@@ -1,12 +1,10 @@
-// NadaMillas (c) 2019-2024-2024 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019-2023/24 Baltasar MIT License <baltasarq@gmail.com>
 
 
 package com.devbaltasarq.nadamillas.core.settings;
 
 
 import android.util.Log;
-
-import com.devbaltasarq.nadamillas.core.session.Distance;
 
 import java.util.Calendar;
 
@@ -50,7 +48,7 @@ public enum FirstDayOfWeek {
      */
     public static FirstDayOfWeek fromCalendarValue(int value)
     {
-        FirstDayOfWeek toret = FirstDayOfWeek.MONDAY;
+        FirstDayOfWeek toret = FirstDayOfWeek.getDefault();
 
         if ( value == Calendar.SUNDAY ) {
             toret = FirstDayOfWeek.SUNDAY;
