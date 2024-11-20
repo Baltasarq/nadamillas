@@ -1,10 +1,12 @@
-// NadaMillas (c) 2019-2024-2024 Baltasar MIT License <baltasarq@gmail.com>
+// NadaMillas (c) 2019-2023/24 Baltasar MIT License <baltasarq@gmail.com>
 
 
 package com.devbaltasarq.nadamillas.core.settings;
 
 
 import android.util.Log;
+
+import androidx.core.util.Pools;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,14 +40,14 @@ public enum PoolLength {
      */
     public static PoolLength fromLength(int length)
     {
+        final PoolLength[] VALUES = PoolLength.values();
         PoolLength toret = getDefault();
 
-        switch( length ) {
-            case 25 -> toret = P25;
-            case 50 -> toret = P50;
-            case 100 -> toret = P100;
-            default ->
-                    Log.e( LOG_TAG, "no PoolLength for: " + length );
+        for (PoolLength value : VALUES) {
+            if ( value.getLength() == length ) {
+                toret = value;
+                break;
+            }
         }
 
         return toret;
