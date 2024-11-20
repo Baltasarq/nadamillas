@@ -138,7 +138,7 @@ public class MainActivity extends BaseActivity
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
     {
         if ( this.go( item.getItemId() ) ) {
             return true;
