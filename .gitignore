@@ -1,6 +1,7 @@
 build/
 release/
 debug/
+*.jar
 
 *.iml
 .gradle/
@@ -11,6 +12,8 @@ debug/
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
+/.idea/misc.xml
+/.idea/compiler.xml
 .DS_Store
 /captures
 .externalNativeBuild
