@@ -1,4 +1,6 @@
 # nadamillas
+[<img src="https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.devbaltasarq.nadamillas">](https://apt.izzysoft.de/packages/com.devbaltasarq.nadamillas)
+[<img src="https://shields.rbtlog.dev/simple/com.devbaltasarq.nadamillas" alt="RB shield">](https://shields.rbtlog.dev/com.devbaltasarq.nadamillas)
 
 ## Introduction
 
@@ -15,5 +17,5 @@ The sources for this app are shared using the [MIT License](LICENSE).
 ## Availability
 
 - [Check out the docs!](https://baltasarq.github.io/nadamillas/)
-
 - [Download it from google's Play Store!](https://play.google.com/store/apps/details?id=com.devbaltasarq.nadamillas)
+- [Get it at IzzyOnDroid](https://apt.izzysoft.de/packages/com.devbaltasarq.nadamillas)
