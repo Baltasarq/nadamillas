@@ -22,6 +22,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -48,6 +49,14 @@ public class StatsActivity extends BaseActivity {
         {
             return GraphType.values()[ pos ];
         }
+
+        /** @return the corresponding string for each graph type. */
+        public String toString(Context ctx)
+        {
+            return ctx.getResources()
+                    .getStringArray( R.array.array_graph_types )
+                                                        [ this.ordinal() ];
+        }
     }
 
     @Override @SuppressWarnings("ClickableViewAccessibility")
@@ -68,20 +77,16 @@ public class StatsActivity extends BaseActivity {
         final ImageButton BT_SHOW_REPORT = this.findViewById( R.id.btShowReport );
 
         // Prepares time segment spinner
-        final ArrayAdapter<String> SEGMENTS_ADAPTER = new ArrayAdapter<>(
+        final var SEGMENTS_ADAPTER = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
-                new String[]{
-                        this.getString( R.string.label_day ),
-                        this.getString( R.string.label_week ),
-                        this.getString( R.string.label_month ),
-                        this.getString( R.string.label_year )
-        });
+                this.getResources().getStringArray( R.array.array_graph_types ) );
 
         CB_TIME_SEGMENT.setAdapter( SEGMENTS_ADAPTER );
+        CB_TIME_SEGMENT.setSelection( GraphType.Weekly.ordinal() );                              // Week selected by default
 
         // Prepare the months spinner
-        final ArrayAdapter<String> MONTHS_ADAPTER = new ArrayAdapter<>(
+        final var MONTHS_ADAPTER = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
                 new DateFormatSymbols().getMonths() );
@@ -90,7 +95,7 @@ public class StatsActivity extends BaseActivity {
         CB_MONTHS.setSelection( Calendar.getInstance().get( Calendar.MONTH ), false );
 
         // Prepare years spinner
-        final ArrayAdapter<String> CB_YEARS_ADAPTER = new ArrayAdapter<>(
+        final var CB_YEARS_ADAPTER = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
                 this.retrieveExistingYearsAsString()
@@ -99,7 +104,7 @@ public class StatsActivity extends BaseActivity {
         CB_YEARS.setAdapter( CB_YEARS_ADAPTER );
 
         // Chart image viewer
-        final StandardGestures GESTURES = new StandardGestures( this );
+        final var GESTURES = new StandardGestures( this );
         this.chartView = findViewById( R.id.ivChartViewer );
         this.chartView.setOnTouchListener( GESTURES );
 
@@ -157,7 +162,7 @@ public class StatsActivity extends BaseActivity {
     private String[] retrieveExistingYearsAsString()
     {
         final int CURRENT_YEAR = new Date().getYear();
-        String[] toret = new String[ 0 ];
+        var toret = new String[ 0 ];
 
         try (Cursor cursor = dataStore.getDescendingAllYearInfosCursor())
         {

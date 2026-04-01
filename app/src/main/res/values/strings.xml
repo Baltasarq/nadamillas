@@ -94,6 +94,14 @@
         Keep swimming!!
     </string>
 
+    <!-- Graph types -->
+    <string-array name="array_graph_types">
+        <item>@string/label_day</item>
+        <item>@string/label_week</item>
+        <item>@string/label_month</item>
+        <item>@string/label_year</item>
+    </string-array>
+
     <!-- Import options -->
     <string-array name="array_import_options">
         <item>@string/label_import_from_internal_backup</item>
