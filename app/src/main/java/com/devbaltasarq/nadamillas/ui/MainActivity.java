@@ -335,7 +335,7 @@ public class MainActivity extends BaseActivity
                 String.format( Locale.getDefault(),
                         "%s (%s)",
                         totalOpenWaters,
-                        progress ) );;
+                        progress ) );
         LBL_TARGET.setText( target );
     }
 
@@ -374,7 +374,7 @@ public class MainActivity extends BaseActivity
                 String.format( Locale.getDefault(),
                         "%s (%s)",
                         totalPool,
-                        progress ) );;
+                        progress ) );
         LBL_TARGET.setText( target );
     }
 
