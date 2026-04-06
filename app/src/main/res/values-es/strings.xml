@@ -30,6 +30,7 @@
     <string name="label_target_distance">Distancia objetivo</string>
     <string name="label_total_distance">Distancia total</string>
     <string name="label_total">total</string>
+    <string name="label_average">media</string>
     <string name="label_km">km</string>
     <string name="label_mi">mi</string>
     <string name="label_previous">Anterior</string>

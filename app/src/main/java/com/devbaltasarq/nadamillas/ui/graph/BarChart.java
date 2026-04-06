@@ -18,19 +18,34 @@ import java.util.Locale;
 
 /** A graph created from lines. */
 public class BarChart extends Drawable {
-    private static String LOG_TAG = BarChart.class.getSimpleName();
+    private static final String LOG_TAG = BarChart.class.getSimpleName();
     private static double SCALED_DENSITY = 1.0;
-    public static int[] COLORS = new int[] {
-            0xff0000ff,                                 // blue
-            0xffff0000,                                 // red
-            0xff8b008b,                                 // magenta
-            0xff00ced1,                                 // dark turquoise
-            0xffffff00,                                 // yellow
-            0xffffa500,                                 // orange
-            0xff9acd32,                                 // yellow-green
-            0xff87ceeb,                                 // sky blue
-            0xff00ff00,                                 // green
-            0xff808080,                                 // gray
+    public enum Colors {
+            Red(0xffff0000),
+            Green(0xff00ff00),
+            Blue(0xff0000ff),
+            Cyan(0xff00ffff),
+            Yellow(0xffffff00),
+            White(0xffffffff),
+            Black(0xff000000),
+            Magenta(0xff8b008b),
+            DarkTurquoise(0xff00ced1),
+            Navy(0xff000080),
+            Orange(0xffffa500),
+            YellowedGreen(0xff9acd32),
+            Gray(0xff808080);
+
+            private Colors(int c) {
+                this.code = c;
+            }
+
+            /** @return the corresponding color code. */
+            public int get()
+            {
+                return this.code;
+            }
+
+            private final int code;
     };
 
     /** Represents a single point in the graph. */
@@ -61,8 +76,8 @@ public class BarChart extends Drawable {
                     this.getX(), this.getY() );
         }
 
-        private double x;
-        private double y;
+        private final double x;
+        private final double y;
     }
 
     /** Represents the correspondence between color and tag
@@ -107,9 +122,9 @@ public class BarChart extends Drawable {
             return this.points.size();
         }
 
-        private ArrayList<Point> points;
-        private int color;
-        private String tag;
+        private final ArrayList<Point> points;
+        private final int color;
+        private final String tag;
     }
 
     /** Constructs a new graph. */
@@ -126,11 +141,12 @@ public class BarChart extends Drawable {
             }
 
             if ( numPoints != serie.count() ) {
-                final String ERROR_MSG = String.format(
-                                        "%d series are uneven: calculated %d vs found %d",
-                                        seriesInfo.size(),
-                                        numPoints,
-                                        SERIE_NUM_POINTS );
+                final String ERROR_MSG =
+                                String.format( Locale.getDefault(),
+                                    "%d series are uneven: calculated %d vs found %d",
+                                    seriesInfo.size(),
+                                    numPoints,
+                                    SERIE_NUM_POINTS );
 
                 Log.e( LOG_TAG, ERROR_MSG );
                 throw new ExceptionInInitializerError( ERROR_MSG  );
@@ -161,7 +177,6 @@ public class BarChart extends Drawable {
         this.calculateDataMinMax();
 
         this.showLabels = true;
-        this.labelThreshold = 1.0;
     }
 
     /** Calculates the minimum and maximum values in the data sets.
@@ -237,12 +252,6 @@ public class BarChart extends Drawable {
         return this.showLabels;
     }
 
-    /** Sets the label threshold. */
-    public void setLabelThreshold(double threshold)
-    {
-        this.labelThreshold = threshold;
-    }
-
     /** Shows the labels on the chart or not. */
     public void setShowLabels(boolean showLabels)
     {
@@ -268,16 +277,20 @@ public class BarChart extends Drawable {
 
         // Set up
         this.canvas = canvas;
-        this.chartBounds = new Rect( 0,  0, this.canvas.getWidth(), this.canvas.getHeight() );
-        this.legendBounds = new Rect( 0, 0, this.canvas.getWidth(), this.canvas.getHeight() );
+        this.chartBounds = new Rect( 0,  0,
+                                    this.canvas.getWidth(),
+                                    this.canvas.getHeight() );
+        this.legendBounds = new Rect( 0, 0,
+                                    this.canvas.getWidth(),
+                                    this.canvas.getHeight() );
         this.paint.setTypeface( Typeface.create( "serif", Typeface.NORMAL ) );
         this.paint.setTextSize( TEXT_SIZE );
         this.paint.setAntiAlias( true );
 
         // Adjust chart bounds
-        this.chartBounds.top += CHART_PADDING;
-        this.chartBounds.right = ( (int) ( this.getBounds().width() * .75 ) ) - CHART_PADDING;
-        this.chartBounds.bottom -= CHART_PADDING + LEGEND_SPACE;
+        this.chartBounds.top += CHART_PADDING + ( LEGEND_SPACE * 2 );
+        this.chartBounds.right = ( (int) ( this.getBounds().width() * .85 ) ) + CHART_PADDING;
+        this.chartBounds.bottom -= CHART_PADDING;
         this.chartBounds.left += CHART_PADDING + LEGEND_SPACE;
 
         // Adjust legend bounds
@@ -351,7 +364,7 @@ public class BarChart extends Drawable {
             value = Math.round( value );
         }
 
-        this.write( x, y, String.format( Locale.getDefault(), "%2d", (int) value ) );
+        this.write( x, y, Integer.toString( (int) value ) );
     }
 
     /** Writes a real value as text.
@@ -364,17 +377,35 @@ public class BarChart extends Drawable {
     {
         final float BEFORE_STROKE_WIDTH = this.paint.getStrokeWidth();
         final int BEFORE_COLOR = this.paint.getColor();
+        final Paint.Style BEFORE_STYLE = this.paint.getStyle();
+        double textWidth = this.paint.measureText( msg );
+        double textHeight = this.paint.getTextSize();
 
+        // Draw outer rectangle
+        this.paint.setColor( Color.WHITE );
+        this.paint.setStyle( Paint.Style.FILL_AND_STROKE );
+        canvas.drawRect(
+                (float) x,
+                (float) ( y - textHeight ),
+                (float) ( x + textWidth ),
+                (float) y,
+                paint );
+
+        // Draw text
         this.paint.setStrokeWidth( 1 );
+        this.paint.setStyle( Paint.Style.STROKE );
         this.paint.setColor( Color.BLACK );
+        this.paint.setStyle( Paint.Style.STROKE );
         this.canvas.drawText( msg, (float) x, (float) y, this.paint );
+
 
         this.paint.setColor( BEFORE_COLOR );
         this.paint.setStrokeWidth( BEFORE_STROKE_WIDTH );
+        this.paint.setStyle( BEFORE_STYLE );
     }
 
     /** Draws the grid.
-     * @see BarChart ::shouldDrawGrid
+     * @see BarChart::shouldDrawGrid
      */
     private void drawGrid()
     {
@@ -397,7 +428,7 @@ public class BarChart extends Drawable {
                 final double DATA_X = this.points[ 0 ][ i ].getX();
                 final int X = this.translateX( DATA_X );
 
-                this.write( X + this.getBarWidth() / 2, CHART_BOTTOM  + 35, DATA_X );
+                this.write( X + this.getBarWidth() / 2.0, CHART_BOTTOM  + 35, DATA_X );
                 this.line( X, CHART_BOTTOM, X, CHART_TOP, COLOR );
             }
 
@@ -514,6 +545,10 @@ public class BarChart extends Drawable {
                 tag = tag.substring( 0, LENGTH ) + "...";
             }
 
+            this.paint.setStyle( Paint.Style.STROKE );
+            this.paint.setColor( Color.BLACK );
+            this.write( this.legendBounds.left + 50, y, tag );
+
             this.paint.setColor( colorTag.getColor() );
             this.paint.setStyle( Paint.Style.FILL );
             this.canvas.drawRect(
@@ -522,10 +557,6 @@ public class BarChart extends Drawable {
                     this.legendBounds.left + 20,
                     y,
                     this.paint );
-
-            this.paint.setStyle( Paint.Style.STROKE );
-            this.paint.setColor( Color.BLACK );
-            this.write( this.legendBounds.left + 50, y, tag );
 
             y += 50;
         }
@@ -548,14 +579,13 @@ public class BarChart extends Drawable {
     private boolean drawGrid;
     private Rect chartBounds;
     private Rect legendBounds;
-    private Paint paint;
+    private final Paint paint;
     private Canvas canvas;
     private double minX;
     private double maxX;
     private double minY;
     private double maxY;
-    private Point[][] points;
-    private SeriesInfo[] series;
+    private final Point[][] points;
+    private final SeriesInfo[] series;
     private boolean showLabels;
-    private double labelThreshold;
 }

@@ -37,6 +37,7 @@
     <string name="label_target_distance">Target distance</string>
     <string name="label_total_distance">Total distance</string>
     <string name="label_total">total</string>
+    <string name="label_average">average</string>
     <string name="label_km">km</string>
     <string name="label_mi">mi</string>
     <string name="label_previous">Previous</string>
@@ -95,11 +96,16 @@
     </string>
 
     <!-- Graph types -->
-    <string-array name="array_graph_types">
+    <string-array name="array_graph_time_types">
         <item>@string/label_day</item>
         <item>@string/label_week</item>
         <item>@string/label_month</item>
         <item>@string/label_year</item>
+    </string-array>
+
+    <string-array name="array_graph_mode_types">
+        <item>@string/label_distance</item>
+        <item>@string/label_temperature</item>
     </string-array>
 
     <!-- Import options -->
