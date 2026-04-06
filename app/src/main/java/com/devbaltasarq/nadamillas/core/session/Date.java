@@ -6,6 +6,7 @@ package com.devbaltasarq.nadamillas.core.session;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -31,13 +32,12 @@ public class Date {
         this.date = c;
     }
 
-    /** @return a copy of the calendar inside this object. */
-    public Calendar getInnerCalendar()
+    /** @return a corresponding LocalDate object. */
+    public LocalDate toLocalDate()
     {
-        final Calendar TORET = Calendar.getInstance();
-
-        TORET.setTimeInMillis( this.date.getTimeInMillis() );
-        return TORET;
+        return this.date.toInstant()
+            .atZone( this.date.getTimeZone().toZoneId() )
+            .toLocalDate();
     }
 
     /** @return the current date in milliseconds. */
@@ -91,6 +91,12 @@ public class Date {
     public int[] toData()
     {
         return dataFromDate( this.date.getTime() );
+    }
+
+    /** @return the date, as a Calendar object. */
+    public Calendar toCalendar()
+    {
+        return this.date;
     }
 
     /** @return the week day name for a given date. */
@@ -189,6 +195,28 @@ public class Date {
                         DATE_DATA[ 0 ], DATE_DATA[ 1 ] + 1, DATE_DATA[ 2 ] );
     }
 
+    @Override
+    public boolean equals(Object o)
+    {
+        if ( this == o ) {
+            return true;
+        }
+
+        boolean toret = false;
+
+        if ( o instanceof Date other) {
+            toret = ( this.getTimeInMillis() == other.getTimeInMillis() );
+        }
+
+        return toret;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.date.hashCode();
+    }
+
     /** Creates a new date from int data.
       * @param year the year
       * @param month the month - 1
@@ -201,6 +229,18 @@ public class Date {
 
         DATE.setTime( dateFromData( year, month, day ) );
         return new Date( DATE );
+    }
+
+    /** Creates a new Date from a java.time.LocalDate.
+      * @param ldate a LocalDate object.
+      * @return a new Date object.
+      */
+    public static Date from(LocalDate ldate)
+    {
+        return Date.from(
+                        ldate.getYear(),
+                        ldate.getMonth().getValue() - 1,
+                        ldate.getDayOfMonth() );
     }
 
     /** Creates a new date from a time in millis.

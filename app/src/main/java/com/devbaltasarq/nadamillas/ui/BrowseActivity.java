@@ -3,10 +3,15 @@
 
 package com.devbaltasarq.nadamillas.ui;
 
-import android.graphics.Color;
 import android.os.Bundle;
+
+import com.applandeo.materialcalendarview.listeners.OnCalendarPageChangeListener;
+import com.devbaltasarq.nadamillas.core.settings.FirstDayOfWeek;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -15,8 +20,18 @@ import com.devbaltasarq.nadamillas.R;
 import com.devbaltasarq.nadamillas.core.Session;
 import com.devbaltasarq.nadamillas.core.session.Date;
 import com.devbaltasarq.nadamillas.ui.adapters.ListViewSessionArrayAdapter;
-import com.github.sundeepk.compactcalendarview.CompactCalendarView;
-import com.github.sundeepk.compactcalendarview.domain.Event;
+
+import com.applandeo.materialcalendarview.CalendarDay;
+import com.applandeo.materialcalendarview.CalendarView;
+import com.applandeo.materialcalendarview.CalendarWeekDay;
+
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 public class BrowseActivity extends BaseActivity {
@@ -32,31 +47,14 @@ public class BrowseActivity extends BaseActivity {
         final ImageButton BT_SCRSHOT = this.findViewById( R.id.btTakeScrshotForBrowse );
         final ImageButton BT_BACK = this.findViewById( R.id.btCloseBrowse );
         final FloatingActionButton FB_NEW = this.findViewById( R.id.fbNew );
-        final CompactCalendarView CV_CALENDAR = this.findViewById( R.id.cvCalendar );
-        final ImageButton BT_PREVIOUS = this.findViewById( R.id.btPreviousMonth );
-        final ImageButton BT_NEXT = this.findViewById( R.id.btNextMonth );
+        final FrameLayout frmCalendarFrame = this.findViewById( R.id.frmCalendarFrame );
 
-        // Connect listeners
-        CV_CALENDAR.setListener( new CompactCalendarView.CompactCalendarViewListener() {
-            @Override
-            public void onDayClick(java.util.Date dateClicked) {
-                BrowseActivity.this.onDateChanged( Date.from( dateClicked.getTime() ) );
-            }
+        // Compose
+        frmCalendarFrame.addView( this.buildCalendar() );
 
-            @Override
-            public void onMonthScroll(java.util.Date firstDayOfNewMonth) {
-                BrowseActivity.this.highlightDays( Date.from( firstDayOfNewMonth.getTime() )   );
-            }
-        });
-
-        CV_CALENDAR.setFirstDayOfWeek( settings.getFirstDayOfWeek().getCalendarValue() );
-        CV_CALENDAR.setUseThreeLetterAbbreviation( true );
-        CV_CALENDAR.shouldDrawIndicatorsBelowSelectedDays( true );
-
+        // Handlers
         FB_NEW.setOnClickListener( v -> BrowseActivity.this.onNewSession() );
         BT_BACK.setOnClickListener( v -> BrowseActivity.this.finish() );
-        BT_PREVIOUS.setOnClickListener( v -> CV_CALENDAR.scrollLeft() );
-        BT_NEXT.setOnClickListener( v -> CV_CALENDAR.scrollRight() );
         BT_SCRSHOT.setOnClickListener( v -> {
             final BrowseActivity SELF = BrowseActivity.this;
 
@@ -64,16 +62,77 @@ public class BrowseActivity extends BaseActivity {
         });
     }
 
+    private CalendarView buildCalendar()
+    {
+        final Calendar MAX = Calendar.getInstance();
+        final Calendar MIN = Calendar.getInstance();
+        final int DELTA_MONTH = 12;
+        var firstDayOfWeek = CalendarWeekDay.MONDAY;
+
+        this.cvCalendar = new CalendarView( this );
+
+        // First day of week
+        if ( settings.getFirstDayOfWeek() == FirstDayOfWeek.SUNDAY ) {
+            firstDayOfWeek = CalendarWeekDay.SUNDAY;
+        }
+
+        this.cvCalendar.setFirstDayOfWeek( firstDayOfWeek );
+        this.cvCalendar.setHeaderColor( R.color.design_default_color_primary );
+
+        // Min and max date
+        MIN.add( Calendar.MONTH, -DELTA_MONTH );
+        MAX.add( Calendar.MONTH, DELTA_MONTH );
+
+        this.cvCalendar.setMinimumDate( MIN );
+        this.cvCalendar.setMaximumDate( MAX );
+
+        // Handlers
+        this.cvCalendar.setOnCalendarDayClickListener( eventDay -> {
+            Date clickedDay = Date.from( eventDay.getCalendar().getTimeInMillis() );
+
+            this.onDateChanged( clickedDay );
+        });
+
+        final OnCalendarPageChangeListener PAGE_CHANGED_HANDLER = () -> {
+            Date newDate = Date.from(
+                    this.cvCalendar.getCurrentPageDate().getTimeInMillis() );
+            this.onDateChanged( newDate );
+        };
+
+        this.cvCalendar.setOnPreviousPageChangeListener( PAGE_CHANGED_HANDLER );
+        this.cvCalendar.setOnForwardPageChangeListener( PAGE_CHANGED_HANDLER );
+
+        this.addedMonths = new HashSet<>();
+        this.currentDate = new Date();
+        return this.cvCalendar;
+    }
+
+    /** Adds various event days.
+     * @param sessions a list of sessions for the event days.
+     */
+    private void addAllEventDaysIn(List<Session> sessions)
+    {
+        final var DOT = ContextCompat.getDrawable(
+                this.cvCalendar.getContext(),
+                R.drawable.ic_dot );
+
+        final var CAL_DAYS = Objects.requireNonNull( sessions )
+                .stream().map( (session) -> {
+                    var calDay = new CalendarDay( session.getDate().toCalendar() );
+                    calDay.setBackgroundDrawable( DOT );
+                    return calDay;
+                }).collect( Collectors.toList() );
+
+        // Apply to calendar
+        this.cvCalendar.setCalendarDays( CAL_DAYS );
+    }
+
     @Override
     public void onResume()
     {
         super.onResume();
 
-        final CompactCalendarView CV_CALENDAR = this.findViewById( R.id.cvCalendar );
-
         this.currentDate = new Date();
-        CV_CALENDAR.setCurrentDate( this.currentDate.getInnerCalendar().getTime() );
-
         this.onDateChanged();
         this.update();
     }
@@ -82,49 +141,6 @@ public class BrowseActivity extends BaseActivity {
     protected void update()
     {
         this.updateSessions();
-        this.highlightDays();
-    }
-
-    private void highlightDays()
-    {
-        this.highlightDays( this.currentDate );
-    }
-
-    private void updateCalendarDate(Date date)
-    {
-        final TextView LBL_YEARMONTH = this.findViewById( R.id.lblYearMonth );
-        String isoCalendarDate = date.toString();
-
-        // Remove the day
-        int posLastDelimiter = isoCalendarDate.lastIndexOf( '-' );
-
-        if ( posLastDelimiter >= 0 ) {
-            isoCalendarDate = isoCalendarDate.substring( 0, posLastDelimiter );
-        }
-
-        LBL_YEARMONTH.setText( isoCalendarDate );
-    }
-
-    private void highlightDays(Date firstDayOfMonth)
-    {
-        final CompactCalendarView CV_CALENDAR = this.findViewById( R.id.cvCalendar );
-        final Session[] SESSIONS = dataStore.getSessionsForMonth( firstDayOfMonth );
-
-        CV_CALENDAR.removeAllEvents();
-        this.updateCalendarDate( firstDayOfMonth );
-
-        for(Session session: SESSIONS) {
-            int indicatorColor = Color.GREEN;
-
-            if ( session.isAtPool() ) {
-                indicatorColor = Color.CYAN;
-            }
-
-            Event ev1 = new Event( indicatorColor, session.getDate().getTimeInMillis(), "extra" );
-            CV_CALENDAR.addEvent( ev1 );
-        }
-
-        return;
     }
 
     /** Update sessions in the list view. */
@@ -139,6 +155,12 @@ public class BrowseActivity extends BaseActivity {
     /** Handler of the new session event. */
     private void onNewSession()
     {
+        var monthDate = Date.from(
+                this.currentDate.getYear(),
+                this.currentDate.getMonth(),
+                1 );
+
+        this.addedMonths.remove( monthDate );
         this.launchNewSessionEdit( this.currentDate );
     }
 
@@ -154,8 +176,23 @@ public class BrowseActivity extends BaseActivity {
 
         this.currentDate = date;
         LBL_SELECTED_DAY.setText( date.toFullDateString() );
-        this.updateCalendarDate( date );
         this.updateSessions();
+        this.highlightDays();
+    }
+
+    private void highlightDays()
+    {
+        var monthDate = Date.from(
+                                this.currentDate.getYear(),
+                                this.currentDate.getMonth(),
+                            1 );
+
+        if ( !this.addedMonths.contains( monthDate ) ) {
+            this.addedMonths.add( monthDate );
+            this.addAllEventDaysIn( Arrays.asList(
+                    Objects.requireNonNull(
+                            dataStore.getSessionsForMonth( monthDate ) ) ) );
+        }
     }
 
     /** Handle the ops menu event. */
@@ -204,4 +241,6 @@ public class BrowseActivity extends BaseActivity {
     }
 
     private Date currentDate;
+    private Set<Date> addedMonths;
+    private CalendarView cvCalendar;
 }

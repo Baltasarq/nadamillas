@@ -6,13 +6,14 @@ package com.devbaltasarq.nadamillas.core.settings;
 
 import android.util.Log;
 
+import java.time.DayOfWeek;
 import java.util.Calendar;
 
 
 public enum FirstDayOfWeek {
     MONDAY(Calendar.MONDAY), SUNDAY(Calendar.SUNDAY);
 
-    private static String LOG_TAG = FirstDayOfWeek.class.getSimpleName();
+    private static final String LOG_TAG = FirstDayOfWeek.class.getSimpleName();
 
     FirstDayOfWeek(int value)
     {
@@ -23,6 +24,18 @@ public enum FirstDayOfWeek {
     public int getCalendarValue()
     {
         return this.value;
+    }
+
+    /** @return the DayOfWeek corresponding value. */
+    public DayOfWeek getDayOfWeek()
+    {
+        DayOfWeek toret = DayOfWeek.MONDAY;
+
+        if ( this == SUNDAY ) {
+            toret = DayOfWeek.SUNDAY;
+        }
+
+        return toret;
     }
 
     /** @return the corresponding enum value, given its position. */
