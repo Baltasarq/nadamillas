@@ -1,40 +1,41 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdk 36
+    compileSdk = 36
     defaultConfig {
-        applicationId "com.devbaltasarq.nadamillas"
-        minSdk 21
-        targetSdk 36
-        versionCode 37
-        versionName '1.3.9'
-        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        applicationId = "com.devbaltasarq.nadamillas"
+        minSdk 26
+        targetSdk = 36
+        versionCode = 38
+        versionName = '1.4.0'
+        testInstrumentationRunner = 'androidx.test.runner.AndroidJUnitRunner'
         vectorDrawables.useSupportLibrary = true
-        versionNameSuffix '.20250702'
+        versionNameSuffix = '.20260404'
     }
     buildTypes {
         release {
-            shrinkResources true
-            minifyEnabled true
+            shrinkResources = true
+            minifyEnabled = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    namespace 'com.devbaltasarq.nadamillas'
+    namespace = 'com.devbaltasarq.nadamillas'
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
+    compileSdkMinor = 1
+    buildToolsVersion = '36.0.0'
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.7.1'
-    implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.vectordrawable:vectordrawable:1.2.0'
-    implementation 'com.github.sundeepk:compact-calendar-view:3.0.0'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    implementation(fileTree(dir: 'libs', include: ['*.jar']))
+    implementation('androidx.appcompat:appcompat:1.7.1')
+    implementation('com.google.android.material:material:1.13.0')
+    implementation('androidx.constraintlayout:constraintlayout:2.2.1')
+    implementation('androidx.vectordrawable:vectordrawable:1.2.0')
+    implementation('com.applandeo:material-calendar-view:1.9.2')
+    testImplementation('junit:junit:4.13.2')
+    androidTestImplementation('androidx.test.ext:junit:1.3.0')
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.7.0')
 }
